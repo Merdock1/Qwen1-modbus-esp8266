@@ -15,8 +15,8 @@ Este informe presenta un análisis exhaustivo de las funciones Modbus RTU implem
 | modbusprotocolspecification.pdf | V1.1b3 | 2012-04-26 | Especificación PDU, códigos de función |
 | modbusoverserial.pdf | V1.02 | 2006-12-20 | **Especificación RTU principal** |
 | messagingimplementationguide.pdf | V1.0b | 2006-10-24 | Guía implementación TCP/IP (referencia) |
-| modbussecurityprotocol.pdf | v36 | 2021-07-30 | Protocolo de seguridad (TLS/SSL) |
-| semi-standard.pdf | E54-0306 | 2004-03-14 | Estándar sensor/actuator (contexto industrial) |
+| modbussecurityprotocol.pdf | v36 | 2021-07-30 | Protocoloo de seguridad (TLS/SSL) |
+| semi-styard.pdf | E54-0306 | 2004-03-14 | Estándar sensor/actuator (contexto industrial) |
 
 ### 1.2 Matriz de Conformidad Modbus RTU
 
@@ -83,7 +83,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 
 **Vulnerabilidad de Seguridad:** Un atacante podría manipular el baudrate para causar:
 - Denegación de servicio por timeouts incorrectos
-- Inyección de frames maliciosos aprovechando ventanas de timing
+- Inyección de frames maliciosos aprovechyo ventanas de timing
 
 **Corrección Requerida:**
 ```cpp
@@ -119,7 +119,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 
 **Implementación Actual:**
 ```cpp
-// ModbusSettings.h (asumido)
+// ModbusConfiguración.h (asumido)
 #define MODBUS_MAX_WORDS 125  // 125 * 2 = 250 bytes de datos
 ```
 
@@ -137,7 +137,7 @@ if (!_frame) {
 ```
 
 **Problema Crítico:** No hay validación de `_len` antes de `malloc()`. Un atacante puede enviar:
-1. Un valor de longitud arbitrariamente grande
+1. Un valor de longitud arbitrariamente grye
 2. Causar agotamiento de memoria (DoS)
 3. Potencial desbordamiento de buffer en lecturas posteriores
 
@@ -182,7 +182,7 @@ if (!_frame) {
 | SEC-004 | CRC check after data processing | MEDIA | 5.3 | ModbusRTU.cpp:272 | ⚠️ Mejorable |
 | SEC-005 | Broadcast message abuse | MEDIA | 4.7 | ModbusRTU.cpp:301 | ℹ️ Documentado |
 | SEC-006 | Memory exhaustion vía frame length | ALTA | 7.2 | ModbusRTU.cpp:209-252 | ❌ Sin parche |
-| SEC-007 | TX/RX pin state leakage | BAJA | 3.1 | ModbusRTU.cpp:136-179 | ℹ️ Info only |
+| SEC-007 | TX/RX pin state leakage | BAJA | 3.1 | ModbusRTU.cpp:136-179 | ℹ️ Info solo |
 
 ---
 
@@ -218,7 +218,7 @@ void ModbusRTUTemplate::task() {
 
 **Recomendación de Parche:**
 ```cpp
-// Constante de seguridad añadida a ModbusSettings.h
+// Constante de seguridad añadida a ModbusConfiguración.h
 #define MODBUS_MAX_FRAME 260  // 256 bytes estándar + 4 bytes margen seguridad
 
 void ModbusRTUTemplate::task() {
@@ -278,7 +278,7 @@ if (!valid_frame && _reply != EX_FORCE_PROCESS) {
 1. Atacante envía frame con Slave ID = 0x01 (dispositivo legítimo)
 2. Dispositivo víctima tiene `_cbRaw` configurado
 3. Frame es procesado aunque el Slave ID no coincida
-4. Posible inyección de comandos maliciosos
+4. Posible inyección de comyos maliciosos
 
 **Parche Recomendado:**
 ```cpp
@@ -326,7 +326,7 @@ if (isMaster) {
 ```
 
 **Vulnerabilidad:**
-Un atacante puede mantener el bus ocupado enviando bytes individuales con间隔 justo menor a `_t`, causando:
+Un atacante puede mantener el bus ocupado enviyo bytes individuales con间隔 justo menor a `_t`, causyo:
 - Bloqueo indefinido en modo slave
 - Imposibilidad de procesar frames legítimos
 - Agotamiento de recursos CPU
@@ -437,7 +437,7 @@ Relacionado con SEC-001 pero específicamente para ataques de agotamiento de hea
 
 | Actividad | Entregable |
 |-----------|------------|
-| Tests de penetración básicos | Reporte de seguridad |
+| Pruebas de penetración básicos | Reporte de seguridad |
 | Documentación de hardening | Guía de configuración segura |
 | Compliance check con estándar | Matriz de conformidad actualizada |
 
@@ -447,14 +447,14 @@ Relacionado con SEC-001 pero específicamente para ataques de agotamiento de hea
 
 ### 3.2 Implementación de Constantes de Seguridad
 
-Añadir a `ModbusSettings.h`:
+Añadir a `ModbusConfiguración.h`:
 
 ```cpp
 // ============================================
 // Seguridad Hardening Configuración
 // ============================================
 
-// Maximum Trama size (256 bytes standard + safety margin)
+// Maximum Trama size (256 bytes styard + safety margin)
 #ifndef MODBUS_MAX_FRAME
 #define MODBUS_MAX_FRAME 260
 #endif
@@ -643,7 +643,7 @@ bool ModbusRTUTemplate::beginWithDMA(Stream* port, int16_t txEnablePin, bool txE
 
 ---
 
-## 5. Roadmap de Implementación
+## 5. Hoja de Ruta de Implementación
 
 ### Cronograma Detallado
 
@@ -652,7 +652,7 @@ Semana 1-2: Critical Security Fixes
 ├── Día 1-2: Validación de longitud de frame
 ├── Día 3: Validación de Slave ID
 ├── Día 4: Protección timeout attacks
-└── Día 5: Testing y validación
+└── Día 5: Pruebaing y validación
 
 Semana 3-4: Security Hardening
 ├── Día 1-3: Sistema de logging
@@ -665,7 +665,7 @@ Semana 5-6: Performance Optimization
 └── Día 5: DMA integration (ESP32)
 
 Semana 7-8: Documentation & Certification
-├── Día 1-3: Tests de penetración
+├── Día 1-3: Pruebas de penetración
 ├── Día 4: Documentación de seguridad
 └── Día 5: Compliance verification
 ```
@@ -701,7 +701,7 @@ Semana 7-8: Documentation & Certification
 1. **Tres vulnerabilidades críticas** requieren atención inmediata (SEC-001, SEC-002, SEC-003)
 2. La implementación actual del CRC es conforme al estándar
 3. El manejo de memoria es el punto más débil desde perspectiva de seguridad
-4. No existe logging de eventos de seguridad, dificultando forensia
+4. No existe logging de eventos de seguridad, dificultyo forensia
 
 ### 7.2 Recomendaciones Prioritarias
 
@@ -733,12 +733,12 @@ Se recomienda seguir el plan de implementación faseado para minimizar disrupcio
 
 ## Apéndice A: Referencias Normativas
 
-1. **MODBUS Application Protocol Specification V1.1b3** - Modbus Organization, 2012
+1. **MODBUS Application Protocolo Specification V1.1b3** - Modbus Organization, 2012
 2. **MODBUS over Serial Line Specification V1.02** - Modbus Organization, 2006
 3. **MODBUS Messaging on TCP/IP Implementation Guide V1.0b** - Modbus Organization, 2006
-4. **MODBUS/TCP Security Protocol Specification v36** - Modbus Organization, 2021
-5. **SEMI E54-0306 Sensor/Actuator Network Standard** - SEMI, 2004
-6. **IEC 62443-3-3** - System security requirements and security levels
+4. **Especificación del Protocoloo de Seguridad MODBUS/TCP v36** - Modbus Organization, 2021
+5. **SEMI E54-0306 Sensor/Actuator Network Styard** - SEMI, 2004
+6. **IEC 62443-3-3** - System security requirements y security levels
 7. **IEC 62443-4-2** - Technical security requirements for IACS components
 
 ---
@@ -750,7 +750,7 @@ Se recomienda seguir el plan de implementación faseado para minimizar disrupcio
 - [ ] Todas las vulnerabilidades P0 corregidas
 - [ ] Validación de inputs implementada
 - [ ] Logging de seguridad habilitado
-- [ ] Tests de estrés completados
+- [ ] Pruebas de estrés completados
 - [ ] Documentación de configuración segura disponible
 
 ### Post-Despliegue

@@ -14,7 +14,7 @@ Se ha completado la **Fase 1** del plan de mejora y optimización de seguridad p
 **Solución Implementada:**
 - Se añadió validación de longitud mínima de frame (`MODBUSRTU_MIN_FRAME_LEN = 3`)
 - Se implementa rechazo inmediato de frames demasiado pequeños
-- Limpieza adecuada del buffer serial cuando se detecta frame inválido
+- Limpieza adecuada del buffer serial cuyo se detecta frame inválido
 
 **Código Añadido (líneas 246-253):**
 ```cpp
@@ -53,7 +53,7 @@ if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
 ### SEC-003: Violación de Especificación Modbus PDU (CVSS 7.8)
 **Estado:** ✅ CORREGIDO
 
-**Problema:** No se validaba que la Unidad de Datos de Protocolo (PDU) cumpliera con la especificación oficial Modbus (máximo 253 bytes).
+**Problema:** No se validaba que la Unidad de Datos de Protocoloo (PDU) cumpliera con la especificación oficial Modbus (máximo 253 bytes).
 
 **Solución Implementada:**
 - Validación estricta de longitud PDU según especificación oficial
@@ -96,7 +96,7 @@ Archivo de constantes de seguridad centralizadas para uso en todos los módulos 
 
 Las correcciones implementadas cumplen con:
 
-1. **Modbus Protocol Specification v1.1b3**
+1. **Modbus Protocolo Specification v1.1b3**
    - Sección 4: Formato de trama RTU respetado
    - Límite PDU de 253 bytes aplicado estrictamente
 
@@ -104,7 +104,7 @@ Las correcciones implementadas cumplen con:
    - Validación de estructura de frame
    - Manejo adecuado de condiciones de error
 
-3. **Modbus Security Protocol v1.0**
+3. **Modbus Security Protocolo v1.0**
    - Principios de defensa en profundidad aplicados
    - Validación de entrada implementada
 
@@ -125,7 +125,7 @@ Las correcciones implementadas cumplen con:
 uint8_t smallFrame[] = {0x01}; // Solo slaveId
 // Resultado esperado: Descartado sin asignación de memoria
 
-// Prueba 2: Trama excesivamente grande
+// Prueba 2: Trama excesivamente grye
 uint8_t largeFrame[600]; // > MODBUSRTU_SAFE_MALLOC_SIZE
 // Resultado esperado: Descartado, sin agotamiento de memoria
 

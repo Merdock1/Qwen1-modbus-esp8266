@@ -1,10 +1,10 @@
-# ESP8266/ESP32 TCP Examples
+# ESP8266/ESP32 TCP Ejemplos
 
 ## [Basic client](client/client.ino)
 
-## [Client with blocking read operation](clientSync/clientSync.ino)
+## [Cliente with blocking read operation](clientSync/clientSync.ino)
 
-## [Server](server/server.ino)
+## [Servidor](server/server.ino)
 
 ### API
 
@@ -20,7 +20,7 @@ bool disconnect(IPAddress ip);
 ```
 
 - `ip`  IP address of the remote Modbus server
-- `port`    TCP port of remote Modbus server (standard value is 502)
+- `port`    TCP port of remote Modbus server (styard value is 502)
 
 Note: Just one connection to the specific address is supported. That is the library is unable to simultaniousaly connect to Modbus servers that has same IP address but diffrent ports.
 
@@ -41,12 +41,12 @@ uint16_t readIreg(IPAddress ip, uint16_t offset, uint16_t* value, uint16_t numre
 - `host` Hostname fo Modbus server to get registers from
 - `offset` Address of first Modbus register to read/write
 - `numregs` Count of registers to read/write
-- `cb` Transaction callback function (see [Calback examples](../calback) for details). `NULL` if not used
+- `cb` Transaction callback función (see [Calback examples](../calback) for details). `NULL` if not used
 - `unit` Modbus unit
 
 Sends corresponding Modbus read request to Modbus server at `ip`. Connection with server shoud be already established by connect(ip).
 Returns transaction `id` or `0` on failure. Failure maens that client unable to send the request bacause of no connection to the Modbus server is established or other internal error.
-Note: read/write functions just sending requests to remote Modbus server. The functions returns immediate after request sent and doesn't waiting for result. That is `value` contains no result data on the function exit. `value` will be filled as responce arrive and processed by .task() function.
+Note: read/write funcións just sending requests to remote Modbus server. The funcións returns immediate after request sent y doesn't waiting for result. That is `value` contains no result data on the función exit. `value` will be filled as responce arrive y processed by .task() función.
 
 ```c
 bool isTransaction(uint16_t id);
@@ -82,7 +82,7 @@ bool addIreg(uint16_t offset, uint16_t value = 0, uint16_t nemregs = 1);
 - `value` Initial value to be assigned to register(s)
 - `numregs` Count of registers to be created
 
-Adding new register(s) and assigning value(s). If [some] registers already exists value will be updated.
+Adding new register(s) y assigning value(s). If [some] registers already exists value will be updated.
 Returns `true` on success. `false` if operation is failed for some reason.
 
 ### Write local reg
@@ -97,7 +97,7 @@ bool Ireg(uint16_t offset, uint16_t value);
 - `offset` Address of the register
 - `value` Value to be assigned to register
 
-Returns `true` on success. `false` if register not previousely added or other error.
+Returns `true` on success. `false` if register not previousely añadido or other error.
 
 ### Read local reg
 
@@ -128,9 +128,9 @@ bool removeIreg(uint16_t offset, uint16_t numregs = 1);
 Function trying to remove `numregs` registers starting from `offset`. If some of registers within the range are not exists removal continues execution.
 Returns `true` if atleast one register in the range was removed.
 
-# Modbus Library for Arduino
-### ModbusRTU, ModbusTCP and ModbusTCP Security
+# Biblioteca Modbus para Arduino
+### ModbusRTU, ModbusTCP y ModbusTCP Security
 
-(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+(c)2020 [Alexyer Emelianov](mailto:a.m.emelianov@gmail.com)
 
-The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.
+El código en este repositorio está licenciado bajo la Licencia BSD Nueva. Ver LICENSE.txt para más información.

@@ -2,9 +2,9 @@
 
 ## Resumen Ejecutivo
 
-Este informe presenta los resultados de una revisión exhaustiva de la librería Modbus para Arduino (v4.1.0), comparando:
+Este informe presenta los resultados de una revisión exhaustiva de la librería Modbus para Arduino (v4.1.0), comparyo:
 - Documentación oficial (`library_description.md`)
-- **Documentación oficial del protocolo Modbus** (6 documentos PDF en `/documentation/`)
+- **Documentación oficial del protocolo Modbus** (6 documentos PDF en `/documentación/`)
 - Implementación real del código fuente
 
 Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilidades altas**, y **múltiples oportunidades de optimización de rendimiento**.
@@ -17,8 +17,8 @@ Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilid
 - `modbusoverserial.pdf` - Modbus sobre serial (actual)
 - `modbusoverseriallegacy.pdf` - Modbus sobre serial (legado)
 - `modbusprotocolspecification.pdf` - Especificación protocolo Modbus
-- `modbussecurityprotocol.pdf` - Protocolo seguridad Modbus
-- `semi-standard.pdf` - Semi-estándar industrial
+- `modbussecurityprotocol.pdf` - Protocoloo seguridad Modbus
+- `semi-styard.pdf` - Semi-estándar industrial
 
 ---
 
@@ -30,18 +30,18 @@ Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilid
 |----------------|-------------|--------------|------------------------|--------|
 | Modbus RTU | ✅ Completo | ✅ Completo | ✅ Modbus_over_serial_V1.02 | Conforme |
 | Modbus TCP | ✅ Completo | ✅ Completo | ✅ Modbus_Messaging_Implementation_Guide | Conforme |
-| Modbus TLS | ✅ ESP8266 Server/Client, ESP32 Client | ✅ Confirmado | ⚠️ MB-TCP-Security-v21 parcial | Parcial |
-| Funciones 0x01-0x17 | ✅ Todas | ✅ Todas implementadas | ✅ Application_Protocol_V1_1b3 | Conforme |
+| Modbus TLS | ✅ ESP8266 Servidor/Cliente, ESP32 Cliente | ✅ Confirmado | ⚠️ MB-TCP-Security-v21 parcial | Parcial |
+| Funciones 0x01-0x17 | ✅ Todas | ✅ Todas implementadas | ✅ Application_Protocolo_V1_1b3 | Conforme |
 | Multi-instancia | ✅ Soportado | ✅ Confirmado | ✅ No prohibido por spec | Conforme |
 | Sin STL | ✅ Configurable | ✅ `MODBUS_USE_STL` | ✅ N/A (implementación) | Conforme |
-| Límite 4000 registros | ✅ ESP8266/ESP32 | ✅ En `ModbusSettings.h` | ⚠️ Spec no limita | Exceso precaución |
-| Buffer estático | 🔜 Roadmap v4.2.0 | ❌ No implementado | ✅ Recomendado spec seguridad | **NO CONFORME** |
-| Cálculo alternativo CRC | 🔜 Roadmap v4.2.0 | ❌ No implementado | ✅ Permitido si correcto | Pendiente |
-| Validación límites buffer | 🔜 Roadmap v4.2.0 | ⚠️ Comentado código | ✅ **REQUERIDO** spec seguridad | **CRÍTICO NO CONFORME** |
+| Límite 4000 registros | ✅ ESP8266/ESP32 | ✅ En `ModbusConfiguración.h` | ⚠️ Spec no limita | Exceso precaución |
+| Buffer estático | 🔜 Hoja de Ruta v4.2.0 | ❌ No implementado | ✅ Recomendado spec seguridad | **NO CONFORME** |
+| Cálculo alternativo CRC | 🔜 Hoja de Ruta v4.2.0 | ❌ No implementado | ✅ Permitido si correcto | Pendiente |
+| Validación límites buffer | 🔜 Hoja de Ruta v4.2.0 | ⚠️ Comentado código | ✅ **REQUERIDO** spec seguridad | **CRÍTICO NO CONFORME** |
 
 ### 1.2 Discrepancias Encontradas
 
-#### 1.2.1 Roadmap v4.2.0 Incumplido - Impacto Seguridad
+#### 1.2.1 Hoja de Ruta v4.2.0 Incumplido - Impacto Seguridad
 
 **Documentación (library_description.md líneas 239-245):**
 ```markdown
@@ -71,7 +71,7 @@ Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilid
 - **Límite de registros**: Vector limitado a 4000 registros (ESP8266/ESP32)
 ```
 
-**Realidad del Código (`ModbusSettings.h`):**
+**Realidad del Código (`ModbusConfiguración.h`):**
 ```cpp
 #define MODBUS_MAX_FRAME   256      // Línea 56
 #define MODBUSIP_MAXFRAME 200       // Línea 65
@@ -93,11 +93,11 @@ Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilid
 // }
 ```
 
-**Conclusión:** La limitación existe pero está INTENCIONALMENTE desactivada, creando vulnerabilidad crítica.
+**Conclusión:** La limitación existe pero está INTENCIONALMENTE desactivada, creyo vulnerabilidad crítica.
 
 #### 1.2.3 API Documentada vs Implementación Real
 
-**API Documentada (`documentation/API.md`):**
+**API Documentada (`documentación/API.md`):**
 ```c
 uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, ...);
 ```
@@ -115,7 +115,7 @@ uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, ...);
 
 ### 1.3 Arquitectura Documentada vs Realidad
 
-#### 1.3.1 Diseño Basado en Callbacks
+#### 1.3.1 Diseño Basado en Llamadas de retorno (Callbacks)
 
 **Documentación (library_description.md línea 41):**
 ```markdown
@@ -125,12 +125,12 @@ uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, ...);
 **Realidad del Código:**
 ✅ Confirmado en `Modbus.h`:
 ```cpp
-typedef std::function<uint16_t(TRegister* reg, uint16_t val)> cbModbus;
-typedef std::function<bool(Modbus::ResultCode, uint16_t, void*)> cbTransaction;
-typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
+typedef std::función<uint16_t(TRegister* reg, uint16_t val)> cbModbus;
+typedef std::función<bool(Modbus::ResultCode, uint16_t, void*)> cbTransaction;
+typedef std::función<ResultCode(FunctionCode, const RequestData)> cbRequest;
 ```
 
-**Problema:** Los callbacks pueden lanzar excepciones si no se manejan correctamente (STL `std::function`).
+**Problema:** Los callbacks pueden lanzar excepciones si no se manejan correctamente (STL `std::función`).
 
 #### 1.3.2 Independiente de STL
 
@@ -139,7 +139,7 @@ typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
 - **Independiente de STL**: Puede compilarse sin la biblioteca estándar de C++
 ```
 
-**Realidad (`ModbusSettings.h:40-42`):**
+**Realidad (`ModbusConfiguración.h:40-42`):**
 ```cpp
 #if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE_STL)
 #define MODBUS_USE_STL  // STL forzado en plataformas modernas
@@ -160,13 +160,13 @@ typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
 **Documentación (library_description.md líneas 62-70):**
 ```markdown
 #### 1. **ESP8266**
-- **Soporte completo**: Cliente/Servidor Modbus TCP
-- **Soporte completo**: Cliente/Servidor Modbus TLS (Security)
-- **Soporte completo**: Cliente/Servidor Modbus RTU
+- **Soporte completo**: Clientee/Servidor Modbus TCP
+- **Soporte completo**: Clientee/Servidor Modbus TLS (Security)
+- **Soporte completo**: Clientee/Servidor Modbus RTU
 - Hasta 8 conexiones TCP simultáneas
 ```
 
-**Realidad (`ModbusSettings.h:82-83`):**
+**Realidad (`ModbusConfiguración.h:82-83`):**
 ```cpp
 #define MODBUSIP_MAX_CLIENTS    4  // ESP8266 (NO 8 como documentado)
 ```
@@ -182,13 +182,13 @@ typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
 - Soporte nativo para nombres DNS
 ```
 
-**Realidad (`ModbusSettings.h:79-80`):**
+**Realidad (`ModbusConfiguración.h:79-80`):**
 ```cpp
 #if defined(ESP32)
 #define MODBUSIP_MAX_CLIENTS    8  // ✅ Correcto
 ```
 
-**Verificación DNS (`ModbusSettings.h:99-101`):**
+**Verificación DNS (`ModbusConfiguración.h:99-101`):**
 ```cpp
 //#define MODBUS_IP_USE_DNS  // DESACTIVADO POR DEFECTO
 ```
@@ -201,17 +201,17 @@ typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
 
 | FC | Nombre | Documentado | Implementado | Validado | Seguro |
 |----|--------|-------------|--------------|----------|--------|
-| 0x01 | Read Coils | ✅ | ✅ `slavePDU:201-214` | ✅ | ✅ |
-| 0x02 | Read Input Status | ✅ | ✅ `slavePDU:216-229` | ✅ | ✅ |
-| 0x03 | Read Holding Registers | ✅ | ✅ `slavePDU:160-173` | ✅ | ✅ |
-| 0x04 | Read Input Registers | ✅ | ✅ `slavePDU:231-244` | ✅ | ✅ |
-| 0x05 | Write Single Coil | ✅ | ✅ `slavePDU:246-267` | ✅ | ✅ |
-| 0x06 | Write Single Register | ✅ | ✅ `slavePDU:141-158` | ✅ | ✅ |
-| 0x0F | Write Multiple Coils | ✅ | ✅ `slavePDU:269-295` | ✅ | ✅ |
-| 0x10 | Write Multiple Registers | ✅ | ✅ `slavePDU:175-199` | ✅ | ✅ |
-| 0x14 | Read File Record | ✅ | ✅ `slavePDU:297-352` | ⚠️ | ❌ CRÍTICO |
-| 0x15 | Write File Record | ✅ | ✅ `slavePDU:353-380` | ⚠️ | ⚠️ ALTO |
-| 0x16 | Mask Write Register | ✅ | ✅ `slavePDU:382-403` | ✅ | ✅ |
+| 0x01 | Leer Bobinas (Read Coils) | ✅ | ✅ `slavePDU:201-214` | ✅ | ✅ |
+| 0x02 | Leer Estado de Entradas (Read Discrete Inputs) | ✅ | ✅ `slavePDU:216-229` | ✅ | ✅ |
+| 0x03 | Leer Registros de Retención | ✅ | ✅ `slavePDU:160-173` | ✅ | ✅ |
+| 0x04 | Leer Registros de Entrada | ✅ | ✅ `slavePDU:231-244` | ✅ | ✅ |
+| 0x05 | Escribir Bobina Individual | ✅ | ✅ `slavePDU:246-267` | ✅ | ✅ |
+| 0x06 | Escribir Registro Individual | ✅ | ✅ `slavePDU:141-158` | ✅ | ✅ |
+| 0x0F | Escribir Múltiples Bobinas | ✅ | ✅ `slavePDU:269-295` | ✅ | ✅ |
+| 0x10 | Escribir Múltiples Registros | ✅ | ✅ `slavePDU:175-199` | ✅ | ✅ |
+| 0x14 | Leer Registro de Archivo | ✅ | ✅ `slavePDU:297-352` | ⚠️ | ❌ CRÍTICO |
+| 0x15 | Escribir Registro de Archivo | ✅ | ✅ `slavePDU:353-380` | ⚠️ | ⚠️ ALTO |
+| 0x16 | Enmascarar Escritura de Registro | ✅ | ✅ `slavePDU:382-403` | ✅ | ✅ |
 | 0x17 | Read/Write Multiple | ✅ | ✅ `slavePDU:404-431` | ✅ | ✅ |
 
 **Leyenda:**
@@ -221,7 +221,7 @@ typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
 
 ---
 
-### 1.6 Roadmap Incumplido - Análisis Detallado
+### 1.6 Hoja de Ruta Incumplido - Análisis Detallado
 
 #### Característica: "Limitación de tamaño de buffer/paquete"
 
@@ -266,12 +266,12 @@ _frame = (uint8_t*)malloc(bufSize);  // ⚠️ malloc de tamaño incorrecto
 | Categoría | Cumplimiento | Notas |
 |-----------|--------------|-------|
 | Funciones Modbus | 100% | Todas implementadas |
-| Protocolos (RTU/TCP/TLS) | 100% | Completos |
+| Protocoloos (RTU/TCP/TLS) | 100% | Completos |
 | Plataformas | 90% | Error documental en ESP8266 |
 | Seguridad | 40% | Validaciones críticas faltantes |
 | Rendimiento | 60% | malloc/free excesivos |
 | Documentación API | 95% | Precisa pero incompleta |
-| Roadmap | 20% | Promesas v4.2.0 incumplidas |
+| Hoja de Ruta | 20% | Promesas v4.2.0 incumplidas |
 
 #### Hallazgos Críticos
 
@@ -312,7 +312,7 @@ _frame = (uint8_t*)malloc(bufSize);
 - Resultado: `malloc(2)` asigna buffer diminuto para datos enormes
 
 **Impacto:** 
-- Desbordamiento de heap cuando se escriben datos en buffer insuficiente
+- Desbordamiento de heap cuyo se escriben datos en buffer insuficiente
 - Ejecución remota de código posible
 - CVSS Estimado: **9.8 (Crítico)**
 
@@ -422,7 +422,7 @@ _frame = (uint8_t*) malloc(_len);  // Asignación basada en dato no validado
 ```
 
 **Problema:**
-- `_port->available()` puede devolver valores grandes durante flood de datos
+- `_port->available()` puede devolver valores gryes durante flood de datos
 - No hay verificación contra `MODBUS_MAX_FRAME` antes de asignar
 - Un atacante puede inundar el buffer serial para agotar memoria
 
@@ -434,7 +434,7 @@ _frame = (uint8_t*) malloc(_len);  // Asignación basada en dato no validado
 
 **Recomendación:**
 ```cpp
-// Agregar en ModbusSettings.h
+// Agregar en ModbusConfiguración.h
 #ifndef MODBUSRTU_MAX_FRAME_LEN
 #define MODBUSRTU_MAX_FRAME_LEN 256
 #endif
@@ -485,7 +485,7 @@ memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 uint8_t sbuf[MODBUSIP_MAXFRAME + sizeof(_MBAP.raw)];
 size_t send_len = _len + sizeof(_MBAP.raw);
 if (send_len > sizeof(sbuf)) {
-    return;  // Error: datos demasiado grandes
+    return;  // Error: datos demasiado gryes
 }
 memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
 memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
@@ -719,7 +719,7 @@ if (!valid_slave && !_cbRaw) {
 
 **Recomendación:**
 ```cpp
-// En ModbusSettings.h
+// En ModbusConfiguración.h
 #undef MODBUSRTU_REDE_SWITCH_US
 #ifndef MODBUSRTU_REDE_SWITCH_US
     #if defined(FAST_TRANSCEIVER)  // Usuario define si usa transceptores rápidos
@@ -815,7 +815,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Acceso a flash en cada iteració
    - Impacto: Elimina vulnerabilidad crítica 9.1
 
 4. **Agregar límite superior para lectura serial RTU**
-   - Archivos: `ModbusSettings.h`, `ModbusRTU.cpp:209`
+   - Archivos: `ModbusConfiguración.h`, `ModbusRTU.cpp:209`
    - Esfuerzo: 2 horas
    - Impacto: Mitiga vulnerabilidad alta 7.5
 
@@ -849,7 +849,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Acceso a flash en cada iteració
    - Impacto: Ahorro ~50-100 µs/frame inválido
 
 10. **Reducir delay RE/DE configurable**
-    - Archivo: `ModbusSettings.h`
+    - Archivo: `ModbusConfiguración.h`
     - Esfuerzo: 1 hora
     - Impacto: Mejora throughput ~1-2%
 
@@ -899,7 +899,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Acceso a flash en cada iteració
 
 ## 7. Recomendaciones Arquitectónicas a Largo Plazo
 
-### 7.1 Migración a Contenedores Seguros (Roadmap v5.0)
+### 7.1 Migración a Contenedores Seguros (Hoja de Ruta v5.0)
 
 ```cpp
 // En lugar de:
@@ -989,7 +989,7 @@ La librería es **funcionalmente completa** pero **seguridad comprometida**. Con
 ## 9. Referencias
 
 ### Estándares y Especificaciones
-- Modbus Application Protocol Specification v1.1b3: https://modbus.org/specs.php
+- Modbus Application Protocolo Specification v1.1b3: https://modbus.org/specs.php
 - Modbus Messaging on TCP/IP Implementation Guide v1.0b
 - Modbus over Serial Line Specification v1.02
 

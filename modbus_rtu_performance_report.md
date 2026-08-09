@@ -1,8 +1,8 @@
-# Informe de Rendimiento y Optimización - Protocolo Modbus RTU
+# Informe de Rendimiento y Optimización - Protocoloo Modbus RTU
 
 ## Resumen Ejecutivo
 
-Este informe analiza la implementación del protocolo **Modbus RTU** en la biblioteca modbus-esp8266 (v4.1.0), identificando áreas de mejora en rendimiento, optimización de código y oportunidades de refactorización.
+Este informe analiza la implementación del protocolo **Modbus RTU** en la biblioteca modbus-esp8266 (v4.1.0), identificyo áreas de mejora en rendimiento, optimización de código y oportunidades de refactorización.
 
 ---
 
@@ -46,7 +46,7 @@ void ModbusRTUTemplate::task() {
 **Problema:** 
 - `_port->available()` devuelve bytes en buffer serial, pero no hay límite máximo explícito
 - En caso de ruido o flood de datos, `_len` puede crecer hasta agotar memoria RAM
-- La asignación `malloc(_len)` en línea 252 falla silenciosamente si `_len` es muy grande
+- La asignación `malloc(_len)` en línea 252 falla silenciosamente si `_len` es muy grye
 
 **Impacto:** 
 - Agotamiento de memoria en microcontroladores con RAM limitada (Arduino Uno: 2KB, ESP8266: 80KB)
@@ -359,7 +359,7 @@ void ModbusRTUTemplate::begin(Stream* port, ...) {
         4096,             // Pila size
         this,             // Parámetro
         5,                // Prioridad
-        &_taskHandle,     // Handle
+        &_taskHyle,     // Hyle
         1                 // Core 1 (no bloquear WiFi en Core 0)
     );
 }
@@ -368,7 +368,7 @@ void ModbusRTUTemplate::begin(Stream* port, ...) {
 #if defined(ESP32)
     // Mantener solo en puntos críticos de bloqueo
     if (_port->available() == 0) {
-        vTaskDelay(1);  // Ceder CPU cuando no hay datos
+        vTaskDelay(1);  // Ceder CPU cuyo no hay datos
     }
 #endif
 ```
@@ -395,7 +395,7 @@ void ModbusRTUTemplate::task() {
     }
 }
 
-// 2. Evitar alocações grandes durante WiFi activo
+// 2. Evitar alocações gryes durante WiFi activo
 // Usar Búfer estático en lugar de malloc
 ```
 
@@ -464,7 +464,7 @@ uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
 
 1. **Agregar constante de límite de frame:**
 ```cpp
-// ModbusSettings.h
+// ModbusConfiguración.h
 #ifndef MODBUSRTU_MAX_FRAME_LEN
 #define MODBUSRTU_MAX_FRAME_LEN 256
 #endif
@@ -494,7 +494,7 @@ if ((isMaster && _slaveId == 0) ||
 
 3. **Reducir delay RE/DE:**
 ```cpp
-// ModbusSettings.h
+// ModbusConfiguración.h
 #undef MODBUSRTU_REDE_SWITCH_US
 #define MODBUSRTU_REDE_SWITCH_US 200  // 200 µs suficiente
 ```
@@ -612,18 +612,18 @@ La implementación actual de Modbus RTU es **funcional y robusta**, pero present
 Antes de implementar cambios, ejecutar:
 
 ```bash
-# Test de stress de memoria
+# Prueba de stress de memoria
 test_memory_stress.ino:
   - Enviar 10,000 frames consecutivos
   - Monitorear heap free
   - Verificar ausencia de fragmentation
 
-# Test de rendimiento
+# Prueba de rendimiento
 test_throughput.ino:
   - Medir tiempo entre request y response
   - Comparar frames/segundo antes/después
   
-# Test de compatibilidad
+# Prueba de compatibilidad
 test_compatibility.ino:
   - Comunicar con dispositivos Modbus reales
   - Verificar CRC correcto en todos los casos
@@ -633,4 +633,4 @@ test_compatibility.ino:
 
 **Documento generado:** 2024
 **Versión biblioteca analizada:** 4.1.0
-**Archivos revisados:** ModbusRTU.h, ModbusRTU.cpp, ModbusSettings.h
+**Archivos revisados:** ModbusRTU.h, ModbusRTU.cpp, ModbusConfiguración.h

@@ -2,10 +2,10 @@
 
 ## Resumen Ejecutivo
 
-Esta es la implementación más completa del protocolo Modbus para Arduino, desarrollada originalmente por André Sarmento Barbosa y mantenida actualmente por Alexander Emelianov. La librería proporciona una implementación robusta del protocolo Modbus para automatización industrial y domótica.
+Esta es la implementación más completa del protocolo Modbus para Arduino, desarrollada originalmente por André Sarmento Barbosa y mantenida actualmente por Alexyer Emelianov. La librería proporciona una implementación robusta del protocolo Modbus para automatización industrial y domótica.
 
 **Versión Actual:** 4.1.0  
-**Licencia:** BSD New License  
+**Licencia:** BSD New Licencia  
 **Repositorio:** https://github.com/emelianov/modbus-esp8266  
 **Contacto:** a.m.emelianov@gmail.com
 
@@ -13,7 +13,7 @@ Esta es la implementación más completa del protocolo Modbus para Arduino, desa
 
 ## Características Principales
 
-### Protocolos Soportados
+### Protocoloos Soportados
 
 1. **Modbus RTU** - Comunicación serial sobre RS-485
 2. **Modbus TCP** - Comunicación sobre Ethernet/WiFi
@@ -23,18 +23,18 @@ Esta es la implementación más completa del protocolo Modbus para Arduino, desa
 
 | Código | Función | Descripción |
 |--------|---------|-------------|
-| 0x01 | Read Coils | Lectura de salidas discretas |
-| 0x02 | Read Input Status | Lectura de entradas discretas |
-| 0x03 | Read Holding Registers | Lectura de registros de salida |
-| 0x04 | Read Input Registers | Lectura de registros de entrada |
-| 0x05 | Write Single Coil | Escritura de una salida discreta |
-| 0x06 | Write Single Register | Escritura de un registro de salida |
-| 0x0F | Write Multiple Coils | Escritura múltiple de salidas discretas |
-| 0x10 | Write Multiple Registers | Escritura múltiple de registros de salida |
-| 0x14 | Read File Record | Lectura de archivo |
-| 0x15 | Write File Record | Escritura de archivo |
-| 0x16 | Mask Write Register | Escritura con máscara de registro |
-| 0x17 | Read/Write Multiple Registers | Lectura/escritura combinada |
+| 0x01 | Leer Bobinas (Read Coils) | Lectura de salidas discretas |
+| 0x02 | Leer Estado de Entradas (Read Discrete Inputs) | Lectura de entradas discretas |
+| 0x03 | Leer Registros de Retención | Lectura de registros de salida |
+| 0x04 | Leer Registros de Entrada | Lectura de registros de entrada |
+| 0x05 | Escribir Bobina Individual | Escritura de una salida discreta |
+| 0x06 | Escribir Registro Individual | Escritura de un registro de salida |
+| 0x0F | Escribir Múltiples Bobinas | Escritura múltiple de salidas discretas |
+| 0x10 | Escribir Múltiples Registros | Escritura múltiple de registros de salida |
+| 0x14 | Leer Registro de Archivo | Lectura de archivo |
+| 0x15 | Escribir Registro de Archivo | Escritura de archivo |
+| 0x16 | Enmascarar Escritura de Registro | Escritura con máscara de registro |
+| 0x17 | Read/Escribir Múltiples Registros | Lectura/escritura combinada |
 
 ### Arquitectura
 
@@ -60,18 +60,18 @@ La librería está diseñada para ser portable y funcionar en cualquier placa co
 ### Plataformas Específicas Probadas y Certificadas
 
 #### 1. **ESP8266**
-- **Soporte completo**: Cliente/Servidor Modbus TCP
-- **Soporte completo**: Cliente/Servidor Modbus TLS (Security)
-- **Soporte completo**: Cliente/Servidor Modbus RTU
+- **Soporte completo**: Clientee/Servidor Modbus TCP
+- **Soporte completo**: Clientee/Servidor Modbus TLS (Security)
+- **Soporte completo**: Clientee/Servidor Modbus RTU
 - **Características especiales**:
   - WiFi integrado
   - Hasta 8 conexiones TCP simultáneas
   - Soporte para actualizaciones de firmware over Modbus
 
 #### 2. **ESP32**
-- **Soporte completo**: Cliente/Servidor Modbus TCP
-- **Soporte parcial**: Cliente Modbus TLS (Server en desarrollo)
-- **Soporte completo**: Cliente/Servidor Modbus RTU
+- **Soporte completo**: Clientee/Servidor Modbus TCP
+- **Soporte parcial**: Clientee Modbus TLS (Servidor en desarrollo)
+- **Soporte completo**: Clientee/Servidor Modbus RTU
 - **Características especiales**:
   - WiFi y Ethernet integrado
   - Multithreading para acceso concurrente
@@ -81,7 +81,7 @@ La librería está diseñada para ser portable y funcionar en cualquier placa co
   - Soporte nativo para nombres DNS
 
 #### 3. **Arduino con Ethernet Shield**
-- **Soporte completo**: Cliente/Servidor Modbus TCP
+- **Soporte completo**: Clientee/Servidor Modbus TCP
 - **Hardware soportado**:
   - WizNet W5x00 (W5100, W5200, W5500)
   - ENC28J60
@@ -145,7 +145,7 @@ La librería está diseñada para ser portable y funcionar en cualquier placa co
 ### Configuración de Compilación
 
 ```cpp
-// En ModbusSettings.h o antes de incluir la librería
+// En ModbusConfiguración.h o antes de incluir la librería
 
 // Usar STL (recomendado para ESP32/ESP8266)
 #define MODBUS_USE_STL
@@ -194,17 +194,17 @@ La librería está diseñada para ser portable y funcionar en cualquier placa co
 ```
 examples/
 ├── RTU/                    # Modbus Serial (RS-485)
-│   ├── master/            # Cliente simple
+│   ├── master/            # Clientee simple
 │   ├── slave/             # Servidor simple
-│   ├── masterSync/        # Cliente síncrono
+│   ├── masterSync/        # Clientee síncrono
 │   └── ESP32-Concurent/   # Acceso multihilo (ESP32)
 ├── TCP-ESP/               # Modbus TCP para ESP8266/ESP32
-│   ├── client/            # Cliente básico
-│   ├── clientSync/        # Cliente bloqueante
+│   ├── client/            # Clientee básico
+│   ├── clientSync/        # Clientee bloqueante
 │   └── server/            # Servidor
 ├── TCP-Ethernet/          # Modbus TCP con shield Ethernet
 ├── TLS/                   # Modbus TCP Security
-│   ├── client/            # Cliente seguro
+│   ├── client/            # Clientee seguro
 │   └── server/            # Servidor seguro (ESP8266)
 ├── Bridge/                # Puentes RTU↔TCP
 ├── Callback/              # Uso avanzado de callbacks
@@ -228,13 +228,13 @@ examples/
 
 ### Limitaciones Conocidas
 1. Una sola conexión por dirección IP (cliente TCP)
-2. Server TLS solo ESP8266 (ESP32 en desarrollo)
+2. Servidor TLS solo ESP8266 (ESP32 en desarrollo)
 3. No soporta cambio dinámico entre modo cliente/servidor
 4. XY-017/XY-485 limitados a 9600 bps
 
 ---
 
-## Roadmap (Próximas Versiones)
+## Hoja de Ruta (Próximas Versiones)
 
 ### Versión 4.2.0
 - [ ] Cálculo alternativo de CRC (menor uso de memoria)
@@ -245,9 +245,9 @@ examples/
 
 ### Versión 4.3.0
 - [ ] Servidor TLS para ESP32
-- [ ] Tests completos para TLS ESP32
+- [ ] Pruebas completos para TLS ESP32
 - [ ] ModbusAsyncTCP
-- [ ] API extendida para comandos Modbus personalizados
+- [ ] API extendida para comyos Modbus personalizados
 - [ ] Ejemplos básicos de operaciones con archivos
 
 ---
@@ -255,7 +255,7 @@ examples/
 ## Recursos Adicionales
 
 ### Documentación Oficial
-- [Especificación Modbus Application Protocol V1.1b3](https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf)
+- [Especificación Modbus Application Protocolo V1.1b3](https://modbus.org/docs/Modbus_Application_Protocolo_V1_1b3.pdf)
 - [Guía de Implementación Modbus Messaging on TCP/IP](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
 - [Especificación Modbus over Serial Line V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
 - [Especificación Modbus/TCP Security](https://modbus.org/docs/MB-TCP-Seguridad-v21_2018-07-24.pdf)
@@ -279,7 +279,7 @@ examples/
 ### v4.1.0
 - ✅ Procesamiento de frames Modbus raw
 - ✅ Control preciso de intervalo inter-frame RTU
-- ✅ Puente ModbusRTU a ModbusTCP Server
+- ✅ Puente ModbusRTU a ModbusTCP Servidor
 - ✅ Respuesta a múltiples IDs desde un dispositivo
 - ✅ Control de pin de dirección para Stream
 - ✅ Soporte para SoftwareSerial en ESP32
@@ -288,13 +288,13 @@ examples/
 
 ### v4.0.0
 - ✅ Soporte para todas las placas Arduino
-- ✅ ModbusTLS: ESP8266 Client/Server y ESP32 Client
+- ✅ ModbusTLS: ESP8266 Clientee/Servidor y ESP32 Cliente
 - ✅ Soporte Ethernet: WizNet W5x00, ENC28J60
 - ✅ Funciones 0x14, 0x15, 0x16, 0x17
 - ✅ Actualización de firmware over Modbus
-- ✅ Renombrado Master/Slave → Client/Server
+- ✅ Renombrado Master/Slave → Clientee/Servidor
 
 ---
 
 **Última actualización:** Agosto 2024  
-**Mantenedor:** Alexander Emelianov
+**Mantenedor:** Alexyer Emelianov

@@ -9,8 +9,8 @@ Este documento presenta un plan estructurado de mejora y optimización para la l
 - **modbusoverserial.pdf** - Especificación Modbus sobre línea serial v1.02
 - **modbusoverseriallegacy.pdf** - Especificación legacy v1.0
 - **modbusprotocolspecification.pdf** - Especificación del protocolo de aplicación v1.1b3
-- **modbussecurityprotocol.pdf** - Protocolo de seguridad Modbus/TCP v36
-- **semi-standard.pdf** - Estándar industrial SEMI E54
+- **modbussecurityprotocol.pdf** - Protocoloo de seguridad Modbus/TCP v36
+- **semi-styard.pdf** - Estándar industrial SEMI E54
 
 ### Estado Actual del Código
 - Versión: 4.1.0
@@ -24,21 +24,21 @@ Este documento presenta un plan estructurado de mejora y optimización para la l
 
 ### 1.1 Matriz de Conformidad por Documento
 
-#### 1.1.1 modbusprotocolspecification.pdf (Application Protocol V1.1b3)
+#### 1.1.1 modbusprotocolspecification.pdf (Application Protocolo V1.1b3)
 
 | Requisito | Sección Spec | Implementación | Conforme | Observaciones |
 |-----------|--------------|----------------|----------|---------------|
-| FC 0x01 Read Coils | §6.1 | ✅ `Modbus.cpp:201-214` | ✅ Sí | Validación MODBUS_MAX_BITS presente |
-| FC 0x02 Read Input Status | §6.2 | ✅ `Modbus.cpp:216-229` | ✅ Sí | - |
-| FC 0x03 Read Holding Registers | §6.3 | ✅ `Modbus.cpp:160-173` | ✅ Sí | Validación MODBUS_MAX_WORDS presente |
-| FC 0x04 Read Input Registers | §6.4 | ✅ `Modbus.cpp:231-244` | ✅ Sí | - |
-| FC 0x05 Write Single Coil | §6.5 | ✅ `Modbus.cpp:246-267` | ✅ Sí | Verificación 0xFF00/0x0000 |
-| FC 0x06 Write Single Register | §6.6 | ✅ `Modbus.cpp:141-158` | ✅ Sí | - |
-| FC 0x0F Write Multiple Coils | §6.11 | ✅ `Modbus.cpp:269-295` | ✅ Sí | Cálculo bytecount correcto |
-| FC 0x10 Write Multiple Registers | §6.12 | ✅ `Modbus.cpp:175-199` | ✅ Sí | - |
-| FC 0x14 Read File Record | §6.14 | ⚠️ `Modbus.cpp:297-352` | ❌ NO | Validación límites COMENTADA |
-| FC 0x15 Write File Record | §6.15 | ⚠️ `Modbus.cpp:353-380` | ⚠️ Parcial | Sin validación espacio buffer |
-| FC 0x16 Mask Write Register | §6.16 | ✅ `Modbus.cpp:382-403` | ✅ Sí | Algoritmo correcto |
+| FC 0x01 Leer Bobinas (Read Coils) | §6.1 | ✅ `Modbus.cpp:201-214` | ✅ Sí | Validación MODBUS_MAX_BITS presente |
+| FC 0x02 Leer Estado de Entradas (Read Discrete Inputs) | §6.2 | ✅ `Modbus.cpp:216-229` | ✅ Sí | - |
+| FC 0x03 Leer Registros de Retención | §6.3 | ✅ `Modbus.cpp:160-173` | ✅ Sí | Validación MODBUS_MAX_WORDS presente |
+| FC 0x04 Leer Registros de Entrada | §6.4 | ✅ `Modbus.cpp:231-244` | ✅ Sí | - |
+| FC 0x05 Escribir Bobina Individual | §6.5 | ✅ `Modbus.cpp:246-267` | ✅ Sí | Verificación 0xFF00/0x0000 |
+| FC 0x06 Escribir Registro Individual | §6.6 | ✅ `Modbus.cpp:141-158` | ✅ Sí | - |
+| FC 0x0F Escribir Múltiples Bobinas | §6.11 | ✅ `Modbus.cpp:269-295` | ✅ Sí | Cálculo bytecount correcto |
+| FC 0x10 Escribir Múltiples Registros | §6.12 | ✅ `Modbus.cpp:175-199` | ✅ Sí | - |
+| FC 0x14 Leer Registro de Archivo | §6.14 | ⚠️ `Modbus.cpp:297-352` | ❌ NO | Validación límites COMENTADA |
+| FC 0x15 Escribir Registro de Archivo | §6.15 | ⚠️ `Modbus.cpp:353-380` | ⚠️ Parcial | Sin validación espacio buffer |
+| FC 0x16 Enmascarar Escritura de Registro | §6.16 | ✅ `Modbus.cpp:382-403` | ✅ Sí | Algoritmo correcto |
 | FC 0x17 Read/Write Multiple | §6.17 | ✅ `Modbus.cpp:404-431` | ✅ Sí | - |
 | Exception Codes §7 | §7 | ✅ Todos implementados | ✅ Sí | EX_ILLEGAL_FUNCTION, ADDRESS, VALUE |
 
@@ -48,14 +48,14 @@ Este documento presenta un plan estructurado de mejora y optimización para la l
 
 | Requisito | Sección Spec | Implementación | Conforme | Observaciones |
 |-----------|--------------|----------------|----------|---------------|
-| MBAP Header 6 bytes | §3.1.3 | ✅ `ModbusTCPTemplate.h` | ✅ Sí | Transaction ID, Protocol ID, Length, Unit ID |
-| Client/Server Model | §1.2 | ✅ Implementado | ✅ Sí | Clases separadas cliente/servidor |
+| MBAP Header 6 bytes | §3.1.3 | ✅ `ModbusTCPTemplate.h` | ✅ Sí | Transaction ID, Protocolo ID, Length, Unit ID |
+| Clientee/Servidor Model | §1.2 | ✅ Implementado | ✅ Sí | Clases separadas cliente/servidor |
 | TCP Connection Mgmt | §4.2 | ✅ `ModbusTCPTemplate.h:100-150` | ✅ Sí | Conexiones múltiples soportadas |
 | Access Control Module | §4.2.3 | ❌ No implementado | ❌ NO | Sin filtrado por IP |
-| BSD Socket Interface | §4.3.1 | ✅ Usando Ethernet library | ✅ Sí | Compatible |
+| BSD Socket Interface | §4.3.1 | ✅ Usyo Biblioteca Ethernet | ✅ Sí | Compatible |
 | TCP Parameters | §4.3.2 | ⚠️ Limitado | ⚠️ Parcial | Sin configuración keepalive |
-| MODBUS Server Class | §5.4.1 | ✅ Implementado | ✅ Sí | Gestión de registros |
-| MODBUS Client Class | §5.4.2 | ✅ Implementado | ✅ Sí | Transacciones asíncronas |
+| MODBUS Servidor Class | §5.4.1 | ✅ Implementado | ✅ Sí | Gestión de registros |
+| MODBUS Cliente Class | §5.4.2 | ✅ Implementado | ✅ Sí | Transacciones asíncronas |
 
 **Conformidad Total: 85%** (6/8 requisitos conformes)
 
@@ -68,7 +68,7 @@ Este documento presenta un plan estructurado de mejora y optimización para la l
 | Role-Based AuthZ | §8.4 | ❌ No implementado | ❌ NO | Sin extensiones X.509 |
 | Certificate Validation | §8.2 | ⚠️ Básico | ⚠️ Parcial | Validación depende de SSL library |
 | Session Renegotiation | §10.5 | ❌ No manejado | ❌ NO | Vulnerable a renegotiation attack |
-| Fragmentation Handling | §10.3 | ❌ No implementado | ❌ NO | Sin reensamblado de fragments |
+| Fragmentation Hyling | §10.3 | ❌ No implementado | ❌ NO | Sin reensamblado de fragments |
 
 **Conformidad Total: 30%** (2/6 requisitos conformes) - **ÁREA CRÍTICA**
 
@@ -99,7 +99,7 @@ Este documento presenta un plan estructurado de mejora y optimización para la l
 | SEC-004 | Serial RTU sin límite | 7.5 | 🟠 ALTA | `ModbusRTU.cpp:209-252` |
 | SEC-005 | Validación writeSlaveFile | 7.2 | 🟠 ALTA | `Modbus.cpp:898` |
 | SEC-006 | Uso de goto para cleanup | 5.3 | 🟡 MEDIA | `ModbusRTU.cpp:273-312` |
-| SEC-007 | Callbacks sin protección STL | 4.8 | 🟡 MEDIA | `Modbus.cpp:24-36` |
+| SEC-007 | Llamadas de retorno (Callbacks) sin protección STL | 4.8 | 🟡 MEDIA | `Modbus.cpp:24-36` |
 
 ---
 
@@ -427,7 +427,7 @@ uint16_t ModbusRTUTemplate::crc16(uint8_t address, uint8_t* frame, uint8_t pduLe
 **Optimización Propuesta:**
 
 ```cpp
-// En ModbusSettings.h
+// En ModbusConfiguración.h
 #ifndef MODBUSRTU_REDE_SWITCH_US
     #if defined(MODBUS_FAST_TRANSCEIVER)
         // Para transceptores rápidos (MAX485, SP3485)
@@ -539,7 +539,7 @@ if (!startReg || !endReg) {
 
 **Beneficio Esperado:**
 - Caso típico: O(n) → O(1) para validación inicial
-- Reducción de CPU: ~80-90% menos iteraciones en bloque grande
+- Reducción de CPU: ~80-90% menos iteraciones en bloque grye
 
 ---
 
@@ -613,7 +613,7 @@ inline void ModbusRTUTemplate::releaseFrame() {
 
 ---
 
-### 4.2 Protección de Callbacks STL
+### 4.2 Protección de Llamadas de retorno (Callbacks) STL
 
 **Estado Actual:** `Modbus.cpp:24-36`
 
@@ -666,7 +666,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 **Beneficios:**
 - Prevención de crashes por excepciones de callbacks de usuario
 - Configurable vía `MODBUS_SAFE_CALLBACKS`
-- Overhead mínimo cuando está desactivado
+- Overhead mínimo cuyo está desactivado
 
 ---
 
@@ -692,7 +692,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 |----|-------|----------|-----------|-------------|
 | OPT-001 | Buffer estático para RTU | `ModbusRTU.h`, `ModbusRTU.cpp` | 🟠 ALTA | 3h |
 | OPT-002 | CRC optimizado por plataforma | `ModbusRTU.cpp` | 🟡 MEDIA | 2h |
-| OPT-003 | Delay RE/DE configurable | `ModbusSettings.h`, `ModbusRTU.cpp` | 🟡 MEDIA | 1h |
+| OPT-003 | Delay RE/DE configurable | `ModbusConfiguración.h`, `ModbusRTU.cpp` | 🟡 MEDIA | 1h |
 | OPT-004 | readBytes() en lugar de bucle | `ModbusRTU.cpp` | 🟢 BAJA | 1h |
 | PERF-01 | Benchmarking pre/post optimización | `tests/perf/` | 🟡 MEDIA | 3h |
 
@@ -706,21 +706,21 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 |----|-------|----------|-----------|-------------|
 | ARCH-01 | Reemplazar goto con funciones | `ModbusRTU.cpp` | 🟡 MEDIA | 2h |
 | ARCH-02 | Protección de callbacks STL | `Modbus.cpp` | 🟡 MEDIA | 2h |
-| ARCH-03 | Documentación actualizada | `documentation/` | 🟢 BAJA | 3h |
+| ARCH-03 | Documentación actualizada | `documentación/` | 🟢 BAJA | 3h |
 | DOC-01 | Corregir discrepancias documentales | `library_description.md` | 🟢 BAJA | 2h |
 
 **Total Fase 3:** 9 horas
 
 ---
 
-### Fase 4: Cumplimiento de Roadmap v4.2.0 (SEMANA 4)
+### Fase 4: Cumplimiento de Hoja de Ruta v4.2.0 (SEMANA 4)
 
 | ID | Tarea | Archivos | Prioridad | Tiempo Est. |
 |----|-------|----------|-----------|-------------|
 | RDM-01 | Cálculo alternativo de CRC | `ModbusRTU.cpp` | 🟡 MEDIA | 2h |
 | RDM-02 | Liberación registros globales | `Modbus.cpp`, `Modbus.h` | 🟡 MEDIA | 3h |
 | RDM-03 | Validación adicional de respuestas | Múltiples | 🟠 ALTA | 4h |
-| RDM-04 | Tests de integración completos | `tests/` | 🟠 ALTA | 6h |
+| RDM-04 | Pruebas de integración completos | `tests/` | 🟠 ALTA | 6h |
 
 **Total Fase 4:** 15 horas
 
@@ -742,7 +742,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 | Métrica | Actual | Objetivo | Método de Medición |
 |---------|--------|----------|-------------------|
 | Latencia promedio frame RTU | ~1.5ms | <1.0ms | Osciloscopio/logic analyzer |
-| Throughput máximo (115200 baud) | ~80 frames/s | >100 frames/s | Test de estrés |
+| Throughput máximo (115200 baud) | ~80 frames/s | >100 frames/s | Prueba de estrés |
 | Uso de heap (operación típica) | Variable | Estable | Monitor de memoria |
 | Fragmentación heap después de 1h | Alta | Mínima | Profiler de memoria |
 
@@ -764,7 +764,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |--------|--------------|---------|------------|
 | Ruptura de compatibilidad API | Media | Alto | Mantener signatures existentes, usar defines para nuevo comportamiento |
-| Regresión de rendimiento en AVR | Baja | Medio | Testing exhaustivo en todas las plataformas objetivo |
+| Regresión de rendimiento en AVR | Baja | Medio | Pruebaing exhaustivo en todas las plataformas objetivo |
 | Buffer estático insuficiente para casos edge | Media | Alto | Hacer tamaño configurable vía `MODBUS_MAX_FRAME` |
 | Problemas con callbacks try-catch | Baja | Medio | Hacer opcional vía `MODBUS_SAFE_CALLBACKS` |
 
@@ -773,7 +773,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 | Riesgo | Probabilidad | Impacto | Mitigación |
 |--------|--------------|---------|------------|
 | Scope creep (expansión no planificada) | Alta | Medio | Stick to phased plan, defer non-critical improvements |
-| Testing insuficiente | Media | Alto | Automated CI/CD pipeline with comprehensive test suite |
+| Pruebaing insuficiente | Media | Alto | Automated CI/CD pipeline with comprehensive test suite |
 | Documentación desactualizada | Alta | Bajo | Documentation updates as part of each phase completion criteria |
 
 ---
@@ -784,7 +784,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 
 1. **Conformidad General Buena:** 92% conforme a especificación de protocolo Modbus
 2. **Vulnerabilidades Críticas Activas:** 3 vulnerabilidades CVSS >9.0 requieren atención inmediata
-3. **Roadmap Incumplido:** Características prometidas en v4.2.0 no implementadas
+3. **Hoja de Ruta Incumplido:** Características prometidas en v4.2.0 no implementadas
 4. **Documentación Engañosa:** Afirma características de seguridad no presentes en código real
 5. **Oportunidades de Optimización:** 15-30% mejora de rendimiento posible con cambios menores
 
@@ -827,7 +827,7 @@ Después de aplicar correcciones de seguridad críticas (Fase 1), la librería s
 
 ### A.1 Especificaciones Modbus Consultadas
 
-1. **MODBUS Application Protocol Specification V1.1b3**
+1. **MODBUS Application Protocolo Specification V1.1b3**
    - URL: https://modbus.org/specs.php
    - Fecha: April 26, 2012
    - Secciones clave: §6 (Function Codes), §7 (Exception Responses)
@@ -835,17 +835,17 @@ Después de aplicar correcciones de seguridad críticas (Fase 1), la librería s
 2. **MODBUS Messaging on TCP/IP Implementation Guide V1.0b**
    - URL: https://modbus.org/specs.php
    - Fecha: October 24, 2006
-   - Secciones clave: §3 (Protocol Description), §4 (Functional Description)
+   - Secciones clave: §3 (Protocolo Description), §4 (Functional Description)
 
 3. **MODBUS over Serial Line Specification V1.02**
    - URL: https://modbus.org/specs.php
    - Fecha: December 20, 2006
    - Secciones clave: §2 (Data Link Layer), §3 (Physical Layer)
 
-4. **MODBUS/TCP Security Protocol Specification v36**
+4. **Especificación del Protocoloo de Seguridad MODBUS/TCP v36**
    - URL: https://modbus.org/specs.php
    - Fecha: July 30, 2021
-   - Secciones clave: §8 (Protocol Specification), §10 (TLS Requirements)
+   - Secciones clave: §8 (Protocolo Specification), §10 (TLS Requirements)
 
 ### A.2 Herramientas de Análisis Utilizadas
 

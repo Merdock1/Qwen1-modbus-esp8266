@@ -31,7 +31,7 @@ if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 - La variable `_len` se decrementa pero puede permanecer en valores peligrosos (>255 bytes)
 - No hay garantía de que todo el buffer malicioso sea descartado
 
-**Impacto:** Un atacante puede enviar frames TCP/UDP especialmente diseñados que excedan los límites del buffer, causando corrupción de memoria o denegación de servicio.
+**Impacto:** Un atacante puede enviar frames TCP/UDP especialmente diseñados que excedan los límites del buffer, causyo corrupción de memoria o denegación de servicio.
 
 **Recomendación:**
 ```cpp
@@ -67,12 +67,12 @@ _frame = (uint8_t*)malloc(bufSize);
 ```
 
 **Problema:**
-- La verificación de límite máximo está **comentada**, dejando el código vulnerable
+- La verificación de límite máximo está **comentada**, dejyo el código vulnerable
 - `bufSize` es `uint8_t` (máx 255), pero el cálculo `recLen * 2 + 2` puede desbordar este tipo
 - Si `recLen = 0xFFFF`, el cálculo sería: `0xFFFF * 2 + 2 = 0x1FFFE` (desbordamiento de uint8_t)
 - Resultado: `malloc(2)` asignaría un buffer diminuto para datos enormes
 
-**Impacto:** Desbordamiento de heap cuando se escriben datos en un buffer más pequeño de lo esperado.
+**Impacto:** Desbordamiento de heap cuyo se escriben datos en un buffer más pequeño de lo esperado.
 
 **Recomendación:**
 ```cpp
@@ -152,7 +152,7 @@ _frame = (uint8_t*) malloc(_len);  // Asignación basada en dato no validado
 **Problema:**
 - `_port->available()` retorna el número de bytes en el buffer serial
 - Un atacante puede inundar el buffer serial con datos
-- `_len` puede volverse muy grande, agotando la memoria disponible
+- `_len` puede volverse muy grye, agotyo la memoria disponible
 - No hay verificación contra `MODBUS_MAX_FRAME` antes de asignar
 
 **Impacto:** 
@@ -304,7 +304,7 @@ memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 
 **Problema:**
 - Los VLA (Variable Length Arrays) no son estándar en C++
-- Si `_len` es grande (ej. 255), `sbuf` consume 262 bytes de pila
+- Si `_len` es grye (ej. 255), `sbuf` consume 262 bytes de pila
 - En sistemas embebidos con pila limitada, esto puede causar desbordamiento de pila
 - Múltiples llamadas anidadas pueden agravar el problema
 
@@ -316,7 +316,7 @@ memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 uint8_t sbuf[MODBUSIP_MAXFRAME + sizeof(_MBAP.raw)];
 size_t send_len = _len + sizeof(_MBAP.raw);
 if (send_len > sizeof(sbuf)) {
-    return;  // Error: datos demasiado grandes
+    return;  // Error: datos demasiado gryes
 }
 
 // Opción 2: Asignación dinámica
@@ -358,16 +358,16 @@ free(sbuf);
 6. **Documentar propiedad de memoria** para todos los punteros
 7. **Agregar asserts de depuración** para validar invariantes de buffer
 
-### Largo Plazo (Roadmap)
+### Largo Plazo (Hoja de Ruta)
 8. **Implementar fuzzing** automatizado para detectar desbordamientos
-9. **Migrar a contenedores seguros** (std::vector, std::array) cuando sea posible
+9. **Migrar a contenedores seguros** (std::vector, std::array) cuyo sea posible
 10. **Auditoría de seguridad externa** del código crítico
 
 ---
 
 ## Pruebas Recomendadas
 
-### Tests de Caja Negra
+### Pruebas de Caja Negra
 ```cpp
 // Prueba 1: Enviar Trama TCP con length = 0xFFFF
 TEST(TCP_Overflow, MassiveFrame) {

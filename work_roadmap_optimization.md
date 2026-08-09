@@ -18,7 +18,7 @@ Este documento establece una ruta de trabajo priorizada para optimizar la librer
 
 ### 1.1 Discrepancias Encontradas
 
-#### Roadmap Incumplido (v4.2.0 - Pendiente)
+#### Hoja de Ruta Incumplido (v4.2.0 - Pendiente)
 | Feature Documentado | Estado Real | Impacto |
 |---------------------|-------------|---------|
 | Cálculo alternativo de CRC | ❌ No implementado | Rendimiento 15-20% menor en AVR |
@@ -32,20 +32,20 @@ Este documento establece una ruta de trabajo priorizada para optimizar la librer
 Documentación library_description.md:
   "Vector limitado a 4000 registros (ESP8266/ESP32)"
   
-Código Real (ModbusSettings.h):
+Código Real (ModbusConfiguración.h):
   #define MODBUS_MAX_REGS     4000  // ✅ Correcto
   
 Documentación library_description.md:
   "Hasta 8 conexiones TCP simultáneas" (ESP8266)
   
-Código Real (ModbusSettings.h líneas 79-83):
+Código Real (ModbusConfiguración.h líneas 79-83):
   #if defined(ESP32)
   #define MODBUSIP_MAX_CLIENTS    8   // ✅ ESP32 correcto
   #else
   #define MODBUSIP_MAX_CLIENTS    4   // ⚠️ ESP8266 tiene 4, NO 8
 ```
 
-**Hallazgo Crítico:** La documentación afirma erróneamente que ESP8266 soporta 8 clientes TCP cuando el código limita a 4.
+**Hallazgo Crítico:** La documentación afirma erróneamente que ESP8266 soporta 8 clientes TCP cuyo el código limita a 4.
 
 #### API Documentada vs Implementada
 ```
@@ -56,7 +56,7 @@ Código Real (ModbusRTU.cpp línea 98):
   void ModbusRTUTemplate::setBaudrate(uint32_t baud)  // ✅ Implementación correcta
 ```
 
-### 1.2 Arquitectura: Diseño Basado en Callbacks
+### 1.2 Arquitectura: Diseño Basado en Llamadas de retorno (Callbacks)
 
 **Verificación:** ✅ CONFIRMADO
 - El sistema de callbacks está correctamente implementado
@@ -82,7 +82,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 
 **Realidad del Código:**
 ```cpp
-// ModbusSettings.h líneas 40-42
+// ModbusConfiguración.h líneas 40-42
 #if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE_STL)
 #define MODBUS_USE_STL  // ⚠️ STL forzado en ESP8266/ESP32/STM32
 #endif
@@ -94,17 +94,17 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
 
 | FC | Función | Documentada | Implementada | Validación Límites | Seguridad |
 |----|---------|-------------|--------------|-------------------|-----------|
-| 0x01 | Read Coils | ✅ | ✅ | ✅ MODBUS_MAX_BITS | ✅ |
-| 0x02 | Read Input Status | ✅ | ✅ | ✅ MODBUS_MAX_BITS | ✅ |
-| 0x03 | Read Holding Registers | ✅ | ✅ | ✅ MODBUS_MAX_WORDS | ✅ |
-| 0x04 | Read Input Registers | ✅ | ✅ | ✅ MODBUS_MAX_WORDS | ✅ |
-| 0x05 | Write Single Coil | ✅ | ✅ | ✅ | ✅ |
-| 0x06 | Write Single Register | ✅ | ✅ | ✅ | ✅ |
-| 0x0F | Write Multiple Coils | ✅ | ✅ | ✅ bytecount_calc | ✅ |
-| 0x10 | Write Multiple Registers | ✅ | ✅ | ✅ field2 < MODBUS_MAX_WORDS | ✅ |
-| 0x14 | Read File Record | ✅ | ✅ | ⚠️ COMENTADA línea 324-327 | ❌ CRÍTICO |
-| 0x15 | Write File Record | ✅ | ✅ | ⚠️ Parcial | ⚠️ ALTO |
-| 0x16 | Mask Write Register | ✅ | ✅ | ✅ | ✅ |
+| 0x01 | Leer Bobinas (Read Coils) | ✅ | ✅ | ✅ MODBUS_MAX_BITS | ✅ |
+| 0x02 | Leer Estado de Entradas (Read Discrete Inputs) | ✅ | ✅ | ✅ MODBUS_MAX_BITS | ✅ |
+| 0x03 | Leer Registros de Retención | ✅ | ✅ | ✅ MODBUS_MAX_WORDS | ✅ |
+| 0x04 | Leer Registros de Entrada | ✅ | ✅ | ✅ MODBUS_MAX_WORDS | ✅ |
+| 0x05 | Escribir Bobina Individual | ✅ | ✅ | ✅ | ✅ |
+| 0x06 | Escribir Registro Individual | ✅ | ✅ | ✅ | ✅ |
+| 0x0F | Escribir Múltiples Bobinas | ✅ | ✅ | ✅ bytecount_calc | ✅ |
+| 0x10 | Escribir Múltiples Registros | ✅ | ✅ | ✅ field2 < MODBUS_MAX_WORDS | ✅ |
+| 0x14 | Leer Registro de Archivo | ✅ | ✅ | ⚠️ COMENTADA línea 324-327 | ❌ CRÍTICO |
+| 0x15 | Escribir Registro de Archivo | ✅ | ✅ | ⚠️ Parcial | ⚠️ ALTO |
+| 0x16 | Enmascarar Escritura de Registro | ✅ | ✅ | ✅ | ✅ |
 | 0x17 | Read/Write Multiple | ✅ | ✅ | ✅ field2/field4 < MODBUS_MAX_WORDS | ✅ |
 
 **Hallazgo Crítico:** La validación `bufSize > MODBUS_MAX_FRAME` para FC_READ_FILE_REC está COMENTADA (líneas 324-327), permitiendo desbordamiento de heap.
@@ -240,11 +240,11 @@ if (c >= MBAP_LEN) {
 }
 ```
 
-**Problema:** El frame se lee COMPLETAMENTE antes de validar longitud. Un atacante puede enviar `length = 65535` forzando:
+**Problema:** El frame se lee COMPLETAMENTE antes de validar longitud. Un atacante puede enviar `length = 65535` forzyo:
 1. Espera de 65KB de datos (timeout)
 2. Asignación de buffer gigante si MODBUSIP_MAXFRAME no está definido correctamente
 
-**Estado Actual:** MODBUSIP_MAXFRAME = 200 (ModbusSettings.h línea 65) ✅ PROTEGIDO
+**Estado Actual:** MODBUSIP_MAXFRAME = 200 (ModbusConfiguración.h línea 65) ✅ PROTEGIDO
 
 **Mejora Recomendada:** Validar ANTES de leer payload completo:
 ```cpp
@@ -475,7 +475,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Lectura desde Flash
 **Archivos:** `/workspace/src/Modbus.cpp`  
 **Líneas:** 324-327, 297-353  
 **Tiempo Estimado:** 2 horas  
-**Testing:** Unit tests con frames maliciosos
+**Pruebaing:** Unit tests con frames maliciosos
 
 ```cpp
 // CAMBIOS REQUERIDOS:
@@ -488,7 +488,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Lectura desde Flash
 **Archivos:** `/workspace/src/Modbus.cpp`  
 **Líneas:** 794-816  
 **Tiempo Estimado:** 1 hora  
-**Testing:** Verificar con buffers pequeños de destino
+**Pruebaing:** Verificar con buffers pequeños de destino
 
 #### 4.1.3 Validación Temprana Longitud TCP
 **Archivos:** `/workspace/src/ModbusTCPTemplate.h`  
@@ -510,12 +510,12 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Lectura desde Flash
 **Tiempo Estimado:** 4 horas  
 **Configuración:**
 ```cpp
-#define MODBUSRTU_STATIC_BUFFER  // En ModbusSettings.h
+#define MODBUSRTU_STATIC_BUFFER  // En ModbusConfiguración.h
 #define MODBUSRTU_BUFFER_SIZE 256
 ```
 
 #### 4.2.2 Optimización Delay RE/DE
-**Archivos:** `/workspace/src/ModbusSettings.h`, `/workspace/src/ModbusRTU.cpp`  
+**Archivos:** `/workspace/src/ModbusConfiguración.h`, `/workspace/src/ModbusRTU.cpp`  
 **Tiempo Estimado:** 1 hora  
 **Cambio:**
 ```cpp
@@ -544,7 +544,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Lectura desde Flash
 **Archivos:** Ejemplos y callbacks  
 **Tiempo Estimado:** 3 horas
 
-#### 4.3.3 Protección de Excepciones en Callbacks
+#### 4.3.3 Protección de Excepciones en Llamadas de retorno (Callbacks)
 **Archivos:** `/workspace/src/Modbus.cpp`  
 **Tiempo Estimado:** 3 horas
 ```cpp
@@ -557,7 +557,7 @@ try {
 #endif
 ```
 
-#### 4.3.4 Corrección Documentación ESP8266 Clientes
+#### 4.3.4 Corrección Documentación ESP8266 Clientees
 **Archivos:** `/workspace/library_description.md`  
 **Líneas:** 66-70  
 **Tiempo Estimado:** 30 minutos
@@ -565,16 +565,16 @@ try {
 **Total Fase 3:** 10.5 horas  
 **Entregable:** Release v4.3.0-quality
 
-### Fase 4: Características Roadmap Original (Post-Seguridad)
+### Fase 4: Características Hoja de Ruta Original (Post-Seguridad)
 
-#### 4.4.1 Cálculo Alternativo de CRC (Roadmap v4.2.0)
+#### 4.4.1 Cálculo Alternativo de CRC (Hoja de Ruta v4.2.0)
 **Tiempo Estimado:** 6 horas  
 **Implementación:** Algoritmo bit-a-bit sin tabla lookup
 
-#### 4.4.2 Liberación Registros Globales y Callbacks
+#### 4.4.2 Liberación Registros Globales y Llamadas de retorno (Callbacks)
 **Tiempo Estimado:** 4 horas
 
-#### 4.4.3 Servidor TLS para ESP32 (Roadmap v4.3.0)
+#### 4.4.3 Servidor TLS para ESP32 (Hoja de Ruta v4.3.0)
 **Tiempo Estimado:** 16 horas
 
 **Total Fase 4:** 26 horas  
@@ -631,7 +631,7 @@ std::unique_ptr<uint8_t[]> _frame(new uint8_t[_len]);
 ### 6.2 Implementación de Memory Pool
 
 **Justificación:** Evitar fragmentación heap en sistemas embebidos  
-**Librerías Candidatas:**
+**Librerías Cyidatas:**
 - [mpool](https://github.com/embeddedartistry/mpool)
 - Implementación custom ligera
 
@@ -639,16 +639,16 @@ std::unique_ptr<uint8_t[]> _frame(new uint8_t[_len]);
 
 **Propuesta:**
 ```
-Layer 3: Application (Callbacks, User Logic)
+Layer 3: Application (Llamadas de retorno (Callbacks), User Logic)
          ↓
-Layer 2: Modbus Protocol (FC processing, Validation)
+Layer 2: Modbus Protocolo (FC processing, Validation)
          ↓
 Layer 1: Transport (RTU/TCP/TLS framing, CRC)
          ↓
 Layer 0: Physical (Serial, Ethernet, WiFi)
 ```
 
-**Beneficio:** Testing unitario por capa, mantenimiento simplificado
+**Beneficio:** Pruebaing unitario por capa, mantenimiento simplificado
 
 ### 6.4 Sistema de Logging Configurable
 
@@ -687,7 +687,7 @@ Layer 0: Physical (Serial, Ethernet, WiFi)
 - [ ] memcpy con límite de destino en respuesta FC_READ_FILE_REC
 - [ ] Validación temprana longitud TCP implementada
 - [ ] Límite MAX_RTU_FRAME en lectura serial
-- [ ] Tests de fuzzing pasados (1000 frames maliciosos)
+- [ ] Pruebas de fuzzing pasados (1000 frames maliciosos)
 
 ### Rendimiento (Fase 2)
 - [ ] Pool buffers estáticos RTU funcional
