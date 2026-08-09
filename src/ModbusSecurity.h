@@ -18,8 +18,18 @@
 #define MODBUS_MAX_BUFFER_LEN 256       // Length maximum of Buffer permitted for any Modbus Frame
 
 // Phase 3: Buffer Pool Configuration
-#define MODBUS_BUFFER_POOL_SIZE 8       // Number of buffers in the Pool
-#define MODBUS_BUFFER_SIZE 256          // Size of each Buffer in bytes
+// Tarea 2.2: Soporte para asignación estática en dispositivos limitados (AVR)
+#if defined(MODBUS_RESOURCE_LIMITED) || defined(__AVR__) || defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_LEONARDO)
+    // En dispositivos con recursos limitados, usar buffers estáticos pre-asignados
+    // Esto evita llamadas a malloc/free durante operación normal
+    #define MODBUS_STATIC_BUFFER 1
+    #define MODBUS_BUFFER_POOL_SIZE 4       // Reducido a 4 buffers para ahorrar RAM (4 x 128 = 512 bytes)
+    #define MODBUS_BUFFER_SIZE 128          // Buffer más pequeño para ahorrar memoria
+#else
+    #define MODBUS_STATIC_BUFFER 0          // Usar asignación dinámica en plataformas con más recursos
+    #define MODBUS_BUFFER_POOL_SIZE 8       // Number of buffers in the Pool
+    #define MODBUS_BUFFER_SIZE 256          // Size of each Buffer in bytes
+#endif
 
 // Phase 3: CRC Optimization
 #define CRC_USE_LOOKUP_TABLE 1          // Use lookup table for faster CRC calculation
