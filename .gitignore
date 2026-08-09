@@ -1,1 +1,13 @@
-(docs/TAREA_1.3_FC2B_DEVICE_IDENTIFICATION.md)
+```
+# Compiled and build artifacts
+*.o
+*.obj
+*.out
+*.exe
+*.dll
+*.so
+*.a
+
+# Test build artifacts
+tests/**/test_*
+```
