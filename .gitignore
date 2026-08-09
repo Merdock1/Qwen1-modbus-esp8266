@@ -1,7 +1,70 @@
-Nothing should be ignored in this case, as only a markdown file (`informe_completo_analisis.md`) was added, which is a source/config file and not a build artifact, dependency, or temporary file. According to rule 6, when the change list contains only source or config files and no build artifacts, dependencies, or temp files, the output should be empty.
+```
+# Compiled and build artifacts
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.exe
+*.out
 
-Therefore, the output is:
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+dist/
+build/
+target/
+.gradle/
 
-```markdown
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
 
+# Environment
+.env
+.env.local
+*.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
 ```
