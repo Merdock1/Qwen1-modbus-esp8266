@@ -1,46 +1,41 @@
 ```
-# Arduino build artifacts
-*.hex
-*.elf
-*.bin
-*.map
-*.sym
+# Logs and temp files
+*.log
+*.tmp
+*.swp
 
-# Build directories
-build/
-.release/
+# Environment
+.env
+.env.local
+.env.
 
-# IDE files
+# Editors
 .vscode/
 .idea/
 
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# Logs
-*.log
-
-# Environment files
-.env
-.env.local
-*.env.*
+# Build artifacts
+dist/
+build/
+target/
 
 # Dependencies
 node_modules/
-venv/
 .venv/
+venv/
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+.mypy_cache/
+.pytest_cache/
 
-# OS specific
+# System files
 .DS_Store
 Thumbs.db
 
-# Compression artifacts
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# Compressed files
 *.zip
 *.gz
 *.tar
