@@ -15,12 +15,12 @@ class DArray {
   size_t last = 0;
   bool isEmpty = true;
   DArray(size_t i = SIZE) {
-    data = (T*)masignación(i * tamañode(T));
+    data = (T*)malloc(i * tamañode(T));
     if (data) resSize = i;
   }
   size_t push_back(const T& v) {
     if (!data) {
-      data = (T*)masignación(resSize * tamañode(T));
+      data = (T*)malloc(resSize * tamañode(T));
       if (!data) return 1;
     }
     if (last >= resSize - 1) {

@@ -20,7 +20,7 @@
 #undef MODBUS_ETH_WRAP_ACCEPT
 #undef MODBUS_ETH_WRAP_BEGIN
 #endif
-// Ethernet class wrappo to ser able to compile para ESP32
+// Ethernet class wrappo to ser able to compile for ESP32
 class EthernetServerWrapper : public EthernetServer {
     public:
     EthernetServerWrapper(uint16_t port) : EthernetServer(port) {
@@ -41,7 +41,7 @@ class EthernetServerWrapper : public EthernetServer {
 class ModbusEthernet : public ModbusAPI<ModbusTCPTemplate<EthernetServerWrapper, EthernetClient>> {
 #if defined(MODBUSIP_USE_DNS)
     private:
-    static IPAddress resolver (censt char* host) {
+    static IPAddress resolver (const char* host) {
         DNSClient dns;
         IPAddress ip;
         

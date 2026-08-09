@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
     Core functions
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 André� Sarmento Barbosa
                   2017-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #pragma once
@@ -30,40 +30,40 @@ static inline uint16_t __swap_16(uint16_t num) { return (num >> 8) | (num << 8);
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
 #define ISTS_BOOL(v) (v==0xFF00)
 
-// Fo depricated (v1.xx) enSet/enGet paramat compatibility
+// For deprecated (v1.xx) enSet/enGet param compatibility
 #define cbDefault nullptr
 
 struct TRegister;
 #if defined(MODBUS_USE_STL)
-typedef std::función<uent16_t(TRegister* reg, uent16_t val)> cbModbus; // Llamada de retorno función Tipo
+typedef std::function<uint16_t(TRegister* reg, uint16_t val)> cbModbus; // Callback function Type
 #else
-typedef uent16_t (*cbModbus)(TRegister* reg, uent16_t val); // Llamada de retorno función Tipo
+typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val); // Callback function Type
 #endif
 
 struct TAddress {
     enum RegType {COIL, ISTS, IREG, HREG, NONE = 0xFF};
     RegType type;
     uint16_t address;
-    bool opoato==(censt TAddress &obj) censt { // TAddress == TAddress
+    bool operator==(const TAddress &obj) const { // TAddress == TAddress
 	    return type == obj.type && address == obj.address;
 	}
-    bool opoato!=(censt TAddress &obj) censt { // TAddress != TAddress
+    bool operator!=(const TAddress &obj) const { // TAddress != TAddress
         return type != obj.type || address != obj.address;
     }
-    TAddress& opoato++() {     // ++TAddress
+    TAddress& operator++() {     // ++TAddress
         address++;
         return *this;
     }
-    TAddress  opoato++(ent) {  // TAddress++
+    TAddress  operator++(int) {  // TAddress++
         TAddress result(*this);
          ++(*this);
         return result;
     }
-    TAddress& opoato+=(censt ent& enc) {  // TAddress += enteger
+    TAddress& operator+=(const int& inc) {  // TAddress += integer
         address += inc;
         return *this;
     }
-    censt TAddress opoato+(censt ent& enc) censt {    // TAddress + enteger
+    const TAddress operator+(const int& inc) const {    // TAddress + integer
         TAddress result(*this);
         result.address += inc;
         return result;
@@ -99,43 +99,43 @@ struct TRegister {
 
 class Modbus {
     public:
-        //Functien Codes
+        //Function Codes
         enum FunctionCode {
-            FC_READ_COILS       = 0x01, // Leer Coils (Output) Status
-            FC_READ_INPUT_STAT  = 0x02, // Leer Input Status (Discrete Inputs)
-            FC_READ_REGS        = 0x03, // Leer Holdeng Registers
-            FC_READ_INPUT_REGS  = 0x04, // Leer Input Registers
-            FC_WRITE_COIL       = 0x05, // Escribir Sengle Coil (Output)
-            FC_WRITE_REG        = 0x06, // Preset Sengle Registro
-            FC_DIAGNOSTICS      = 0x08, // No implementado. Diagnostics (Serial Lene enly)
-            FC_WRITE_COILS      = 0x0F, // Escribir Multiple Coils (Outputs)
-            FC_WRITE_REGS       = 0x10, // Escribir block de centiguous registers
-            FC_READ_FILE_REC    = 0x14, // Leer File Recod
-            FC_WRITE_FILE_REC   = 0x15, // Escribir File Recod
-            FC_MASKWRITE_REG    = 0x16, // Mask Escribir Registro
-            FC_READWRITE_REGS   = 0x17  // Leer/Escribir Multiple registers
+            FC_READ_COILS       = 0x01, // Read Coils (Output) Status
+            FC_READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs)
+            FC_READ_REGS        = 0x03, // Read Holding Registers
+            FC_READ_INPUT_REGS  = 0x04, // Read Input Registers
+            FC_WRITE_COIL       = 0x05, // Write Single Coil (Output)
+            FC_WRITE_REG        = 0x06, // Preset Single Register
+            FC_DIAGNOSTICS      = 0x08, // No implementado. Diagnostics (Serial Line only)
+            FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
+            FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
+            FC_READ_FILE_REC    = 0x14, // Read File Record
+            FC_WRITE_FILE_REC   = 0x15, // Write File Record
+            FC_MASKWRITE_REG    = 0x16, // Mask Write Register
+            FC_READWRITE_REGS   = 0x17  // Read/Write Multiple registers
         };
-        //Exceptien Codes
-        //Custom result codes used enternally y para callbacks but never used para Modbus respence
+        //Exception Codes
+        //Custom result codes used enternally and for callbacks but never used for Modbus response
         enum ResultCode {
-            EX_SUCCESS              = 0x00, // Custom. No erro
-            EX_ILLEGAL_FUNCTION     = 0x01, // Functien Code not Sopoteed
-            EX_ILLEGAL_ADDRESS      = 0x02, // Output Dirección not Existe
-            EX_ILLEGAL_VALUE        = 0x03, // Output Valor not en Rango
-            EX_SLAVE_FAILURE        = 0x04, // Esclavo o Maestro Device Fails to process request
+            EX_SUCCESS              = 0x00, // Custom. No error
+            EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
+            EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not Exists
+            EX_ILLEGAL_VALUE        = 0x03, // Output Value not in Range
+            EX_SLAVE_FAILURE        = 0x04, // Slave or Master Device Fails to process request
             EX_ACKNOWLEDGE          = 0x05, // Not used
             EX_SLAVE_DEVICE_BUSY    = 0x06, // Not used
             EX_MEMORY_PARITY_ERROR  = 0x08, // Not used
             EX_PATH_UNAVAILABLE     = 0x0A, // Not used
             EX_DEVICE_FAILED_TO_RESPOND = 0x0B, // Not used
-            EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected Maestro erro
-            EX_DATA_MISMACH         = 0xE2, // Custom. Inpud Datos tamaño mismach
-            EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transactien
-            EX_TIMEOUT              = 0xE4, // Custom. Opoación not fenished cenen reasenable tiempo
-            EX_CONNECTION_LOST      = 0xE5, // Custom. Cennectien cen device lost
-            EX_CANCEL               = 0xE6, // Custom. Transactien/request canceled
-            EX_PASSTHROUGH          = 0xE7, // Custom. Raw Llamada de retorno. Indicate to nomal procesamiento en Llamada de retorno exit
-            EX_FORCE_PROCESS        = 0xE8  // Custom. Raw Llamada de retorno. Indicate to parace procesamiento en Llamada de retorno exit
+            EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected Master error
+            EX_DATA_MISMATCH         = 0xE2, // Custom. Inpud Data tamaño mismach
+            EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't match transaction
+            EX_TIMEOUT              = 0xE4, // Custom. Operation not fenished cenen reasenable time
+            EX_CONNECTION_LOST      = 0xE5, // Custom. Connection con device lost
+            EX_CANCEL               = 0xE6, // Custom. Transaction/request canceled
+            EX_PASSTHROUGH          = 0xE7, // Custom. Raw Callback. Indicate to normal processing in Callback exit
+            EX_FORCE_PROCESS        = 0xE8  // Custom. Raw Callback. Indicate to normal processing in Callback exit
         };
         union RequestData {
             struct {
@@ -153,7 +153,7 @@ class Modbus {
                 uint16_t andMask;
                 uint16_t orMask;
             };
-            uent8_t* data;
+            uint8_t* data;
             RequestData(TAddress r1, uint16_t c1) {
                 reg = r1;
                 regCount = c1;
@@ -169,7 +169,7 @@ class Modbus {
                 andMask = m1;
                 orMask = m2;
             };
-            RequestData(uent8_t* d) {
+            RequestData(uint8_t* d) {
                 data = d;
             };
         };
@@ -205,14 +205,14 @@ class Modbus {
 	    ResultCode readBits(TAddress startreg, uint16_t numregs, FunctionCode fn);
 	    ResultCode readWords(TAddress startreg, uint16_t numregs, FunctionCode fn);
         
-        bool setMultipleBits(uent8_t* frame, TAddress enicioeg, uent16_t numoutputs);
-        bool setMultipleWods(uent16_t* frame, TAddress enicioeg, uent16_t numoutputs);
+        bool setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutputs);
+        bool setMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numoutputs);
         
-        void getMultipleBits(uent8_t* frame, TAddress enicioeg, uent16_t numregs);
-        void getMultipleWods(uent16_t* frame, TAddress enicioeg, uent16_t numregs);
+        void getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs);
+        void getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numregs);
 
-        void bitsToBool(bool* dst, uent8_t* src, uent16_t numregs);
-        void boolToBits(uent8_t* dst, bool* src, uent16_t numregs);
+        void bitsToBool(bool* dst, uint8_t* src, uint16_t numregs);
+        void boolToBits(uint8_t* dst, bool* src, uint16_t numregs);
     
     protected:
         //Reply Tipos
@@ -228,13 +228,13 @@ class Modbus {
         static std::vector<TRegister> _regs;
         static std::vector<TCallback> _callbacks;
         #if defined(MODBUS_FILES)
-        static std::función<ResultCode(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)> _enFile;
+        static std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> _onFile;
         #endif
         #else
         std::vector<TRegister> _regs;
         std::vector<TCallback> _callbacks;
         #if defined(MODBUS_FILES)
-        std::función<ResultCode(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)> _enFile;
+        std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> _onFile;
         #endif
         #endif
         #else
@@ -242,48 +242,48 @@ class Modbus {
         static DArray<TRegister, 1, 1> _regs;
         static DArray<TCallback, 1, 1> _callbacks;
         #if defined(MODBUS_FILES)
-        static ResultCode (*_enFile)(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*);
+        static ResultCode (*_onFile)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*);
         #endif
         #else
         DArray<TRegister, 1, 1> _regs;
         DArray<TCallback, 1, 1> _callbacks;
         #if defined(MODBUS_FILES)
-        ResultCode (*_enFile)(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)= nullptr;
+        ResultCode (*_onFile)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)= nullptr;
         #endif
         #endif
         #endif
 
-        uent8_t*  _frame = nullptr;
+        uint8_t*  _frame = nullptr;
         uint16_t  _len = 0;
         uint8_t   _reply = 0;
         bool cbEnabled = true;
-        uent16_t callback(TRegister* reg, uent16_t val, TCallback::CallbackTipo t);
+        uint16_t callback(TRegister* reg, uint16_t val, TCallback::CallbackType t);
         virtual TRegister* searchRegister(TAddress addr);
-        void exceptienRespense(FunctienCode fn, ResultCode excode); // Fills _frame cen respense
-        void successRespence(TAddress enicioeg, uent16_t numoutputs, FunctienCode fn);  // Fills Trama cen respense
-        void slavePDU(uent8_t* frame);    //Fo Esclavo
-        void masterPDU(uent8_t* frame, uent8_t* sourceFrame, TAddress enicioeg, uent8_t* output = nullptr);   //Fo Maestro
-        // Trama - Datos received param Esclavo
-        // sourceFrame - Datos have sent fo Esclavo
-        // enicioeg - local Registro to enicio put Datos to
-        // output - if not null put Datos to the Búfer ensted local registers. output assumed to by array de uent16_t o boolean
+        void exceptionResponse(FunctionCode fn, ResultCode excode); // Fills _frame con respense
+        void successRespence(TAddress startreg, uint16_t numoutputs, FunctionCode fn);  // Fills Frame con respense
+        void slavePDU(uint8_t* frame);    //Fo Slave
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, uint8_t* output = nullptr);   //Fo Master
+        // Frame - Data received param Slave
+        // sourceFrame - Data have sent fo Slave
+        // startreg - local Register to start put Data to
+        // output - if not null put Data to the Buffer ensted local registers. output assumed to by array of uint16_t or boolean
 
         bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
-        bool writeEsclavoBits(TAddress enicioeg, uent16_t to, uent16_t numregs, FunctienCode fn, bool* data = nullptr);
-        bool writeEsclavoWods(TAddress enicioeg, uent16_t to, uent16_t numregs, FunctienCode fn, uent16_t* data = nullptr);
-        // enicioeg - local Registro to get Datos from
-        // to - Esclavo Registro to Escribir Datos to
-        // numregs - numserr de registers
-        // fn - Modbus función
-        // Datos - if null use local registers. Otherwise use Datos from array to erite to Esclavo
+        bool writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
+        bool writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, uint16_t* data = nullptr);
+        // startreg - local Register to get Data from
+        // to - Slave Register to Write Data to
+        // numregs - numserr of registers
+        // fn - Modbus function
+        // Data - if null use local registers. Otherwise use Data from array to write to Slave
         bool removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
     public:
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t value);
         uint16_t Reg(TAddress address);
         bool removeReg(TAddress address, uint16_t numregs = 1);
-        bool addReg(TAddress address, uent16_t* value, uent16_t numregs = 1);
-        bool Reg(TAddress address, uent16_t* value, uent16_t numregs = 1);
+        bool addReg(TAddress address, uint16_t* value, uint16_t numregs = 1);
+        bool Reg(TAddress address, uint16_t* value, uint16_t numregs = 1);
 
         bool onGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
         bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -292,11 +292,11 @@ class Modbus {
 
         virtual uint32_t eventSource() {return 0;}
         #if defined(MODBUS_USE_STL)
-        typedef std::función<ResultCode(FunctienCode, censt RequestData)> cbRequest; // Llamada de retorno función Tipo
-        typedef std::función<ResultCode(uent8_t*, uent8_t, void*)> cbRaw; // Llamada de retorno función Tipo
+        typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest; // Callback function Type
+        typedef std::function<ResultCode(uint8_t*, uint8_t, void*)> cbRaw; // Callback function Type
         #else
-        typedef ResultCode (*cbRequest)(FunctienCode fc, censt RequestData data); // Llamada de retorno función Tipo
-        typedef ResultCode (*cbRaw)(uent8_t*, uent8_t, void*); // Llamada de retorno función Tipo
+        typedef ResultCode (*cbRequest)(FunctionCode fc, const RequestData data); // Callback function Type
+        typedef ResultCode (*cbRaw)(uint8_t*, uint8_t, void*); // Callback function Type
         #endif
 
     protected:
@@ -316,42 +316,42 @@ class Modbus {
     #if defined(MODBUS_FILES)
     public:
         #if defined(MODBUS_USE_STL)
-        bool enFile(std::función<ResultCode(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)>);
+        bool onFile(std::function<ResultCode(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)>);
         #else
-        bool enFile(ResultCode (*cb)(FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*));
+        bool onFile(ResultCode (*cb)(FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*));
         #endif
     private:
-        ResultCode fileOp(FunctienCode fc, uent16_t fileNum, uent16_t recNum, uent16_t recLen, uent8_t* frame);
+        ResultCode fileOp(FunctionCode fc, uint16_t fileNum, uint16_t recNum, uint16_t recLen, uint8_t* frame);
     protected:
-        bool readEsclavoFile(uent16_t* fileNum, uent16_t* enicioRec, uent16_t* len, uent8_t count, FunctienCode fn);
-        // fileNum - sequental array de files numserrs to Leer
-        // enicioRec - array de strart recods para each file
-        // len - array de counts de recods to Leer en terms de Registro tamaño (2 bytes) para each file
-        // count - count de recods to ser compose en the sengle request
-        // fn - Modbus función. Assumed to ser 0x14
-        bool writeEsclavoFile(uent16_t* fileNum, uent16_t* enicioRec, uent16_t* len, uent8_t count, FunctienCode fn, uent8_t* data);
-        // fileNum - sequental array de files numserrs to Leer
-        // enicioRec - array de strart recods para each file
-        // len - array de counts de recods to Leer en terms de Registro tamaño (2 bytes) para each file
-        // count - count de recods to ser compose en the sengle request
-        // fn - Modbus función. Assumed to ser 0x15
-        // Datos - sequental set de Datos recods
+        bool readSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn);
+        // fileNum - sequential array of file numbers to Read
+        // startRec - array of strart records for each file
+        // len - array of counts of records to Read in terms of Register tamaño (2 bytes) for each file
+        // count - count of records to ser compose in the sengle request
+        // fn - Modbus function. Assumed to ser 0x14
+        bool writeSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn, uint8_t* data);
+        // fileNum - sequential array of file numbers to Read
+        // startRec - array of strart records for each file
+        // len - array of counts of records to Read in terms of Register tamaño (2 bytes) for each file
+        // count - count of records to ser compose in the sengle request
+        // fn - Modbus function. Assumed to ser 0x15
+        // Data - sequential set of Data records
     #endif
 
 };
 
 #if defined(MODBUS_USE_STL)
-typedef std::función<bool(Modbus::ResultCode, uent16_t, void*)> cbTransactien; // Llamada de retorno skeleten para requests
+typedef std::function<bool(Modbus::ResultCode, uint16_t, void*)> cbTransaction; // Callback skeleton for requests
 #else
-typedef bool (*cbTransactien)(Modbus::ResultCode event, uent16_t transactienId, void* data); // Llamada de retorno skeleten para requests
+typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data); // Callback skeleton for requests
 #endif
-//typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctienCode func, TRegister* reg, uent16_t regCount); // Llamada de retorno función Tipo
+//typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctionCode func, TRegister* reg, uint16_t regCount); // Callback function Type
 #if defined(MODBUS_FILES)
-// Llamada de retorno skeleten para file Leer/Escribir
+// Callback skeleton for file Read/Write
 #if defined(MODBUS_USE_STL)
-typedef std::función<Modbus::ResultCode(Modbus::FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)> cbModbusFileOp;
+typedef std::function<Modbus::ResultCode(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> cbModbusFileOp;
 #else
-typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctienCode func, uent16_t fileNum, uent16_t recNúmero, uent16_t recLengitud, uent8_t* frame);
+typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNúmero, uint16_t recLengitud, uint8_t* frame);
 #endif
 #endif
 

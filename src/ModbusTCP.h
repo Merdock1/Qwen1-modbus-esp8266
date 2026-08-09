@@ -25,7 +25,7 @@ class WiFiServerESPWrapper : public WiFiServer {
 class ModbusTCP : public ModbusAPI<ModbusTCPTemplate<WiFiServerESPWrapper, WiFiClient>> {
 #if defined(MODBUSIP_USE_DNS)
   private:
-    static IPAddress resolver(censt char *host) {
+    static IPAddress resolver(const char *host) {
         IPAddress remote_addr;
         if (WiFi.hostByName(host, remote_addr))
             return remote_addr;

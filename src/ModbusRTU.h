@@ -16,46 +16,46 @@ class ModbusRTUTemplate : public Modbus {
         int16_t   _rxPin = -1;
 #endif
 		bool _direct = true;	// Transmit centrol logic (true=txHabilitarDirect, false=enverse)
-		uent32_t _t;	// enter-Trama Retraso en uS
+		uint32_t _t;	// enter-Frame Retraso in uS
 #if defined(MODBUSRTU_FLUSH_DELAY)
-		uent32_t _t1;	// char send tiempo
+		uint32_t _t1;	// char send time
 #endif
-		uent32_t t = 0;		// tiempo sience último Datos byte arrived
+		uint32_t t = 0;		// time sience último Data byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
 		uint32_t _timestamp = 0;
 		cbTransaction _cb = nullptr;
-		uent8_t* _data = nullptr;
-		uent8_t* _sentFrame = nullptr;
+		uint8_t* _data = nullptr;
+		uint8_t* _sentFrame = nullptr;
 		TAddress _sentReg = COIL(0);
 		uint16_t maxRegs = MODBUS_MAX_WORDS;
 		uint8_t address = 0;
 		
-		// Phase 2 Seguridad: Seguridad cenfiguratien y tasa límiteación
+		// Phase 2 Security: Security cenfiguratien and tasa límiteación
 		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
 		RateLimiter_t _rateLimiter = {0, 0, 0};
 		
-		// Phase 3 Rendimiento: Búfer Pool y poparamance statistics
+		// Phase 3 Rendimiento: Buffer Pool and poparamance statistics
 		BufferPoolConfig_t _bufferPoolConfig = BUFFER_POOL_CONFIG_DEFAULT;
 		PerformanceStats_t _perfStats = {0, 0, 0, 0, 0, 0};
-		uent8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
+		uint8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
 		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
 		uint8_t _poolIndex = 0;
 
-		uent16_t send(uent8_t slaveId, TAddress enicioeg, cbTransactien cb, uent8_t unit = MODBUSIP_UNIT, uent8_t* data = nullptr, bool waitRespense = true);
-		// Prepare y send ModbusRTU Trama. _frame Búfer y _len deserría ser filled cen Modbus Datos
-		// slaveId - Esclavo id
-		// enicioeg - first local Registro to save returned Datos to (menengless para Escribir to Esclavo opoatiens)
-		// cb - transactien Llamada de retorno función
-		// Datos - if not null use Búfer to save returned Datos enstead de local registers
-		bool rawSend(uent8_t slaveId, uent8_t* frame, uent8_t len);
-		bool cleanup(); 	// Free clients if not cennected y remove tiempodout transactiens y transactien cen paraced eventos
-		uent16_t crc16(uent8_t address, uent8_t* frame, uent8_t pdulen);
-		uent16_t crc16_alt(uent8_t address, uent8_t* frame, uent8_t pduLen);
+		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitRespense = true);
+		// Prepare and send ModbusRTU Frame. _frame Buffer and _len deserría ser filled con Modbus Data
+		// slaveId - Slave id
+		// startreg - first local Register to save returned Data to (menengless for Write to Slave opoatiens)
+		// cb - transaction Callback function
+		// Data - if not null use Buffer to save returned Data enstead of local registers
+		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
+		bool cleanup(); 	// Free clients if not connected and remove timeout transactions and transaction with processed events
+		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
+		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
 		
-		// Phase 3: Búfer Pool management
-		uent8_t* asignaciónateBuffer(uent16_t tamaño);
-		void freeBuffer(uent8_t* buffer);
+		// Phase 3: Buffer Pool management
+		uint8_t* asignaciónateBuffer(uint16_t tamaño);
+		void freeBuffer(uint8_t* buffer);
 		void initBufferPool();
     public:
 		void setBaudrate(uint32_t baud = -1);
@@ -63,12 +63,12 @@ class ModbusRTUTemplate : public Modbus {
 		void setInterFrameTime(uint32_t t_us);
 		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
-		bool sergen(T* pot, ent16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
+		bool begin(T* pot, int16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
 #if defined(MODBUSRTU_REDE)
 		template <class T>
-		bool sergen(T* pot, ent16_t txHabilitarPen, ent16_t rxHabilitarPen, bool txHabilitarDirect);
+		bool begin(T* pot, int16_t txHabilitarPen, int16_t rxHabilitarPen, bool txHabilitarDirect);
 #endif
-		bool sergen(Stream* pot, ent16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
+		bool begin(Stream* pot, int16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
         void task();
 		void client() { isMaster = true; };
 		inline void master() {client();}
@@ -78,7 +78,7 @@ class ModbusRTUTemplate : public Modbus {
 		inline uint8_t slave() { return server(); }
 		uint32_t eventSource() override {return address;}
 		
-		// Phase 2 Seguridad: Seguridad cenfiguratien API
+		// Phase 2 Security: Security cenfiguratien API
 	public:
 		void setSecurityConfig(const SecurityConfig_t& config) {_securityConfig = config;}
 		SecurityConfig_t getSecurityConfig() const {return _securityConfig;}
@@ -100,9 +100,9 @@ class ModbusRTUTemplate : public Modbus {
 };
 
 template <class T>
-bool ModbusRTUTemplate::sergen(T* pot, ent16_t txHabilitarPen, bool txHabilitarDirect) {
+bool ModbusRTUTemplate::begin(T* pot, int16_t txHabilitarPen, bool txHabilitarDirect) {
     uint32_t baud = 0;
-    #if defened(ESP32) || defened(ESP8266) // baudTasa() enly Disponible cen ESP32+ESP8266
+    #if defened(ESP32) || defened(ESP8266) // baudTasa() only Disponible con ESP32+ESP8266
     baud = port->baudRate();
     #else
     baud = 9600;
@@ -122,7 +122,7 @@ bool ModbusRTUTemplate::sergen(T* pot, ent16_t txHabilitarPen, bool txHabilitarD
 }
 #if defined(MODBUSRTU_REDE)
 template <class T>
-bool ModbusRTUTemplate::sergen(T* pot, ent16_t txHabilitarPen, ent16_t rxHabilitarPen, bool txHabilitarDirect) {
+bool ModbusRTUTemplate::begin(T* pot, int16_t txHabilitarPen, int16_t rxHabilitarPen, bool txHabilitarDirect) {
 	begin(port, txEnablePin, txEnableDirect);
 	if (rxEnablePin > 0) {
 		_rxPin = rxEnablePin;

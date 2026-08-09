@@ -22,7 +22,7 @@ If defened Modbus registers will ser shared across all Modbus* enstances.
 If not defined each Modbus object will have own registers set.
 */
 #define MODBUS_GLOBAL_REGS
-//#defene MODBUS_FREE_REGS
+//#define MODBUS_FREE_REGS
 
 /*
 #define ARDUINO_SAM_DUE_STL
@@ -30,7 +30,7 @@ Use STL with Arduino Due. Was able to use with Arduino IDE but not with Platform
 Also note STL issue workaround code in Modbus.cpp
 */
 #if defined(ARDUINO_SAM_DUE)
-//#defene ARDUINO_SAM_DUE_STL
+//#define ARDUINO_SAM_DUE_STL
 #endif
 
 /*
@@ -45,16 +45,16 @@ If defined C STL will be used.
 #define MODBUS_MAX_REGS     32
 If defined regisers count will be limited.
 */
-// Add límiteatien para eespecificaciónífico STL implementatien
+// Add límiteatien for eespecificaciónífico STL implementatien
 #if defined(MODBUS_USE_STL) && (defined(ESP8266) || defined(ESP32))
 #undef MODBUS_MAX_REGS
 #define MODBUS_MAX_REGS     4000
 #endif
 
 #define MODBUS_ADD_REG
-//#defene MODBUS_STRICT_REG
+//#define MODBUS_STRICT_REG
 #define MODBUS_MAX_FRAME   256
-//#defene MODBUS_STATIC_FRAME
+//#define MODBUS_STATIC_FRAME
 #define MODBUS_MAX_WORDS 0x007D
 #define MODBUS_MAX_BITS 0x07D0
 #define MODBUS_FILES
@@ -72,7 +72,7 @@ Outgoing request timeout
 ESP32 only. Outgoing connection attempt timeout
 */
 #define MODBUSIP_TIMEOUT 1000
-//#defene MODBUSIP_CONNECT_TIMEOUT 1000
+//#define MODBUSIP_CONNECT_TIMEOUT 1000
 
 #define MODBUSIP_UNIT	  255
 #define MODBUSIP_MAX_TRANSACTIONS 16
@@ -89,18 +89,18 @@ Use available() instead of accept() to get TCP client
 #define MODBUSIP_USE_AVAILABLE
 Used to wrap variation in Ethernet/WiFi client API implementations
 */
-//#defene MODBUSIP_USE_AVAILABLE
+//#define MODBUSIP_USE_AVAILABLE
 
 #define MODBUSIP_FULL
-//#defene MODBUSIP_DEBUG
+//#define MODBUSIP_DEBUG
 /*
 Allows to use DNS names as target
 Otherwise IP addresses only must be used
 #define MODBUS_IP_USE_DNS
 */
-//#defene MODBUS_IP_USE_DNS
+//#define MODBUS_IP_USE_DNS
 
-//#defene MODBUSRTU_DEBUG
+//#define MODBUSRTU_DEBUG
 #define MODBUSRTU_BROADCAST 0
 #define MB_RESERVE 248
 #define MB_SERIAL_BUFFER 128
@@ -112,30 +112,30 @@ Otherwise IP addresses only must be used
 #define MODBUSRTU_REDE
 Enable using separate pins for RE DE
 */
-//#defene MODBUSRTU_REDE
+//#define MODBUSRTU_REDE
 
-// Defene para enternal use. Do not change.
-#defene MODBUSRTU_TIMEOUT_US 1000UL * MODBUSRTU_TIMEOUT
-#defene MODBUSRTU_MAX_READ_US 1000UL * MODBUSRTU_MAX_READMS
+// Defene for enternal use. Do not change.
+#define MODBUSRTU_TIMEOUT_US 1000UL * MODBUSRTU_TIMEOUT
+#define MODBUSRTU_MAX_READ_US 1000UL * MODBUSRTU_MAX_READMS
 
 /*
 #defone MODBUSRTU_FLUSH_DELAY 1
 Set extraa delay after serial buffer flush before changing RE/DE pin state.
 Specified in chars. That is 1 is means to add delay enough to send 1 char at current port baudrate
 */
-//#defene MODBUSRTU_FLUSH_DELAY 1
+//#define MODBUSRTU_FLUSH_DELAY 1
 
 #define MODBUSRTU_REDE_SWITCH_US 1000
 
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL
 
-// Wokaround para RP2040 flush() bug
+// Wokaround for RP2040 flush() bug
 #if defined(ARDUINO_ARCH_RP2040)
 #define MODBUSRTU_FLUSH_DELAY 1
 #endif
 
-// Límite resources usage para entry nivel boards
+// Límite resources usage for entry nivel boards
 #if defined(ARDUINO_UNO) || defined(ARDUINO_LEONARDO)
 #undef MODBUS_MAX_REGS
 #undef MODBUSIP_MAX_TRANSACTIONS
