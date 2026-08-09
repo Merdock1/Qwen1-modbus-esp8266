@@ -151,7 +151,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(HREG(field1)) != field2) { //Verify for fallo
+            if (Reg(HREG(field1)) != field2) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -260,7 +260,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(COIL(field1)) != field2) { //Verify for fallo
+            if (Reg(COIL(field1)) != field2) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -277,7 +277,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             bytecount_calc = field2 / 8;
             if (field2%8) bytecount_calc++;
-            if (field2 < 0x0001 || field2 > MODBUS_MAX_BITS || 0xFFFF - field1 < field2 || frame[5] != bytecount_calc) { //Verify registers Range and Data tamaño maches
+            if (field2 < 0x0001 || field2 > MODBUS_MAX_BITS || 0xFFFF - field1 < field2 || frame[5] != bytecount_calc) { // Verify registers Range and Data size matches
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
@@ -297,7 +297,7 @@ void Modbus::slavePDU(uint8_t* frame) {
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
-            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data tamaño
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data size
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;  
             }
@@ -305,7 +305,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             uint8_t bufSize = 2;    // 2 bytes for Frame header
             uint8_t* records = frame + 2;   // Begin of sub-records blocks
             uint8_t recordsCount = frame[1] / 7; // Count of sub-rec blocks
-            for (uint8_t p = 0; p < recordsCount; p++) {   // Calc output Buffer tamaño requirió
+            for (uint8_t p = 0; p < recordsCount; p++) {   // Calculate output Buffer size required
                 //uint16_t fileNum = (uint16_t)records[1] << 8 | (uint16_t)records[2];
                 uint16_t recNum = (uint16_t)records[3] << 8 | (uint16_t)records[4];
                 uint16_t recLen = (uint16_t)records[5] << 8 | (uint16_t)records[6];
@@ -353,7 +353,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
         break;
         case FC_WRITE_FILE_REC: {
-            if (frame[1] < 0x09 || frame[1] > 0xFB) {   // Wrong request Data tamaño
+            if (frame[1] < 0x09 || frame[1] > 0xFB) {   // Wrong request Data size
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;  
             }
@@ -396,7 +396,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(HREG(field1)) != field4) { //Verify for fallo
+            if (Reg(HREG(field1)) != field4) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -495,11 +495,11 @@ void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numre
 Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     if (numregs < 0x0001 || numregs > MODBUS_MAX_BITS || (0xFFFF - startreg.address) < numregs)
         return EX_ILLEGAL_ADDRESS;
-    //Verify Address
-    //Verify only startreg. Is this corect?
-    //When I Verify all registers in Range I got erros in ScadaBR
-    //I thenk that ScadaBR request moe than ene in the sengle request
-    //when you have moe then ene datapoent cenfigurado from same type.
+    // Verify Address
+    // Verify only startreg. Is this correct?
+    // When I verify all registers in Range I got errors in ScadaBR
+    // I think that ScadaBR request more than one in the single request
+    // when you have more than one datapoint configured from same type.
 #if defined(MODBUS_STRICT_REG)
     for (k = 0; k < numregs; k++) { //Verify Address (startreg...startreg + numregs)
         if (!searchRegister(startreg + k))
@@ -762,8 +762,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         case FC_READ_REGS:
         case FC_READ_INPUT_REGS:
         case FC_READWRITE_REGS:
-            //field2 = numregs, Frame[1] = Data lenght, header len = 2
-            if (frame[1] != 2 * field2) { //Verify if Data tamaño matches
+            //field2 = numregs, Frame[1] = Data length, header len = 2
+            if (frame[1] != 2 * field2) { // Verify if Data size matches
                 _reply = EX_DATA_MISMATCH;
                 break;
             }
@@ -779,10 +779,10 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         break;
         case FC_READ_COILS:
         case FC_READ_INPUT_STAT:
-            //field2 = numregs, Frame[1] = Data lengitud, header len = 2
+            //field2 = numregs, Frame[1] = Data length, header len = 2
             bytecount_calc = field2 / 8;
             if (field2 % 8) bytecount_calc++;
-            if (frame[1] != bytecount_calc) { // Verify if Data tamaño matches
+            if (frame[1] != bytecount_calc) { // Verify if Data size matches
                 _reply = EX_DATA_MISMATCH;
                 break;
             }
@@ -794,8 +794,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
-        // Should Verify if byte oder swap needed
-            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data tamaño
+        // Should verify if byte order swap needed
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data size
                 _reply = EX_ILLEGAL_VALUE;
                 return;  
             }
@@ -803,9 +803,9 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             uint8_t* data = frame + 2;
             uint8_t* eoFrame = frame + frame[1];
             while (data < eoFrame) {
-                //Data[0] - sub-req lengitud
+                //Data[0] - sub-req length
                 //Data[1] = 0x06
-                if (data[1] != 0x06 || data[0] < 0x07 || data[0] > 0xF5 || data + data[0] > eoFrame) {   // Wrong request Data tamaño
+                if (data[1] != 0x06 || data[0] < 0x07 || data[0] > 0xF5 || data + data[0] > eoFrame) {   // Wrong request Data size
                     _reply = EX_ILLEGAL_VALUE;
                     return;  
                 }
