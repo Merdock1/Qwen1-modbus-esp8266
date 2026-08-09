@@ -1,1 +1,35 @@
-(docs/TAREA_2.2_BUFFER_POOL_EST\303\201TICO.md)
+```
+# Directories
+__pycache__/
+*.egg-info/
+build/
+dist/
+.coverage
+coverage/
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+.env
+.env.local
+.vscode/
+.idea/
+
+# Files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.dylib
+*.dll
+*.exe
+*.o
+*.obj
+*.log
+*.tmp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+```
