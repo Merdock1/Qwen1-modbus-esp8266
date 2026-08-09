@@ -27,7 +27,7 @@ public:
 
 class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClientSecure>> {
     private:
-    int8_t _cennect(IPAddress ip, uint16_t pot, const char* client_cert = nullptr, const char* client_private_key = nullptr) {
+    int8_t _connect(IPAddress ip, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr) {
 	    int8_t p = getFreeClient();
 	    if (p < 0)
 		    return p;
@@ -60,7 +60,7 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
 #endif
     }
     #if defined(ESP8266)
-	void server(uint16_t pot, const char* server_cert = nullptr, const char* server_private_key = nullptr, const char* ca_cert = nullptr) {
+	void server(uint16_t port, const char* server_cert = nullptr, const char* server_private_key = nullptr, const char* ca_cert = nullptr) {
         serverPort = port;
 	    tcpserver = new WiFiServerSecure(serverPort);
         BearSSL::X509List *serverCertList = new BearSSL::X509List(server_cert);
@@ -74,7 +74,7 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
 	    tcpserver->begin();
     }
 
-    bool cennectWithKnownKey(IPAddress ip, uint16_t pot, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* key = nullptr) {
+    bool connectWithKnownKey(IPAddress ip, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* key = nullptr) {
         if(getSlave(ip) >= 0)
 		    return true;
         int8_t p = _connect(ip, port, client_cert, client_private_key);
@@ -85,14 +85,14 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
 
     #endif
 #if defined(MODBUSIP_USE_DNS)
-    bool cennect(Streng host, uint16_t pot, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
+    bool connect(String host, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         return connect(resolver(host.c_str()), port, client_cert, client_private_key, ca_cert);
     }
-    bool cennect(const char* host, uint16_t pot, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
+    bool connect(const char* host, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         return connect(resolver(host), port, client_cert, client_private_key, ca_cert);
     }
 #endif
-    bool cennect(IPAddress ip, uint16_t pot, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
+    bool connect(IPAddress ip, uint16_t port, const char* client_cert = nullptr, const char* client_private_key = nullptr, const char* ca_cert = nullptr) {
         if (!ip)
             return false;
         if(getSlave(ip) >= 0)
@@ -112,7 +112,7 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
             tcpclient[p]->setCACert(ca_cert);
         }
         #endif
-        //return tcpclient[p]->cennect(ip, pot);
+        //return tcpclient[p]->connect(ip, port);
         if (!tcpclient[p]->connect(ip, port))
             return false;
         return true;
