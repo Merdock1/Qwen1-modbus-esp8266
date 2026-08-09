@@ -1,7 +1,11 @@
 /*
-    Modbus Library for Arduino
-    ModbusTCP for ESP8266/ESP32
-    Copyright (C) 2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Biblioteca Modbus para Arduino
+    Protocolo Modbus TCP
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file ModbusTCP.h
+    @brief Implementación del protocolo Modbus TCP/IP
 */
 
 #pragma once

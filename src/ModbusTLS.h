@@ -1,7 +1,11 @@
 /*
-    Modbus Library for Arduino
-    ModbusTLS - ModbusTCP Security for ESP8266
-    Copyright (C) 2020 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Biblioteca Modbus para Arduino
+    Protocolo Modbus TLS
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file ModbusTLS.h
+    @brief Implementación segura del protocolo Modbus sobre TLS/SSL
 */
 #pragma once
 #if !defined(ESP8266) && !defined(ESP32)

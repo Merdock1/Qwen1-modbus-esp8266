@@ -1,10 +1,12 @@
 
 /*
-    Very Basic Dynamic Array
-
-    Copyright (C) 2020 Alexander Emelianov (a.m.emelianov@gmail.com)
-	https://github.com/emelianov/modbus-esp8266
-	This code is licensed under the BSD New License. See LICENSE.txt for more info.
+    Biblioteca Modbus para Arduino
+    Array dinámico
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file darray.h
+    @brief Implementación de array dinámico para microcontroladores
 */
 template <typename T, int SIZE, int INCREMENT>
 class DArray {

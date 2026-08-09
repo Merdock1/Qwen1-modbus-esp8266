@@ -1,8 +1,11 @@
 /*
-    Modbus Library for Arduino
-    Core functions
-    Copyright (C) 2014 Andr� Sarmento Barbosa
-                  2017-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
+    Biblioteca Modbus para Arduino
+    Clase base Modbus
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file Modbus.h
+    @brief Implementación central de la clase Modbus con tipos de datos y códigos de función
 */
 #pragma once
 #include "ModbusSettings.h"
