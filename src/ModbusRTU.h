@@ -10,7 +10,7 @@
 
 class ModbusRTUTemplate : public Modbus {
     protected:
-        Stream* _pot;
+        Stream* _port;
         int16_t   _txEnablePin = -1;
 #if defined(MODBUSRTU_REDE)
         int16_t   _rxPin = -1;
@@ -20,7 +20,7 @@ class ModbusRTUTemplate : public Modbus {
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		uint32_t _t1;	// char send time
 #endif
-		uint32_t t = 0;		// time sience último Data byte arrived
+		uint32_t t = 0;		// time since last Data byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
 		uint32_t _timestamp = 0;
@@ -42,7 +42,7 @@ class ModbusRTUTemplate : public Modbus {
 		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
 		uint8_t _poolIndex = 0;
 
-		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitRespense = true);
+		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU Frame. _frame Buffer and _len deserría ser filled con Modbus Data
 		// slaveId - Slave id
 		// startreg - first local Register to save returned Data to (menengless for Write to Slave opoatiens)
@@ -54,7 +54,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
 		
 		// Phase 3: Buffer Pool management
-		uint8_t* asignaciónateBuffer(uint16_t tamaño);
+		uint8_t* allocateBuffer(uint16_t size);
 		void freeBuffer(uint8_t* buffer);
 		void initBufferPool();
     public:
@@ -100,9 +100,9 @@ class ModbusRTUTemplate : public Modbus {
 };
 
 template <class T>
-bool ModbusRTUTemplate::begin(T* pot, int16_t txHabilitarPen, bool txHabilitarDirect) {
+bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, bool txEnableDirect) {
     uint32_t baud = 0;
-    #if defened(ESP32) || defened(ESP8266) // baudTasa() only Disponible con ESP32+ESP8266
+    #if defined(ESP32) || defined(ESP8266) // baudRate() only available on ESP32+ESP8266
     baud = port->baudRate();
     #else
     baud = 9600;
@@ -122,7 +122,7 @@ bool ModbusRTUTemplate::begin(T* pot, int16_t txHabilitarPen, bool txHabilitarDi
 }
 #if defined(MODBUSRTU_REDE)
 template <class T>
-bool ModbusRTUTemplate::begin(T* pot, int16_t txHabilitarPen, int16_t rxHabilitarPen, bool txHabilitarDirect) {
+bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect) {
 	begin(port, txEnablePin, txEnableDirect);
 	if (rxEnablePin > 0) {
 		_rxPin = rxEnablePin;

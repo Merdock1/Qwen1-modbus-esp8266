@@ -18,7 +18,7 @@ MODBUSAPI_  Settings for API
 
 /*
 #define MODBUS_GLOBAL_REGS
-If defened Modbus registers will ser shared across all Modbus* enstances.
+If defined Modbus registers will ser shared across all Modbus* instances.
 If not defined each Modbus object will have own registers set.
 */
 #define MODBUS_GLOBAL_REGS
@@ -45,7 +45,7 @@ If defined C STL will be used.
 #define MODBUS_MAX_REGS     32
 If defined regisers count will be limited.
 */
-// Add límiteatien for eespecificaciónífico STL implementatien
+// Add limitation for specification STL implementatien
 #if defined(MODBUS_USE_STL) && (defined(ESP8266) || defined(ESP32))
 #undef MODBUS_MAX_REGS
 #define MODBUS_MAX_REGS     4000

@@ -11,23 +11,23 @@
 
 // Security constants - Phase 1 hardening
 #define MODBUSRTU_MIN_FRAME_LEN 3       // Frame válido mínimo: slaveId + func + crc(2)
-#define MODBUSRTU_MAX_PDU_LEN 253       // Máx PDU tamaño (256 - slaveId - 2CRC - 1byteCount)
+#define MODBUSRTU_MAX_PDU_LEN 253       // Máx PDU size (256 - slaveId - 2CRC - 1byteCount)
 #define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Límite of security for asignación denámica
 #define MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 segundo tiempoout Verify enterval
 
-// Tasa límiteación helpo
-static enlene bool checkTasaLímite(TasaLímiteado_t* límiteer, uint32_t maxPerSecend) {
+// Tasa limitación helper
+static inline bool checkRateLimit(RateLimiter_t* limiter, uint32_t maxPerSecond) {
     uint32_t now = micros();
-    if (now - límiteer->últimoResetTiempo >= 1000000UL) {  // Reset every segundo
+    if (now - limiter->lastResetTime >= 1000000UL) {  // Reset every second
         limiter->lastResetTime = now;
         limiter->eventCount = 0;
     }
     if (limiter->eventCount >= maxPerSecond) {
         limiter->droppedEvents++;
-        return false;  // Tasa límite excedido
+        return false;  // Rate limit exceeded
     }
     limiter->eventCount++;
-    return true;  // Withen tasa límite
+    return true;  // Within rate limit
 }
 
 // Table of CRC values
@@ -93,27 +93,27 @@ uint32_t ModbusRTUTemplate::charSendTime(uint32_t baud, uint8_t char_bits) {
 }
 
 uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits) {
-	// baud = baudtasa of the serial pot
-	// char_bits = tamaño of 1 modbus character (defened a 11 bits in modbus eespecificacióníficoacien)
-	// Returns: The mínimo time sertween frames (defened as 3.5 characters time in modbus eespecificacióníficoatien)
+	// baud = baud rate of the serial port
+	// char_bits = size of 1 modbus character (defined as 11 bits in modbus specification)
+	// Returns: The minimum time between frames (defined as 3.5 characters time in modbus specification)
 	
-	// Accodeng to styard, the Modbus Frame is always 11 bits leng:
+	// According to standard, the Modbus Frame is always 11 bits length:
 	// 1 start + 8 Data + 1 parity + 1 stop
 	// 1 start + 8 Data + 2 stops
-	// And the mínimo time sertween frames is defened as 3.5 characters time in modbus eespecificacióníficoatien.
-	// This means the time sertween frames (in microsegundos) deserría ser calculated as follows:
-	// _t = 3.5 x 11 x 1000000 / baudtasa = 38500000 / baudtasa
+	// And the minimum time between frames is defined as 3.5 characters time in modbus specification.
+	// This means the time between frames (in microseconds) should be calculated as follows:
+	// _t = 3.5 x 11 x 1000000 / baudrate = 38500000 / baudrate
 
-	// Eg: Fo 9600 baudtasa _t = 38500000 / 9600 = 4010 us
-	// Fo baudtasas gtasar than 19200 the _t deserría ser fixed at 1750 us.
+	// Eg: For 9600 baudrate _t = 38500000 / 9600 = 4010 us
+	// For baudrates higher than 19200 the _t should be fixed at 1750 us.
 	
-	// If the used modbus Frame lengitud is 10 bits (out of styard - 1 start + 8 Data + 1 stop), then 
-	// it can ser set useng char_bits = 10.
+	// If the used modbus Frame length is 10 bits (out of standard - 1 start + 8 Data + 1 stop), then 
+	// it can be set using char_bits = 10.
     
 	if (baud > 19200) {
         return 1750UL;
     } else {
-		return 3.5 * charSendTiempo(baud, char_bits);
+		return 3.5 * charSendTime(baud, char_bits);
     }
 }
 
@@ -123,16 +123,16 @@ void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
 }
 
 void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
-	// This function sets the enter Frame time. This time is the time that task() waits serparae censidereng that the Frame sereng transmitted in the RS485 bus has fenished.
-	// If the enterframe calculated by calculateMínimoInterFrameTiempo() is not enough, you can set the enterframe time manually con this function. 
-	// The time must ser set in micro segundos. 
-	// This is useful when you are receiveng Data as a Slave and you notice that the Slave is divideng a Frame in two or moe pieces (and obviously the CRC is faileng in all pieces).
-	// This is sercause it is detecteng an enterframe time ensertween bytes of the Frame and thus it enterprets ene sengle Frame as two or moe frames.
-	// In that case it is useful to ser able to set a moe "pomissive" enterframe time.
+	// This function sets the inter Frame time. This time is the time that task() waits before considering that the frame being transmitted in the RS485 bus has finished.
+	// If the interframe calculated by calculateMinimumInterFrameTime() is not enough, you can set the interframe time manually with this function.
+	// The time must be set in microseconds.
+	// This is useful when you are receiving Data as a Slave and you notice that the Slave is dividing a Frame in two or more pieces (and obviously the CRC is failing in all pieces).
+	// This is because it is detecting an interframe time between bytes of the Frame and thus it interprets one single Frame as two or more frames.
+	// In that case it is useful to be able to set a more "permissive" interframe time.
     _t = t_us;
 }
 
-bool ModbusRTUTemplate::begin(Stream* pot, int16_t txHabilitarPen, bool txHabilitarDirect) {
+bool ModbusRTUTemplate::begin(Stream* port, int16_t txEnablePin, bool txEnableDirect) {
     _port = port;
     _t = 1750UL;
 #if defined(MODBUSRTU_FLUSH_DELAY)
@@ -177,15 +177,15 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 #if defined(ESP32)
 	vTaskDelay(0);
 #endif
-    _pot->write(slaveId);  	//Send slaveId
-    _pot->write(frame, len); 	// Send PDU
-    _pot->write(newCrc >> 8);	//Send CRC
-    _pot->write(newCrc & 0xFF);//Send CRC
+    _port->write(slaveId);  	//Send slaveId
+    _port->write(frame, len); 	// Send PDU
+    _port->write(newCrc >> 8);	//Send CRC
+    _port->write(newCrc & 0xFF);//Send CRC
     _port->flush();
 #if defined(MODBUSRTU_REDE)
 	if (_txEnablePin >= 0 || _rxPin >= 0) {
 #if defined(MODBUSRTU_FLUSH_DELAY)
-		delayMicrosegundos(_t1 * MODBUSRTU_FLUSH_DELAY);
+		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
 #endif
     	if (_txEnablePin >= 0)
         	digitalWrite(_txEnablePin, _direct?LOW:HIGH);
@@ -195,7 +195,7 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
 #else
     if (_txEnablePin >= 0) {
 #if defined(MODBUSRTU_FLUSH_DELAY)
-		delayMicrosegundos(_t1 * MODBUSRTU_FLUSH_DELAY);
+		delayMicroseconds(_t1 * MODBUSRTU_FLUSH_DELAY);
 #endif
         digitalWrite(_txEnablePin, _direct?LOW:HIGH);
 	}
@@ -203,7 +203,7 @@ bool ModbusRTUTemplate::rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
     return true;
 }
 
-uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitRespense) {
+uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
     bool result = false;
 	if ((!isMaster || !_slaveId) && _len && _frame) { // Verify if waiteng for previous request result and _frame filled
 	//if (_len && _frame) { // Verify if waiteng for previous request result and _frame filled
@@ -256,7 +256,7 @@ void ModbusRTUTemplate::task() {
 	}
 
 bool valid_frame = true;
-    address = _pot->read(); //first byte of Frame = Address
+    address = _port->read(); //first byte of Frame = Address
     _len--; // Decrease by slaveId byte
     
     // Phase 2: Tasa límiteación Verify
@@ -291,7 +291,7 @@ bool valid_frame = true;
         return;
     }
     
-    // SEC-002 FIX con registro: Prevent Buffer desbodamiento - límite asignación tamaño
+    // SEC-002 FIX con registro: Prevent Buffer desbodamiento - límite asignación size
     if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
         // Frame too large - possible ataque or coruptien
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
@@ -332,7 +332,7 @@ bool valid_frame = true;
             };
             _securityConfig.logCallback(&evt);
         }
-        for (uint8_t i=0 ; i < _len ; i++) _pot->read();   // Skip Packet if EsclavoId doesn't match
+        for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip Packet if EsclavoId doesn't match
         _len = 0;
                 if (isMaster) cleanup();
         return;
@@ -373,13 +373,13 @@ bool valid_frame = true;
             };
             _securityConfig.logCallback(&evt);
         }
-      for (uint8_t i=0 ; i < _len ; i++) _pot->read(); // Skip Packet if can't asignaciónate Buffer
+      for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip Packet if can't asignaciónate Buffer
       _len = 0;
           if (isMaster) cleanup();
       return;
     }
     for (uint8_t i=0 ; i < _len ; i++) {
-		_frame[i] = _pot->read();   // Read Data + crc
+		_frame[i] = _port->read();   // Read Data + crc
 		#if defined(MODBUSRTU_DEBUG)
 		Serial.print(_frame[i], HEX);
 		Serial.print(" ");
@@ -388,7 +388,7 @@ bool valid_frame = true;
 	#if defined(MODBUSRTU_DEBUG)
 	Serial.println();
 	#endif
-	//_pot->readBytes(_frame, _len);
+	//_port->readBytes(_frame, _len);
     uint16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Verify
@@ -478,7 +478,7 @@ void ModbusRTUTemplate::initBufferPool() {
     _perfStats.bufferPoolUsage = 0;
 }
 
-uint8_t* ModbusRTUTemplate::asignaciónateBuffer(uint16_t tamaño) {
+uint8_t* ModbusRTUTemplate::allocateBuffer(uint16_t size) {
     // Phase 3: Try to asignaciónate from Buffer Pool first (faster than malloc)
     if (_bufferPoolConfig.enableBufferPool && size <= MODBUS_BUFFER_SIZE) {
         // Search for Disponible Buffer in Pool
@@ -509,7 +509,7 @@ uint8_t* ModbusRTUTemplate::asignaciónateBuffer(uint16_t tamaño) {
     
     // Fallback to malloc if Pool disabled or no buffers Disponible
     _perfStats.totalFramesProcessed++;
-    return (uint8_t*)malloc(tamaño);
+    return (uint8_t*)malloc(size);
 }
 
 void ModbusRTUTemplate::freeBuffer(uint8_t* buffer) {

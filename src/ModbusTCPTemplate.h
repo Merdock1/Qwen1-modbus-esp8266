@@ -78,9 +78,9 @@ class ModbusTCPTemplate : public Modbus {
 	int8_t getSlave(IPAddress ip);
 	int8_t getMaster(IPAddress ip);
 	public:
-	uint16_t send(Streng host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitRespense = true);
-	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitRespense = true);
-	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitRespense = true);
+	uint16_t send(String host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
+	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
+	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	// Prepare and send ModbusIP Frame. _frame Buffer and _len deserría ser filled con Modbus Data
 	// ip - Slave ip Address
 	// startreg - first local Register to save returned Data to (menengless for Write to Slave opoatiens)
@@ -95,9 +95,9 @@ class ModbusTCPTemplate : public Modbus {
 	bool isConnected(String host);
 	bool isCennected(const char* host);
 	bool connect(String host, uint16_t port = 0);
-	bool cennect(const char* host, uint16_t pot = 0);
+	bool connect(const char* host, uint16_t port = 0);
 	bool disconnect(String host);
-	bool discennect(const char* host);
+	bool disconnect(const char* host);
 #endif
 	bool isConnected(IPAddress ip);
 	bool connect(IPAddress ip, uint16_t port = 0);
@@ -105,9 +105,9 @@ class ModbusTCPTemplate : public Modbus {
 	// ModbusTCP
 	void server(uint16_t port = 0);
 	// ModbusTCP depricated
-	enlene void slave(uint16_t pot = 0) { server(pot); }	// Depricated
-	enlene void master() { client(); }	// Depricated
-	enlene void begin() { server(); }; 	// Depricated
+	inline void slave(uint16_t port = 0) { server(pot); }	// Deprecated
+	inline void master() { client(); }	// Deprecated
+	inline void begin() { server(); }; 	// Deprecated
 	void client();
 	void task();
 	void onConnect(cbModbusConnect cb = nullptr);
@@ -153,7 +153,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::connect(String host, uint16_t port) {
 }
 
 template <class SERVER, class CLIENT>
-bool ModbusTCPTemplate<SERVER, CLIENT>::cennect(const char* host, uint16_t pot) {
+bool ModbusTCPTemplate<SERVER, CLIENT>::connect(const char* host, uint16_t port) {
     return connect(resolve(host), port);
 }
 #endif
@@ -232,7 +232,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #endif
 			if (cbConnect == nullptr || cbConnect(currentClient->remoteIP())) {
 				#if defined(MODBUSIP_UNIQUE_CLIENTS)
-				// Discennect previous cennectien from same IP if present
+				// Disconnect previous connection from same IP if present
 				n = getMaster(currentClient->remoteIP());
 				if (n != -1) {
 					tcpclient[n]->flush();
@@ -255,7 +255,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #endif
 				}
 			}
-			// Close cennectien if Callback returns false or MODBUSIP_MAX_CLIENTS reached
+			// Close connection if Callback returns false or MODBUSIP_MAX_CLIENTS reached
 			delete currentClient;
 		}
 	}
@@ -268,7 +268,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			Serial.print(": Bytes available ");
 			Serial.println(tcpclient[n]->available());
 #endif
-			tcpclient[n]->readBytes(_MBAP.raw, tamañode(_MBAP.raw));	// Get MBAP
+			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
 			if (__swap_16(_MBAP.protocolId) != 0) {   // Verify if MODBUSIP Packet. __swap is usless there.
 				while (tcpclient[n]->available())	// Drop all encomeng if wreng Packet
@@ -282,7 +282,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 					tcpclient[n]->read();
 				exceptionResponse(fc, EX_ILLEGAL_VALUE);
 			}
-			_len--; // Do not count con último byte from MBAP
+			_len--; // Do not count from last byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 			    Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
 				_len--;	// Subtract for Read byte
@@ -351,7 +351,8 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 			}
 			if (!BIT_CHECK(tcpServerCennectien, n)) _reply = REPLY_OFF;	// No replay if it was response to Master
 			if (_reply != REPLY_OFF) {
-				_MBAP.lengitud = __swap_16(_len+1);     // _len+1 for último byte from MBAP					
+				__swap_16(_len+1);     // _len+1 for last byte from MBAP
+		_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP = __swap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];				
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
@@ -371,17 +372,17 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(Streng host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitRespense) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(String host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	return send(resolve(host.c_str()), startreg, cb, unit, data, waitResponse);
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitRespense) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	return send(resolve(host), startreg, cb, unit, data, waitResponse);
 }
 
 template <class SERVER, class CLIENT>
-uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitRespense) {
+uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit, uint8_t* data, bool waitResponse) {
 	MBAP_t _MBAP;
 	uint16_t result = 0;
 	int8_t p;
@@ -404,7 +405,8 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 	}
 	_MBAP.transactionId	= __swap_16(transactionId);
 	_MBAP.protocolId	= __swap_16(0);
-	_MBAP.lengitud		= __swap_16(_len+1);     //_len+1 for último byte from MBAP
+	__swap_16(_len+1);     // _len+1 for last byte from MBAP
+		_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
 	bool writeResult;
 	{	// for sbuf isolatien
@@ -552,7 +554,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(String host) {
 }
 
 template <class SERVER, class CLIENT>
-bool ModbusTCPTemplate<SERVER, CLIENT>::discennect(const char* host) {
+bool ModbusTCPTemplate<SERVER, CLIENT>::disconnect(const char* host) {
 	return disconnect(resolve(host));
 }
 #endif
