@@ -10,9 +10,9 @@
 #include "ModbusSecurity.h"
 
 // Security constants - Phase 1 hardening
-#define MODBUSRTU_MIN_FRAME_LEN 3       // Minimum valid frame: slaveId + func + crc(2)
+#define MODBUSRTU_MIN_FRAME_LEN 3       // Frame válido mínimo: slaveId + func + crc(2)
 #define MODBUSRTU_MAX_PDU_LEN 253       // Max PDU size (256 - slaveId - 2CRC - 1byteCount)
-#define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Safety limit for dynamic allocation
+#define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Límite de seguridad para asignación dinámica
 #define MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 second timeout check interval
 
 // Rate limiting helper
@@ -101,7 +101,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 	// 1 start + 8 data + 1 parity + 1 stop
 	// 1 start + 8 data + 2 stops
 	// And the minimum time between frames is defined as 3.5 characters time in modbus specification.
-	// This means the time between frames (in microseconds) should be calculated as follows:
+	// This means the time between frames (in microsegundos) should be calculated as follows:
 	// _t = 3.5 x 11 x 1000000 / baudrate = 38500000 / baudrate
 
 	// Eg: For 9600 baudrate _t = 38500000 / 9600 = 4010 us

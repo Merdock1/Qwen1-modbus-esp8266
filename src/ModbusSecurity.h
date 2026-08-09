@@ -1,9 +1,9 @@
 /*
     Modbus Library for Arduino
-    Security Constants and Logging - Phase 2 & 3 Hardening
+    Security Constants and Logging - Phase 2 & 3 Fortalecimiento
     
-    Based on analysis of Modbus specification documents and security audit
-    Phase 2: Security Event Logging and Additional Hardening
+    Basado en análisis of Modbus specification documents and auditoría de seguridad
+    Phase 2: Registro de Eventos de Seguridad and Additional Fortalecimiento
     Phase 3: Performance Optimization Support
 */
 #pragma once
@@ -11,11 +11,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-// Frame validation constants
-#define MODBUS_MIN_FRAME_LEN 3          // Minimum valid frame: func + crc(2) or slaveId + func + crc(2)
-#define MODBUS_MAX_PDU_LEN 253          // Max PDU size per Modbus spec (256 - overhead)
-#define MODBUS_SAFE_MALLOC_SIZE 512     // Safety limit for dynamic allocation to prevent DoS
-#define MODBUS_MAX_BUFFER_LEN 256       // Maximum allowed buffer length for any Modbus frame
+// Constantes de validación de frames
+#define MODBUS_MIN_FRAME_LEN 3          // Frame válido mínimo: func + crc(2) or slaveId + func + crc(2)
+#define MODBUS_MAX_PDU_LEN 253          // Tamaño máximo PDU según spec Modbus (256 - sobrecarga)
+#define MODBUS_SAFE_MALLOC_SIZE 512     // Límite de seguridad para asignación dinámica to prevenir DoS
+#define MODBUS_MAX_BUFFER_LEN 256       // Longitud máxima de buffer permitida for any Modbus frame
 
 // Phase 3: Buffer Pool Configuration
 #define MODBUS_BUFFER_POOL_SIZE 8       // Number of buffers in the pool
@@ -44,7 +44,7 @@ typedef enum {
     SEC_EVENT_MALLOC_FAILURE,           // Memory allocation failed
     SEC_EVENT_CRC_MISMATCH,             // CRC validation failed
     SEC_EVENT_SLAVE_ID_MISMATCH,        // Slave ID doesn't match expected
-    SEC_EVENT_TIMEOUT,                  // Operation timeout
+    SEC_EVENT_TIMEOUT,                  // Timeout de operación
     SEC_EVENT_INVALID_FUNCTION_CODE,    // Unsupported function code
     SEC_EVENT_REGISTER_OUT_OF_RANGE,    // Register address out of valid range
     SEC_EVENT_BUFFER_OVERFLOW_ATTEMPT,  // Attempt to write beyond buffer
@@ -138,7 +138,7 @@ typedef struct {
     uint32_t totalFramesProcessed;
     uint32_t poolHits;                  // Number of times buffer pool was used
     uint32_t poolMisses;                // Number of times malloc was needed
-    uint32_t crcCalculationTime;        // Total time spent in CRC calculation (microseconds)
+    uint32_t crcCalculationTime;        // Total time spent in CRC calculation (microsegundos)
     uint32_t averageProcessingLatency;  // Average frame processing latency
     uint16_t bufferPoolUsage;           // Current buffer pool usage percentage
 } PerformanceStats_t;
@@ -146,7 +146,7 @@ typedef struct {
 // Phase 3: Buffer Pool Configuration
 typedef struct {
     bool enableBufferPool;              // Enable/disable buffer pooling
-    uint8_t poolSize;                   // Number of buffers in pool
+    uint8_t poolSize;                   // Número de buffers en el pool
     uint16_t bufferSize;                // Size of each buffer
 } BufferPoolConfig_t;
 

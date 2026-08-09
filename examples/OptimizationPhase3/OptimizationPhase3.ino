@@ -2,7 +2,7 @@
  * Modbus RTU - Phase 3 Performance Optimization Example
  * 
  * This example demonstrates the Phase 3 performance optimizations:
- * - Buffer Pooling System (reduces malloc/free overhead)
+ * - Buffer Pooling System (reduces malloc/free sobrecarga)
  * - Optimized CRC calculation with lookup table
  * - Real-time performance statistics monitoring
  * - Memory efficiency improvements
@@ -180,7 +180,7 @@ void setup() {
     /*
     BufferPoolConfig_t customConfig = {
         .enableBufferPool = true,
-        .poolSize = 8,        // Number of pre-allocated buffers
+        .poolSize = 8,        // Number of buffers pre-asignados
         .bufferSize = 256     // Size of each buffer in bytes
     };
     mb.setBufferPoolConfig(customConfig);
@@ -251,7 +251,7 @@ void loop() {
         }
         else if (command.equalsIgnoreCase("reset")) {
             mb.resetPerformanceStats();
-            Serial.println("Performance statistics reset!\n");
+            Serial.println("Estadísticas de rendimiento reset!\n");
         }
         else if (command.equalsIgnoreCase("help")) {
             Serial.println("\nAvailable commands:");
@@ -292,7 +292,7 @@ void loop() {
  * 
  * EXPECTED IMPROVEMENTS:
  * - 30-40% reduction in average frame processing time
- * - 50-60% reduction in CRC calculation overhead
+ * - 50-60% reduction in CRC calculation sobrecarga
  * - Near-zero heap fragmentation over time
  * - More deterministic real-time behavior
  */

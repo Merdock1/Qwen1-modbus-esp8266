@@ -5,7 +5,7 @@
  * - Security event logging
  * - Rate limiting
  * - Strict validation
- * - DoS protection
+ * - protección DoS
  * 
  * Hardware:
  * - Arduino ESP32/ESP8266 or any Arduino with Serial support
@@ -185,7 +185,7 @@ void setup() {
     // Enable DoS attack protection
     securityConfig.enableDoSProtection = true;
     
-    // Enable rate limiting (optional, uncomment to enable)
+    // Habilitar limitación de tasa (optional, uncomment to enable)
     // securityConfig.enableRateLimiting = true;
     // securityConfig.maxEventsPerSecond = 100;  // Max 100 frames per second
     

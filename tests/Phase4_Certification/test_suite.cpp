@@ -23,7 +23,7 @@ static ComplianceItem_t g_complianceItems[] = {
     {"Phase 1 Security", "SEC-001 Buffer Overflow Protection", true, true, true, "test_memory_safety"},
     {"Phase 1 Security", "SEC-002 Slave ID Validation", true, true, true, "test_slave_id_handling"},
     {"Phase 1 Security", "SEC-003 DoS Protection", true, true, true, "test_timeout_management"},
-    {"Phase 2 Security", "Security Event Logging", true, true, true, "test_security_logging"},
+    {"Phase 2 Security", "Registro de Eventos de Seguridad", true, true, true, "test_security_logging"},
     {"Phase 2 Security", "Rate Limiting", true, true, true, "test_rate_limiting"},
     {"Phase 3 Performance", "Buffer Pool Allocation", true, true, true, "test_buffer_pool_allocation"},
     {"Phase 3 Performance", "CRC Lookup Table Optimization", false, true, true, "test_performance_crc_lookup"},
@@ -256,10 +256,10 @@ TestResult_t test_frame_validation(void) {
     TEST_LOG_INFO("Frame validation test - checking boundaries");
     
     // Test minimum frame size (Address + Function + CRC = 4 bytes)
-    TEST_ASSERT(true, "Minimum frame size validation");
+    TEST_ASSERT(true, "Tamaño mínimo de frame validation");
     
     // Test maximum frame size (256 bytes for Modbus RTU)
-    TEST_ASSERT(true, "Maximum frame size validation");
+    TEST_ASSERT(true, "Tamaño máximo de frame validation");
     
     // Test invalid frame structures
     TEST_ASSERT(true, "Invalid frame structure detection");
@@ -370,7 +370,7 @@ TestResult_t test_slave_id_handling(void) {
 }
 
 /**
- * @brief Test timeout management (Phase 1 security - DoS protection)
+ * @brief Test timeout management (Phase 1 security - protección DoS)
  */
 TestResult_t test_timeout_management(void) {
     TEST_LOG_INFO("Timeout management test");
@@ -543,7 +543,7 @@ TestResult_t test_integration_security_performance(void) {
     TEST_LOG_INFO("Integration test: Security + Performance");
     
     // Test that security features don't degrade performance beyond threshold
-    TEST_ASSERT(true, "Security logging with minimal overhead");
+    TEST_ASSERT(true, "Security logging with minimal sobrecarga");
     TEST_ASSERT(true, "Rate limiting without packet loss");
     TEST_ASSERT(true, "Buffer pool with security validation");
     TEST_ASSERT(true, "Combined features stability");
@@ -567,13 +567,13 @@ void __attribute__((constructor)) testSuite_autoRegister(void) {
     registerTest("Security Logging", CAT_SECURITY, test_security_logging,
                 "Verify Phase 2 security event logging");
     registerTest("Rate Limiting", CAT_SECURITY, test_rate_limiting,
-                "Test DoS protection via rate limiting");
+                "Test protección DoS via rate limiting");
     registerTest("PDU Length Validation", CAT_SECURITY, test_pdu_length_validation,
                 "Validate PDU length security checks");
     registerTest("Slave ID Handling", CAT_SECURITY, test_slave_id_handling,
                 "Test slave ID validation and security");
     registerTest("Timeout Management", CAT_SECURITY, test_timeout_management,
-                "Verify timeout-based DoS protection");
+                "Verify timeout-based protección DoS");
     registerTest("Memory Safety", CAT_SECURITY, test_memory_safety,
                 "Test memory safety and overflow prevention");
     
