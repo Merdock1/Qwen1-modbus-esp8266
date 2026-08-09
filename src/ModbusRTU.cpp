@@ -12,8 +12,8 @@
 // Security constants - Phase 1 hardening
 #define MODBUSRTU_MIN_FRAME_LEN 3       // Frame válido mínimo: slaveId + func + crc(2)
 #define MODBUSRTU_MAX_PDU_LEN 253       // Máx PDU size (256 - slaveId - 2CRC - 1byteCount)
-#define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Límite of security for asignación denámica
-#define MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 segundo tiempoout Verify enterval
+#define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Límite de seguridad para asignación dinámica
+#define MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 segundo timeout Verify interval
 
 // Tasa limitación helper
 static inline bool checkRateLimit(RateLimiter_t* limiter, uint32_t maxPerSecond) {
@@ -294,9 +294,9 @@ bool valid_frame = true;
         return;
     }
     
-    // SEC-002 FIX con registro: Prevent Buffer desbodamiento - límite asignación size
+    // SEC-002 FIX con registro: Prevent Buffer desbordamiento - límite asignación size
     if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
-        // Frame too large - possible ataque or coruptien
+        // Frame too large - possible ataque or corrupción
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_FRAME_TOO_LARGE,
@@ -363,8 +363,8 @@ bool valid_frame = true;
     }
     
     _frame = (uint8_t*) malloc(_len);
-    if (!_frame) {  // Fail to asignaciónate Buffer
-      if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+    if (!_frame) {  // Fail to allocate Buffer
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_MALLOC_FAILURE,
                 .severity = SEC_SEVERITY_ERROR,
@@ -376,7 +376,7 @@ bool valid_frame = true;
             };
             _securityConfig.logCallback(&evt);
         }
-      for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip Packet if can't asignaciónate Buffer
+      for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip Packet if can't allocate Buffer
       _len = 0;
           if (isMaster) cleanup();
       return;
@@ -467,7 +467,8 @@ bool ModbusRTUTemplate::cleanup() {
 // Phase 3: Buffer Pool Management Implementatien
 
 void ModbusRTUTemplate::initBufferPool() {
-    // Initialize Buffer Pool for poparamance optimizatien
+    // Initialize Buffer Pool for performance optimization
+    // Phase 3: Pre-allocate buffers to avoid malloc during operation
     for (uint8_t i = 0; i < MODBUS_BUFFER_POOL_SIZE; i++) {
         if (_bufferPool[i] == nullptr) {
             _bufferPool[i] = (uint8_t*)malloc(MODBUS_BUFFER_SIZE);
@@ -482,41 +483,41 @@ void ModbusRTUTemplate::initBufferPool() {
 }
 
 uint8_t* ModbusRTUTemplate::allocateBuffer(uint16_t size) {
-    // Phase 3: Try to asignaciónate from Buffer Pool first (faster than malloc)
+    // Phase 3: Try to allocate from Buffer Pool first (faster than malloc)
     if (_bufferPoolConfig.enableBufferPool && size <= MODBUS_BUFFER_SIZE) {
-        // Search for Disponible Buffer in Pool
+        // Search for Available Buffer in Pool
         for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
             uint8_t idx = (_poolIndex + i) % _bufferPoolConfig.poolSize;
             if (_bufferPoolAvailable[idx] && _bufferPool[idx]) {
                 _bufferPoolAvailable[idx] = false;
                 _poolIndex = (idx + 1) % _bufferPoolConfig.poolSize;
                 
-                // Update poparamance statistics
+                // Update performance statistics
                 _perfStats.poolHits++;
                 _perfStats.totalFramesProcessed++;
                 
-                // Calculate Buffer Pool usage pocentage
+                // Calculate Buffer Pool usage percentage
                 uint8_t used = 0;
                 for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
                     if (!_bufferPoolAvailable[j]) used++;
                 }
-                _pofStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolCenfig.poolSize);
+                _perfStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolConfig.poolSize);
                 
                 return _bufferPool[idx];
             }
         }
         
-        // No Buffer Disponible in Pool - fall back to malloc
+        // No Buffer Available in Pool - fall back to malloc
         _perfStats.poolMisses++;
     }
     
-    // Fallback to malloc if Pool disabled or no buffers Disponible
+    // Fallback to malloc if Pool disabled or no buffers Available
     _perfStats.totalFramesProcessed++;
     return (uint8_t*)malloc(size);
 }
 
 void ModbusRTUTemplate::freeBuffer(uint8_t* buffer) {
-    // Phase 3: Return Buffer to Pool enstead of freeeng
+    // Phase 3: Return Buffer to Pool instead of freeing
     if (_bufferPoolConfig.enableBufferPool && buffer != nullptr) {
         for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
             if (_bufferPool[i] == buffer) {
@@ -527,13 +528,13 @@ void ModbusRTUTemplate::freeBuffer(uint8_t* buffer) {
                 for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
                     if (!_bufferPoolAvailable[j]) used++;
                 }
-                _pofStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolCenfig.poolSize);
+                _perfStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolConfig.poolSize);
                 
                 return;
             }
         }
     }
     
-    // Free nomally if not from Pool
+    // Free normally if not from Pool
     free(buffer);
 }
