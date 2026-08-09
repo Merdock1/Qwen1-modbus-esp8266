@@ -357,8 +357,15 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 		_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP = __swap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];				
-				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
-				memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+				// Tarea 1.4: Validación de límites con SAFE_COPY para TCP
+				if (!SAFE_COPY(sbuf, _MBAP.raw, sizeof(_MBAP.raw), sizeof(sbuf))) {
+					MODBUS_LOG_ERROR("Copia MBAP fallida: buffer overflow prevenido");
+					goto cleanup;
+				}
+				if (!SAFE_COPY(sbuf + sizeof(_MBAP.raw), _frame, _len, send_len - sizeof(_MBAP.raw))) {
+					MODBUS_LOG_ERROR("Copia frame TCP fallida: buffer overflow prevenido");
+					goto cleanup;
+				}
 				tcpclient[n]->write(sbuf, send_len);
 				//tcpclient[n]->flush();
 			}
@@ -414,8 +421,15 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 	{	// for sbuf isolatien
 		size_t send_len = _len + sizeof(_MBAP.raw);
 		uint8_t sbuf[send_len];
-		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
-		memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
+		// Tarea 1.4: Validación de límites con SAFE_COPY para TCP
+		if (!SAFE_COPY(sbuf, _MBAP.raw, sizeof(_MBAP.raw), sizeof(sbuf))) {
+			MODBUS_LOG_ERROR("Copia MBAP fallida: buffer overflow prevenido");
+			return false;
+		}
+		if (!SAFE_COPY(sbuf + sizeof(_MBAP.raw), _frame, _len, send_len - sizeof(_MBAP.raw))) {
+			MODBUS_LOG_ERROR("Copia frame TCP fallida: buffer overflow prevenido");
+			return false;
+		}
 		writeResult = (tcpclient[p]->write(sbuf, send_len) == send_len);
 	}
 	if (!writeResult)

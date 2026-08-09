@@ -159,6 +159,7 @@ struct ModbusLogConfig {
 
 /**
  * @brief Clase singleton para gestión de logging
+ * @note Implementa patrón Singleton con instancia estática
  */
 class ModbusLogger {
 private:
@@ -168,11 +169,31 @@ private:
     ModbusLogger() {}
     
 public:
+    /**
+     * @brief Obtener instancia única del logger
+     * @return Referencia a la instancia singleton
+     */
     static ModbusLogger& getInstance() {
         if (!instance) {
             instance = new ModbusLogger();
         }
         return *instance;
+    }
+    
+    /**
+     * @brief Destructor - libera memoria del singleton
+     * @note Llamar explícitamente al finalizar la aplicación si es necesario
+     */
+    static void destroyInstance() {
+        if (instance) {
+            delete instance;
+            instance = nullptr;
+        }
+    }
+    
+    ~ModbusLogger() {
+        // Limpieza de recursos si fuera necesario
+        MODBUS_LOG_INFO("Logger destruido");
     }
     
     bool shouldLog(ModbusLogLevel level) {

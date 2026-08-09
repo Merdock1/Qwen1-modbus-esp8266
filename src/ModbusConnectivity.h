@@ -831,7 +831,8 @@ public:
         #if defined(ESP8266) || defined(ESP32)
         snprintf(serialNum, sizeof(serialNum), "%08X", ESP.getChipId());
         #else
-        strcpy(serialNum, "UNKNOWN");
+        strncpy(serialNum, "UNKNOWN", sizeof(serialNum) - 1);
+        serialNum[sizeof(serialNum) - 1] = '\0';
         #endif
         deviceInfo.setSerialNumber(serialNum);
     }

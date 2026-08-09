@@ -194,7 +194,8 @@ typedef void (*ModbusMQTTStateCallback)(ModbusMQTTConnectionState state, void* u
  *     
  *     // Configurar topic de publicación (registro Modbus -> MQTT)
  *     ModbusMQTTTopicConfig pubConfig;
- *     strcpy(pubConfig.topic, "modbus/device1/temperature");
+ *     strncpy(pubConfig.topic, "modbus/device1/temperature", sizeof(pubConfig.topic) - 1);
+ *     pubConfig.topic[sizeof(pubConfig.topic) - 1] = '\0';  // Asegurar terminación
  *     pubConfig.registerAddress = 0;
  *     pubConfig.registerType = MODBUS_HOLDING_REGISTER;
  *     pubConfig.publishOnChange = true;
@@ -202,7 +203,8 @@ typedef void (*ModbusMQTTStateCallback)(ModbusMQTTConnectionState state, void* u
  *     
  *     // Configurar topic de suscripción (MQTT -> registro Modbus)
  *     ModbusMQTTTopicConfig subConfig;
- *     strcpy(subConfig.topic, "modbus/device1/setpoint");
+ *     strncpy(subConfig.topic, "modbus/device1/setpoint", sizeof(subConfig.topic) - 1);
+ *     subConfig.topic[sizeof(subConfig.topic) - 1] = '\0';  // Asegurar terminación
  *     subConfig.registerAddress = 10;
  *     subConfig.registerType = MODBUS_HOLDING_REGISTER;
  *     mqttBridge.addSubscribeTopic(subConfig);
@@ -699,7 +701,8 @@ void setup() {
     
     // Configurar topic de publicación (temperatura)
     ModbusMQTTTopicConfig tempConfig;
-    strcpy(tempConfig.topic, "modbus/factory1/sensor/temperature");
+    strncpy(tempConfig.topic, "modbus/factory1/sensor/temperature", sizeof(tempConfig.topic) - 1);
+    tempConfig.topic[sizeof(tempConfig.topic) - 1] = '\0';  // Asegurar terminación
     tempConfig.registerAddress = 0;
     tempConfig.registerType = MODBUS_HOLDING_REGISTER;
     tempConfig.publishOnChange = true;
@@ -708,7 +711,8 @@ void setup() {
     
     // Configurar topic de publicación (humedad)
     ModbusMQTTTopicConfig humConfig;
-    strcpy(humConfig.topic, "modbus/factory1/sensor/humidity");
+    strncpy(humConfig.topic, "modbus/factory1/sensor/humidity", sizeof(humConfig.topic) - 1);
+    humConfig.topic[sizeof(humConfig.topic) - 1] = '\0';  // Asegurar terminación
     humConfig.registerAddress = 1;
     humConfig.registerType = MODBUS_HOLDING_REGISTER;
     humConfig.publishInterval = 5000;  // Publicar cada 5 segundos
@@ -716,7 +720,8 @@ void setup() {
     
     // Configurar topic de suscripción (setpoint)
     ModbusMQTTTopicConfig setpointConfig;
-    strcpy(setpointConfig.topic, "modbus/factory1/control/setpoint");
+    strncpy(setpointConfig.topic, "modbus/factory1/control/setpoint", sizeof(setpointConfig.topic) - 1);
+    setpointConfig.topic[sizeof(setpointConfig.topic) - 1] = '\0';  // Asegurar terminación
     setpointConfig.registerAddress = 10;
     setpointConfig.registerType = MODBUS_HOLDING_REGISTER;
     setpointConfig.qos = MQTT_QOS_1;

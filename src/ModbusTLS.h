@@ -164,4 +164,14 @@ class ModbusTLS : public ModbusAPI<ModbusTCPTemplate<WiFiServerSecure, WiFiClien
             return false;
         return true;
     }
+    
+    /**
+     * @brief Destructor - libera recursos TLS
+     * @note Limpia conexiones seguras activas
+     */
+    ~ModbusTLS() {
+        // El destructor de la clase base ModbusTCPTemplate se encarga
+        // de liberar tcpserver y tcpclient mediante cleanupConnections()
+        MODBUS_LOG_INFO("ModbusTLS destruido - conexiones TLS cerradas");
+    }
 };

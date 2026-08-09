@@ -809,7 +809,12 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
                     _reply = EX_ILLEGAL_VALUE;
                     return;  
                 }
-                memcpy(output, data + 2, data[0]);
+                // Tarea 1.4: Validación de límites con SAFE_COPY para output
+                if (!SAFE_COPY(output, data + 2, data[0], (eoFrame - output))) {
+                    MODBUS_LOG_ERROR("Copia de output fallida: buffer overflow prevenido");
+                    _reply = EX_ILLEGAL_VALUE;
+                    return;
+                }
                 data += data[0] + 1;
                 output += data[0] - 1;
             }
@@ -897,7 +902,13 @@ Modbus::ResultCode Modbus::fileOp(Modbus::FunctionCode fc, uint16_t fileNum, uin
             subReq[5] = len[i] >> 8;
 	        subReq[6] = len[i] & 0x00FF;
             uint8_t clen = len[i] * 2;
-            memcpy(subReq + 7, data, clen);
+            // Tarea 1.4: Validación de límites con SAFE_COPY para subReq
+            if (!SAFE_COPY(subReq + 7, data, clen, (_len - (subReq + 7 - _frame)))) {
+                MODBUS_LOG_ERROR("Copia de subReq fallida: buffer overflow prevenido");
+                free(_frame);
+                _frame = nullptr;
+                return false;
+            }
             subReq += 7 + clen;
             data += clen;
         }

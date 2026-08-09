@@ -70,7 +70,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
 		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
 		
-		// Phase 3: Buffer Pool management
+		// Fase 3: Gestión de Buffer Pool
 		uint8_t* allocateBuffer(uint16_t size);
 		void freeBuffer(uint8_t* buffer);
 		void initBufferPool();
@@ -80,9 +80,15 @@ class ModbusRTUTemplate : public Modbus {
 		void setInterFrameTime(uint32_t t_us);
 		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
+/** @brief Inicializa el módulo
+ * @return true si la inicialización fue exitosa
+ */
 		bool begin(T* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
 #if defined(MODBUSRTU_REDE)
 		template <class T>
+/** @brief Inicializa el módulo
+ * @return true si la inicialización fue exitosa
+ */
 		bool begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect);
 #endif
 		bool begin(Stream* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
