@@ -8,6 +8,11 @@
 #pragma once
 #include "ModbusAPI.h"
 
+// Soporte para mutex en ESP32 para operaciones multi-hilo
+#if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
+#include <mutex>
+#endif
+
 class ModbusRTUTemplate : public Modbus {
     protected:
         Stream* _port;
@@ -15,8 +20,8 @@ class ModbusRTUTemplate : public Modbus {
 #if defined(MODBUSRTU_REDE)
         int16_t   _rxPin = -1;
 #endif
-		bool _direct = true;	// Transmit centrol logic (true=txHabilitarDirect, false=enverse)
-		uint32_t _t;	// enter-Frame Retraso in uS
+		bool _direct = true;	// Transmit control logic (true=txEnableDirect, false=inverse)
+		uint32_t _t;	// inter-Frame Delay in uS
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		uint32_t _t1;	// char send time
 #endif
@@ -31,23 +36,27 @@ class ModbusRTUTemplate : public Modbus {
 		uint16_t maxRegs = MODBUS_MAX_WORDS;
 		uint8_t address = 0;
 		
-		// Phase 2 Security: Security cenfiguratien and tasa límiteación
+		// Phase 2 Security: Security configuration and rate limiting
 		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
 		RateLimiter_t _rateLimiter = {0, 0, 0};
 		
-		// Phase 3 Rendimiento: Buffer Pool and poparamance statistics
+		// Phase 3 Performance: Buffer Pool and performance statistics
 		BufferPoolConfig_t _bufferPoolConfig = BUFFER_POOL_CONFIG_DEFAULT;
 		PerformanceStats_t _perfStats = {0, 0, 0, 0, 0, 0};
 		uint8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
 		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
 		uint8_t _poolIndex = 0;
 
+#if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
+		std::mutex _taskMutex;  // Mutex para proteger operaciones en multi-hilo
+#endif
+
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
-		// Prepare and send ModbusRTU Frame. _frame Buffer and _len deserría ser filled con Modbus Data
+		// Prepare and send ModbusRTU Frame. _frame Buffer and _len should be filled with Modbus Data
 		// slaveId - Slave id
-		// startreg - first local Register to save returned Data to (menengless for Write to Slave opoatiens)
+		// startreg - first local Register to save returned Data to (meaningless for Write to Slave operations)
 		// cb - transaction Callback function
-		// Data - if not null use Buffer to save returned Data enstead of local registers
+		// Data - if not null use Buffer to save returned Data instead of local registers
 		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
 		bool cleanup(); 	// Free clients if not connected and remove timeout transactions and transaction with processed events
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
@@ -63,12 +72,12 @@ class ModbusRTUTemplate : public Modbus {
 		void setInterFrameTime(uint32_t t_us);
 		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
-		bool begin(T* pot, int16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
+		bool begin(T* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
 #if defined(MODBUSRTU_REDE)
 		template <class T>
-		bool begin(T* pot, int16_t txHabilitarPen, int16_t rxHabilitarPen, bool txHabilitarDirect);
+		bool begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect);
 #endif
-		bool begin(Stream* pot, int16_t txHabilitarPen = -1, bool txHabilitarDirect = true);
+		bool begin(Stream* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
         void task();
 		void client() { isMaster = true; };
 		inline void master() {client();}
@@ -78,7 +87,7 @@ class ModbusRTUTemplate : public Modbus {
 		inline uint8_t slave() { return server(); }
 		uint32_t eventSource() override {return address;}
 		
-		// Phase 2 Security: Security cenfiguratien API
+		// Phase 2 Security: Security configuration API
 	public:
 		void setSecurityConfig(const SecurityConfig_t& config) {_securityConfig = config;}
 		SecurityConfig_t getSecurityConfig() const {return _securityConfig;}
@@ -89,7 +98,7 @@ class ModbusRTUTemplate : public Modbus {
 		void enableRateLimiting(bool enable) {_securityConfig.enableRateLimiting = enable;}
 		RateLimiter_t getRateLimiterStats() const {return _rateLimiter;}
 		
-		// Phase 3 Rendimiento: Rendimiento optimizatien API
+		// Phase 3 Performance: Performance optimization API
 	public:
 		void initBufferPool();
 		void setBufferPoolConfig(const BufferPoolConfig_t& config) {_bufferPoolConfig = config;}
