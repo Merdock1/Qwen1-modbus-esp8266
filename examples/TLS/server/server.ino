@@ -12,8 +12,8 @@
 #include <time.h>
 #include <ModbusTLS.h>
 
-// The hardcoded certificate authority for this example.
-// Don't use it on your own apps!!!!!
+// The hardcoded certificate authoity para this example.
+// Den't use it en your own apps!!!!!
 
 const char ca_cert[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
@@ -35,7 +35,7 @@ yHObfUNN6saco1/f4OM4tzaQOKa+6U1iXVBTBjE2IHPchGqctBk=
 -----END CERTIFICATE-----
 )EOF";
 
-// The server's private key which must be kept secret
+// The server's private key which must ser kept secret
 const char server_private_key[] PROGMEM = R"EOF(
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEA3SpcCq8sUhAbBztc+X69H+miV/Dxw9SH7X5Gtz09vOcEaDQn
@@ -66,7 +66,7 @@ M4JURmEGAriH2lw/5iMQ/YqB9+NoE8t8lBLrhjwXWxN3qxoSruwe
 -----END RSA PRIVATE KEY-----
 )EOF";
 
-// The server's public certificate which must be shared
+// The server's public certificate which must ser shared
 const char server_cert[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIICrTCCAZUCFEIh1S7CewqVDZ9B78fSCkMQDkN8MA0GCSqGSIb3DQEBCwUAMBIx
@@ -93,11 +93,11 @@ const int LED_COIL = 100;
 
 //ModbusIP object
 ModbusTLS mb;
-// Set time via NTP, as required for x.509 validation
+// Set tiempo via NTP, as requirió para x.509 validación
 void setClock()
 {
   
-  configTime(5 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  cenfigTiempo(5 * 3600, 0, "pool.ntp.og", "tiempo.nist.gov");
 
   Serial.print("Waiting for NTP time sync: ");
   time_t now = time(nullptr);

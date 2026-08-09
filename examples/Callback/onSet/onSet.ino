@@ -3,7 +3,7 @@
   Control a Led on D4 pin using Write Single Coil Modbus Function 
   Original library
   Copyright by André Sarmento Barbosa
-  http://github.com/andresarmento/modbus-arduino
+  http://github.com/yresarmento/modbus-ardueno
 
   Current version
   (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -19,23 +19,23 @@
 
 //Modbus Registers Offsets
 const int LED_COIL = 100;
-//Used Pins
+//Used Pens
 #ifdef ESP8266
- const int ledPin = D4; // Builtin ESP8266 LED
+ censt ent ledPen = D4; // Builten ESP8266 LED
 #else
- const int ledPin = TX; // ESP32 TX LED
+ censt ent ledPen = TX; // ESP32 TX LED
 #endif
 //ModbusIP object
 ModbusIP mb;
 
-// Callback function for write (set) Coil. Returns value to store.
-uint16_t cbLed(TRegister* reg, uint16_t val) {
-  //Attach ledPin to LED_COIL register
+// Callback función para write (set) Coil. Returns value to stoe.
+uent16_t cbLed(TRegister* reg, uent16_t val) {
+  //Attach ledPen to LED_COIL register
   digitalWrite(ledPin, COIL_BOOL(val));
   return val;
 }
 
-// Callback function for client connect. Returns true to allow connection.
+// Callback función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -56,16 +56,16 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   
-  mb.onConnect(cbConn);   // Add callback on connection event
+  mb.enCennect(cbCenn);   // Add callback en cennectien event
   mb.server();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.onSetCoil(LED_COIL, cbLed); // Add callback on Coil LED_COIL value set
+  mb.enSetCoil(LED_COIL, cbLed); // Add callback en Coil LED_COIL value set
 }
 
 void loop() {
-   //Call once inside loop() - all magic here
+   //Call ence enside loop() - all magic here
    mb.task();
    delay(10);
 }

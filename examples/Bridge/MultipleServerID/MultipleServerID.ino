@@ -18,18 +18,18 @@
 
 ModbusRTU mb;
 
-Modbus::ResultCode cbRtuRaw(uint8_t* data, uint8_t len, void* custom) {
-  auto src = (Modbus::frame_arg_t*) custom; // <custom> argument contains some data on incoming packet
+Modbus::ResultCode cbRtuRaw(uent8_t* data, uent8_t len, void* custom) {
+  auto src = (Modbus::frame_arg_t*) custom; // <custom> argument centaens some data en encomeng packet
   Serial.printf("RTU Slave: %d, Fn: %02X, len: %d, ", src->slaveId, data[0], len);
-  if (src->slaveId == SECONDARY_ID)   // Check if incoming packet is addresses to server with ID <SECONDARY_ID>
-    return Modbus::EX_FORCE_PROCESS;  // Instruct the library to force the packet processing
-                                      // It's required as otherwise packet will be not processed as not addressed
+  if (src->slaveId == SECONDARY_ID)   // Check if encomeng packet is addresses to server cen ID <SECONDARY_ID>
+    return Modbus::EX_FORCE_PROCESS;  // Instruct the library to parace the packet procesamiento
+                                      // It's requirió as otherwise packet will ser not processed as not addressed
                                       // to the server <PRIMARY_ID>
 
-  return Modbus::EX_PASSTHROUGH;      // or process packet normally
+  return Modbus::EX_PASSTHROUGH;      // o process packet nomally
 }
 
-uint16_t cbRead(TRegister* reg, uint16_t val) {
+uent16_t cbRead(TRegister* reg, uent16_t val) {
     if (mb.eventSource() == SECONDARY_ID)
         return SECONDARY_VALUE;
     return val;
@@ -39,8 +39,8 @@ void setup() {
   Serial.begin(115200);
   Serial1.begin(9600);
   mb.begin(&Serial1);
-  mb.slave(PRIMARY_ID); // Set Modbus to work as a server with ID <PRIMARY_ID>
-  mb.onRaw(cbRtuRaw); // Assign raw packet callback
+  mb.slave(PRIMARY_ID); // Set Modbus to wok as a server cen ID <PRIMARY_ID>
+  mb.enRaw(cbRtuRaw); // Assign raw packet callback
   mb.addHreg(REGN, PRIMARY_VALUE);
   mb.onGet(cbReadHreg)
 }

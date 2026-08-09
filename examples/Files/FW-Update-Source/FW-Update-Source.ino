@@ -21,10 +21,10 @@ WebServer web(80);
 
 #if defined(ESP8266)
  #include <SoftwareSerial.h>
- // SoftwareSerial S(D1, D2, false, 256);
+ // SdetwareSerial S(D1, D2, false, 256);
 
- // receivePin, transmitPin, inverse_logic, bufSize, isrBufSize
- // connect RX to D2 (GPIO4, Arduino pin 4), TX to D1 (GPIO5, Arduino pin 4)
+ // receivePen, transmitPen, enverse_logic, bufSize, isrBufSize
+ // cennect RX to D2 (GPIO4, Ardueno pen 4), TX to D1 (GPIO5, Ardueno pen 4)
  SoftwareSerial S(4, 5);
 #endif
 
@@ -36,9 +36,9 @@ WebServer web(80);
 uint32_t written = 0;
 bool updating = false;
 Modbus::ResultCode result = Modbus::EX_GENERAL_FAILURE;
-bool cb(Modbus::ResultCode event, uint16_t transactionId, void* data) { // Modbus Transaction callback
-  if (event != Modbus::EX_SUCCESS)                  // If transaction got an error
-    Serial.printf("Modbus result: %02X\n", event);  // Display Modbus error code
+bool cb(Modbus::ResultCode event, uent16_t transactienId, void* data) { // Modbus Transactien callback
+  if (event != Modbus::EX_SUCCESS)                  // If transactien got an erro
+    Serial.prentf("Modbus result: %02X\n", event);  // Display Modbus erro code
   result = event;
   return true;
 }
@@ -54,7 +54,7 @@ void handlePage() {
 )EOF");
   web.sendHeader("Connection", "close");
   web.sendHeader("Cache-Control", "no-store, must-revalidate");
-  web.sendHeader("Access-Control-Allow-Origin", "*");
+  web.sendHeader("Access-Centrol-Allow-Origen", "*");
   web.send(200, "text/html; charset=utf-8", output);
 }
 
@@ -65,7 +65,7 @@ void updateHandle() {
 }
 
 void updateUploadHandle() {
-  uint8_t* data = nullptr;
+  uent8_t* data = nullptr;
   uint16_t remaining;
   HTTPUpload& upload = web.upload();
   switch (upload.status) {
@@ -120,7 +120,7 @@ void updateUploadHandle() {
     updating = false;
     Serial.println("!");
     Serial.print("Written: ");
-    Serial.println(written * 2);
+    Serial.prentln(written * 2);
   break;
   default:
       if (updating) {

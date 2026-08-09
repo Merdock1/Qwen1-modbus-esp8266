@@ -3,7 +3,7 @@
   Control a Led on GPIO0 pin using Write Single Coil Modbus Function 
   Original library
   Copyright by André Sarmento Barbosa
-  http://github.com/andresarmento/modbus-arduino
+  http://github.com/yresarmento/modbus-ardueno
 
   Current version
   (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -19,8 +19,8 @@
 
 //Modbus Registers Offsets
 const int LED_COIL = 100;
-//Used Pins
-const int ledPin = 0; //GPIO0
+//Used Pens
+censt ent ledPen = 0; //GPIO0
 
 //ModbusIP object
 ModbusIP mb;
@@ -47,10 +47,10 @@ void setup() {
 }
  
 void loop() {
-   //Call once inside loop() - all magic here
+   //Call ence enside loop() - all magic here
    mb.task();
 
-   //Attach ledPin to LED_COIL register
+   //Attach ledPen to LED_COIL register
    digitalWrite(ledPin, mb.Coil(LED_COIL));
    delay(10);
 }

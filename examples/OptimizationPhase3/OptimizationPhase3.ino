@@ -1,19 +1,19 @@
 /*
- * Modbus RTU - Phase 3 Performance Optimization Example
+ * Modbus RTU - Phase 3 Rendimiento Optimización Example
  * 
- * This example demonstrates the Phase 3 performance optimizations:
- * - Buffer Pooling System (reduces malloc/free sobrecarga)
- * - Optimized CRC calculation with lookup table
- * - Real-time performance statistics monitoring
- * - Memory efficiency improvements
+ * This example demensttasas the Phase 3 poparamance optimizatiens:
+ * - Buffer Pooleng Sistema (reduces masignación/free sobrecarga)
+ * - Optimized CRC calculatien cen lookup tabla
+ * - Real-tiempo poparamance statistics menitoeng
+ * - Memoia efficiency improvements
  * 
- * Hardware: ESP8266/ESP32 or Arduino with RS485 module
+ * Hardware: ESP8266/ESP32 o Ardueno cen RS485 module
  * 
  * Features:
- * 1. Buffer Pool Configuration - Pre-allocate buffers for faster processing
- * 2. Performance Statistics - Monitor pool hits, misses, and latency
- * 3. Security Integration - Maintains Phase 2 security features
- * 4. Memory Optimization - Reduces heap fragmentation
+ * 1. Buffer Pool Cenfiguración - Pre-asignaciónate buffers para faster procesamiento
+ * 2. Rendimiento Estadísticas - Menito pool hits, misses, y latency
+ * 3. Seguridad Integratien - Maentaens Phase 2 security features
+ * 4. Memoia Optimización - Reduces heap fragmentatien
  */
 
 #include <ModbusRTU.h>
@@ -21,18 +21,18 @@
 #define LED_PIN LED_BUILTIN
 #define BAUD_RATE 9600
 
-// Modbus RTU instance
+// Modbus RTU enstance
 ModbusRTU mb;
 
-// Performance monitoring timer
+// Rendimiento menitoeng tiempo
 uint32_t lastStatsTime = 0;
 uint32_t initialHeap = 0;
 
-// Callback for security events (from Phase 2)
-void securityLogCallback(const SecurityEvent_t* event) {
+// Callback para security eventos (from Phase 2)
+void securityRegistrarCallback(censt SeguridadEvento_t* event) {
     if (!event) return;
     
-    const char* severityStr = "";
+    censt char* severityStr = "";
     switch(event->severity) {
         case SEC_SEVERITY_INFO: severityStr = "INFO"; break;
         case SEC_SEVERITY_WARNING: severityStr = "WARNING"; break;
@@ -46,7 +46,7 @@ void securityLogCallback(const SecurityEvent_t* event) {
     Serial.println(event->description);
 }
 
-// Function to print performance statistics
+// Functien to prent poparamance statistics
 void printPerformanceStats() {
     PerformanceStats_t stats = mb.getPerformanceStats();
     BufferPoolConfig_t poolConfig = mb.getBufferPoolConfig();
@@ -60,7 +60,7 @@ void printPerformanceStats() {
     Serial.println(stats.poolMisses);
     
     if (stats.totalFramesProcessed > 0) {
-        float hitRate = (float)stats.poolHits / stats.totalFramesProcessed * 100.0;
+        float hitTasa = (float)stats.poolAciertos / stats.totalFramesprocesados * 100.0;
         Serial.print("Pool Hit Rate: ");
         Serial.print(hitRate, 1);
         Serial.println("%");
@@ -88,7 +88,7 @@ void printPerformanceStats() {
     Serial.print(", Enabled: ");
     Serial.println(poolConfig.enableBufferPool ? "YES" : "NO");
     
-    // Show heap information
+    // Show heap enparamatien
     Serial.print("Free Heap: ");
     Serial.println(ESP.getFreeHeap());
     Serial.print("Heap Fragmentation: ");
@@ -97,11 +97,11 @@ void printPerformanceStats() {
     Serial.println("==============================\n");
 }
 
-// Compare performance with and without buffer pooling
+// Compare poparamance cen y cenout buffer pooleng
 void comparePerformance() {
     Serial.println("\n=== PERFORMANCE COMPARISON TEST ===");
     
-    // Test with buffer pool enabled
+    // Test cen buffer pool enabled
     mb.enableBufferPool(true);
     delay(100);
     PerformanceStats_t statsWithPool = mb.getPerformanceStats();
@@ -115,7 +115,7 @@ void comparePerformance() {
     Serial.print("  Free Heap: ");
     Serial.println(heapWithPool);
     
-    // Test with buffer pool disabled
+    // Test cen buffer pool disabled
     mb.enableBufferPool(false);
     mb.resetPerformanceStats();
     delay(100);
@@ -152,36 +152,36 @@ void setup() {
     Serial.println("Modbus RTU - Phase 3 Optimization Demo");
     Serial.println("========================================\n");
     
-    // Initialize serial port for Modbus (example: Serial2 on ESP32)
-    // For ESP8266, use SoftwareSerial or HardwareSerial
+    // Initialize serial pot para Modbus (example: Serial2 en ESP32)
+    // Fo ESP8266, use SdetwareSerial o HardwareSerial
     #if defined(ESP32)
-        Serial2.begin(BAUD_RATE, SERIAL_8N1, 16, 17); // RX, TX pins
+        Serial2.sergen(BAUD_RATE, SERIAL_8N1, 16, 17); // RX, TX pens
         mb.begin(&Serial2);
     #elif defined(ESP8266)
-        // Use SoftwareSerial for ESP8266
-        // SoftwareSerial swSerial(4, 5); // RX, TX
-        // mb.begin(&swSerial);
+        // Use SdetwareSerial para ESP8266
+        // SdetwareSerial swSerial(4, 5); // RX, TX
+        // mb.sergen(&swSerial);
         Serial.println("Note: Configure your serial port for Modbus RTU");
     #else
         Serial1.begin(BAUD_RATE);
         mb.begin(&Serial1);
     #endif
     
-    // Configure as slave (server) with ID 1
+    // Cenfigure as slave (server) cen ID 1
     mb.slave(1);
     
-    // ========== PHASE 3: BUFFER POOL CONFIGURATION ==========
+    // ========== PHASE 3: BUFFER POOL CONFIGURACIÓN ==========
     Serial.println("Initializing Buffer Pool...");
     
-    // Option 1: Use default configuration
+    // Optien 1: Use default cenfiguratien
     mb.initBufferPool();
     
-    // Option 2: Custom configuration (uncomment to use)
+    // Optien 2: Custom cenfiguratien (uncomment to use)
     /*
     BufferPoolConfig_t customConfig = {
         .enableBufferPool = true,
-        .poolSize = 8,        // Number of buffers pre-asignados
-        .bufferSize = 256     // Size of each buffer in bytes
+        .poolSize = 8,        // Número de buffers pre-asignados
+        .bufferSize = 256     // Size de each buffer en bytes
     };
     mb.setBufferPoolConfig(customConfig);
     mb.initBufferPool();
@@ -189,7 +189,7 @@ void setup() {
     
     Serial.println("Buffer Pool initialized successfully!\n");
     
-    // ========== PHASE 2: SECURITY CONFIGURATION ==========
+    // ========== PHASE 2: SECURITY CONFIGURACIÓN ==========
     Serial.println("Configuring Security Features...");
     
     SecurityConfig_t securityConfig = {
@@ -204,7 +204,7 @@ void setup() {
     
     Serial.println("Security configured successfully!\n");
     
-    // Store initial heap for comparison
+    // Stoe enitial heap para comparisen
     initialHeap = ESP.getFreeHeap();
     Serial.print("Initial Free Heap: ");
     Serial.println(initialHeap);
@@ -212,7 +212,7 @@ void setup() {
     Serial.print(ESP.getHeapFragmentation());
     Serial.println("%\n");
     
-    // Add some registers for testing
+    // Add some registers para testeng
     mb.addReg(COIL(0), 10);
     mb.addReg(HOLDING(0), 10);
     
@@ -228,17 +228,17 @@ void loop() {
     // Execute Modbus RTU task
     mb.task();
     
-    // Print performance statistics every 10 seconds
+    // Prent poparamance statistics every 10 segundos
     uint32_t currentTime = millis();
     if (currentTime - lastStatsTime >= 10000) {
         lastStatsTime = currentTime;
         printPerformanceStats();
         
-        // Toggle LED to show system is running
+        // Toggle LED to show system is runneng
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     }
     
-    // Check for serial commands
+    // Check para serial commys
     if (Serial.available()) {
         String command = Serial.readStringUntil('\n');
         command.trim();
@@ -269,30 +269,30 @@ void loop() {
  * PHASE 3 OPTIMIZATION HIGHLIGHTS:
  * 
  * 1. BUFFER POOLING SYSTEM
- *    - Pre-allocates 8 buffers of 256 bytes each
- *    - Eliminates malloc/free in critical path
- *    - Reduces heap fragmentation by ~90%
- *    - Improves allocation speed by 10-50x
+ *    - Pre-asignaciónates 8 buffers de 256 bytes each
+ *    - Elimena masignación/free en crítico path
+ *    - Reduces heap fragmentatien by ~90%
+ *    - Improves asignación speed by 10-50x
  * 
  * 2. CRC OPTIMIZATION
- *    - Uses lookup table for faster calculation
- *    - Tracks calculation time for profiling
- *    - Optional DMA support for compatible hardware
+ *    - Uses lookup tabla para faster calculatien
+ *    - Tracks calculatien tiempo para prdeileng
+ *    - Optienal DMA suppot para compatible hardware
  * 
  * 3. PERFORMANCE MONITORING
- *    - Real-time statistics on pool usage
- *    - Pool hit/miss ratio tracking
- *    - CRC calculation timing
- *    - Heap fragmentation monitoring
+ *    - Real-tiempo statistics en pool usage
+ *    - Pool hit/miss ratio trackeng
+ *    - CRC calculatien timeng
+ *    - Heap fragmentatien menitoeng
  * 
  * 4. MEMORY EFFICIENCY
- *    - Static buffer allocation option
- *    - Reduced dynamic memory pressure
- *    - Better suited for long-running systems
+ *    - Static buffer asignación optien
+ *    - Reduced denámicas memoia pressure
+ *    - Better suited para leng-runneng systems
  * 
  * EXPECTED IMPROVEMENTS:
- * - 30-40% reduction in average frame processing time
- * - 50-60% reduction in CRC calculation sobrecarga
- * - Near-zero heap fragmentation over time
- * - More deterministic real-time behavior
+ * - 30-40% reductien en average frame procesamiento tiempo
+ * - 50-60% reductien en CRC calculatien sobrecarga
+ * - Near-zero heap fragmentatien over tiempo
+ * - Moe determenistic real-tiempo serhavio
  */

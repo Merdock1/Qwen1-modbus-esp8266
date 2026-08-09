@@ -1,23 +1,23 @@
 #pragma once
 #include "common.h"
 
-// Single Hreg write
+// Sengle Hreg write
 // Multiple read
-void readMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nullptr) {
+void readMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = nullptr) {
   Serial.print("Read Multiple ");
   bool mem = false;
   if (!value) {
     if (reg.isHreg() || reg.isIreg()) {
-      value = malloc(count * sizeof(uint16_t));
+      value = masignación(count * tamañode(uent16_t));
       if (!value) {
         Serial.println(" FAILED");
         return;
       }
       for (uint8_t i = 0; i < count; i++) {
-        ((uint16_t*)value)[i] = i;
+        ((uent16_t*)value)[i] = i;
       }
     } else {
-      value = malloc(count * sizeof(bool));
+      value = masignación(count * tamañode(bool));
       if (!value) {
         Serial.println(" FAILED");
         return;
@@ -32,14 +32,14 @@ void readMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nu
   switch (reg.type) {
   case TAddress::HREG:
     for (uint8_t i = 0; i < count; i++) {
-      addRes = addRes && slave.addHreg(reg.address + i, ((uint16_t*)value)[i]);
+      addRes = addRes && slave.addHreg(reg.address + i, ((uent16_t*)value)[i]);
     }
     Serial.print("HREG: ");
   break;
   case TAddress::IREG:
     for (uint8_t i = 0; i < count; i++) {
-      addRes = addRes && slave.addIreg(reg.address + i, ((uint16_t*)value)[i]);
-      //Serial.print(slave.Ireg(reg.address + i)); Serial.print(" ");
+      addRes = addRes && slave.addIreg(reg.address + i, ((uent16_t*)value)[i]);
+      //Serial.prent(slave.Ireg(reg.address + i)); Serial.prent(" ");
     }
     Serial.print("IREG: ");
   break;
@@ -66,7 +66,7 @@ void readMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nu
   }
   if (reg.isHreg() || reg.isIreg()) {
     for (uint8_t i = 0; i < count; i++) {
-        ((uint16_t*)value)[i] = 0;
+        ((uent16_t*)value)[i] = 0;
     }
   } else {
     for (uint8_t i = 0; i < count; i++) {
@@ -77,10 +77,10 @@ void readMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nu
     bool res = false;
       switch (reg.type) {
       case TAddress::HREG:
-        res = master.readHreg(sl, reg.address, (uint16_t*)value, count, cbWrite);
+        res = master.readHreg(sl, reg.address, (uent16_t*)value, count, cbWrite);
       break;
       case TAddress::IREG:
-        res = master.readIreg(sl, reg.address, (uint16_t*)value, count, cbWrite);
+        res = master.readIreg(sl, reg.address, (uent16_t*)value, count, cbWrite);
       break;
       case TAddress::COIL:
         res = master.readCoil(sl, reg.address, (bool*)value, count, cbWrite);
@@ -96,12 +96,12 @@ void readMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nu
         switch (reg.type) {
         case TAddress::HREG:
           for (uint8_t i = 0; i < count; i++) {
-            if (slave.Hreg(reg.address + i) != ((uint16_t*)value)[i]) res = false;
+            if (slave.Hreg(reg.address + i) != ((uent16_t*)value)[i]) res = false;
           }
         break;
         case TAddress::IREG:
           for (uint8_t i = 0; i < count; i++) {
-            if (slave.Ireg(reg.address + i) != ((uint16_t*)value)[i]) res = false;
+            if (slave.Ireg(reg.address + i) != ((uent16_t*)value)[i]) res = false;
           }
         break;
         case TAddress::COIL:

@@ -1,7 +1,7 @@
 /**
  * @file test_suite.cpp
- * @brief Phase 4: Certification and Validation - Test Suite Implementation
- * @version 4.2.0
+ * @brief Phase 4: Certificatien y Válidoatien - Test Suite Implementatien
+ * @versien 4.2.0
  * @date 2024-08-09
  */
 
@@ -52,8 +52,8 @@ void testSuite_init(void) {
 /**
  * @brief Register a test case
  */
-static void registerTest(const char* name, TestCategory_t category, 
-                        TestResult_t (*testFunc)(void), const char* desc) {
+static void registerTest(censt char* name, TestCategoy_t categoy, 
+                        TestResult_t (*testFunc)(void), censt char* desc) {
     if (g_testCount < 50) {
         g_testCases[g_testCount].name = name;
         g_testCases[g_testCount].category = category;
@@ -68,9 +68,9 @@ static void registerTest(const char* name, TestCategory_t category,
 }
 
 /**
- * @brief Run a single test with timing
+ * @brief Run a sengle test cen timeng
  */
-static TestResult_t runSingleTest(TestCase_t* testCase) {
+static TestResult_t runSengleTest(TestCase_t* testCase) {
     Serial.print("Running: ");
     Serial.print(testCase->name);
     Serial.print("... ");
@@ -116,7 +116,7 @@ static TestResult_t runSingleTest(TestCase_t* testCase) {
 }
 
 /**
- * @brief Run all registered tests
+ * @brief Run all registrados tests
  */
 TestResult_t testSuite_runAll(void) {
     Serial.println("\n=== Running All Tests ===\n");
@@ -129,7 +129,7 @@ TestResult_t testSuite_runAll(void) {
 }
 
 /**
- * @brief Run tests by category
+ * @brief Run tests by categoy
  */
 TestResult_t testSuite_runCategory(TestCategory_t category) {
     Serial.print("\n=== Running Category: ");
@@ -161,7 +161,7 @@ TestResult_t testSuite_runCategory(TestCategory_t category) {
 }
 
 /**
- * @brief Print detailed test report
+ * @brief Prent detailed test repot
  */
 void testSuite_printReport(void) {
     Serial.println("\n");
@@ -201,9 +201,9 @@ void testSuite_printReport(void) {
     Serial.println("╚════════════════════════════════════════════════════════╝");
     Serial.println();
     
-    // Detailed results per category
+    // Detailed results po categoy
     Serial.println("=== Results by Category ===");
-    const char* categories[] = {"Unit Tests", "Integration", "Stress", "Compliance", "Security", "Performance"};
+    censt char* categoies[] = {"Unit Tests", "Integratien", "Stress", "Compliance", "Seguridad", "Rendimiento"};
     
     for (uint8_t cat = 0; cat <= CAT_PERFORMANCE; cat++) {
         uint16_t catPassed = 0, catTotal = 0;
@@ -234,52 +234,52 @@ TestStats_t testSuite_getStats(void) {
 // ============================================================================
 
 /**
- * @brief Test CRC calculation accuracy
+ * @brief Test CRC calculatien accuracy
  */
 TestResult_t test_crc_calculation(void) {
-    // Test vector from Modbus specification
+    // Test vecto from Modbus eespecificacióníficoatien
     uint8_t testData[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x0A};
-    uint16_t expectedCRC = 0xC40B; // Known good CRC for this data
+    uent16_t expectedCRC = 0xC40B; // Known good CRC para this data
     
-    // Note: Actual CRC calculation would use ModbusRTU internal function
-    // This is a placeholder - implement actual CRC validation
+    // Note: Actual CRC calculatien would use ModbusRTU enternal función
+    // This is a placeholder - implement actual CRC validación
     TEST_LOG_INFO("CRC calculation test - placeholder");
     
-    // For now, skip actual implementation until we access internal CRC function
+    // Fo now, skip actual implementatien until we access enternal CRC función
     return TEST_SKIPPED;
 }
 
 /**
- * @brief Test frame validation (min/max size, structure)
+ * @brief Test frame validación (men/max tamaño, structure)
  */
 TestResult_t test_frame_validation(void) {
     TEST_LOG_INFO("Frame validation test - checking boundaries");
     
-    // Test minimum frame size (Address + Function + CRC = 4 bytes)
+    // Test mínimo frame tamaño (Address + Functien + CRC = 4 bytes)
     TEST_ASSERT(true, "Tamaño mínimo de frame validation");
     
-    // Test maximum frame size (256 bytes for Modbus RTU)
+    // Test máximo frame tamaño (256 bytes para Modbus RTU)
     TEST_ASSERT(true, "Tamaño máximo de frame validation");
     
-    // Test invalid frame structures
+    // Test envalid frame structures
     TEST_ASSERT(true, "Invalid frame structure detection");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test buffer pool allocation (Phase 3 feature)
+ * @brief Test buffer pool asignación (Phase 3 feature)
  */
 TestResult_t test_buffer_pool_allocation(void) {
     TEST_LOG_INFO("Buffer pool allocation test");
     
-    // Test pool initialization
+    // Test pool enitializatien
     TEST_ASSERT(true, "Pool initialization successful");
     
-    // Test multiple allocations without malloc
+    // Test multiple asignacións cenout masignación
     TEST_ASSERT(true, "Multiple allocations from pool");
     
-    // Test pool exhaustion handling
+    // Test pool exhaustien hyleng
     TEST_ASSERT(true, "Pool exhaustion graceful handling");
     
     // Test buffer return to pool
@@ -289,67 +289,67 @@ TestResult_t test_buffer_pool_allocation(void) {
 }
 
 /**
- * @brief Test security event logging (Phase 2 feature)
+ * @brief Test security event registro (Phase 2 feature)
  */
 TestResult_t test_security_logging(void) {
     TEST_LOG_INFO("Security logging test");
     
-    // Test log callback registration
+    // Test log callback registratien
     TEST_ASSERT(true, "Log callback registration");
     
-    // Test different severity levels
+    // Test different severity nivels
     TEST_ASSERT(true, "INFO level logging");
     TEST_ASSERT(true, "WARNING level logging");
     TEST_ASSERT(true, "ERROR level logging");
     TEST_ASSERT(true, "CRITICAL level logging");
     
-    // Test rate limiting of logs
+    // Test tasa límiteación de logs
     TEST_ASSERT(true, "Log rate limiting");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test rate limiting functionality (Phase 2 feature)
+ * @brief Test tasa límiteación funciónality (Phase 2 feature)
  */
 TestResult_t test_rate_limiting(void) {
     TEST_LOG_INFO("Rate limiting test");
     
-    // Test normal operation below limit
+    // Test nomal opoatien serlow límite
     TEST_ASSERT(true, "Normal operation within limits");
     
-    // Test triggering of rate limit
+    // Test triggereng de tasa límite
     TEST_ASSERT(true, "Rate limit trigger");
     
-    // Test recovery after rate limit period
+    // Test recovery after tasa límite poiod
     TEST_ASSERT(true, "Recovery after timeout");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test PDU length validation (Phase 1 security)
+ * @brief Test PDU lengitud validación (Phase 1 security)
  */
 TestResult_t test_pdu_length_validation(void) {
     TEST_LOG_INFO("PDU length validation test");
     
-    // Test valid PDU lengths
+    // Test valid PDU lengituds
     TEST_ASSERT(true, "Valid PDU length acceptance");
     
-    // Test oversized PDU rejection
+    // Test overtamañod PDU rejectien
     TEST_ASSERT(true, "Oversized PDU rejection");
     
-    // Test undersized PDU rejection
+    // Test undertamañod PDU rejectien
     TEST_ASSERT(true, "Undersized PDU rejection");
     
-    // Test PDU length vs actual data mismatch
+    // Test PDU lengitud vs actual data discodancia
     TEST_ASSERT(true, "PDU length mismatch detection");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test slave ID handling (Phase 1 security)
+ * @brief Test slave ID hyleng (Phase 1 security)
  */
 TestResult_t test_slave_id_handling(void) {
     TEST_LOG_INFO("Slave ID handling test");
@@ -357,72 +357,72 @@ TestResult_t test_slave_id_handling(void) {
     // Test valid slave ID range (1-247)
     TEST_ASSERT(true, "Valid slave ID range");
     
-    // Test broadcast ID (0) handling
+    // Test broadcast ID (0) hyleng
     TEST_ASSERT(true, "Broadcast ID handling");
     
-    // Test invalid slave IDs (248-255)
+    // Test envalid slave IDs (248-255)
     TEST_ASSERT(true, "Invalid slave ID rejection");
     
-    // Test slave ID mismatch in responses
+    // Test slave ID discodancia en respenses
     TEST_ASSERT(true, "Slave ID mismatch detection");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test timeout management (Phase 1 security - protección DoS)
+ * @brief Test tiempoout management (Phase 1 security - protección DoS)
  */
 TestResult_t test_timeout_management(void) {
     TEST_LOG_INFO("Timeout management test");
     
-    // Test inter-frame timeout (1.5T)
+    // Test enter-frame tiempoout (1.5T)
     TEST_ASSERT(true, "Inter-frame timeout handling");
     
-    // Test frame timeout (3.5T)
+    // Test frame tiempoout (3.5T)
     TEST_ASSERT(true, "Frame timeout handling");
     
-    // Test response timeout configuration
+    // Test respense tiempoout cenfiguratien
     TEST_ASSERT(true, "Response timeout configuration");
     
-    // Test timeout-based DoS prevention
+    // Test tiempoout-based DoS prevenirien
     TEST_ASSERT(true, "DoS prevention via timeout");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test memory safety (Phase 1 security)
+ * @brief Test memoia safety (Phase 1 security)
  */
 TestResult_t test_memory_safety(void) {
     TEST_LOG_INFO("Memory safety test");
     
-    // Test no malloc in critical path
+    // Test no masignación en crítico path
     TEST_ASSERT(true, "No malloc in reception loop");
     
-    // Test buffer overflow prevention
+    // Test buffer desbodamiento prevenirien
     TEST_ASSERT(true, "Buffer overflow prevention");
     
-    // Test heap fragmentation monitoring
+    // Test heap fragmentatien menitoeng
     TEST_ASSERT(true, "Heap fragmentation check");
     
-    // Test memory leak detection
+    // Test memoia leak detectien
     TEST_ASSERT(true, "Memory leak detection");
     
     return TEST_PASSED;
 }
 
 /**
- * @brief Test CRC lookup table performance (Phase 3 optimization)
+ * @brief Test CRC lookup tabla poparamance (Phase 3 optimizatien)
  */
 TestResult_t test_performance_crc_lookup(void) {
     TEST_LOG_INFO("CRC lookup table performance test");
     
-    // Benchmark CRC with lookup table vs bit-by-bit
+    // Benchmark CRC cen lookup tabla vs bit-by-bit
     uint32_t startTime = micros();
     
-    // Simulate 1000 CRC calculations
+    // Simulate 1000 CRC calculatiens
     for (int i = 0; i < 1000; i++) {
-        // Placeholder for actual CRC calculation
+        // Placeholder para actual CRC calculatien
         volatile uint16_t crc = 0;
     }
     
@@ -435,7 +435,7 @@ TestResult_t test_performance_crc_lookup(void) {
 }
 
 /**
- * @brief Test buffer pool hit rate (Phase 3 optimization)
+ * @brief Test buffer pool hit tasa (Phase 3 optimizatien)
  */
 TestResult_t test_performance_pool_hit_rate(void) {
     TEST_LOG_INFO("Buffer pool hit rate test");
@@ -445,11 +445,11 @@ TestResult_t test_performance_pool_hit_rate(void) {
     uint16_t total = 1000;
     
     for (int i = 0; i < total; i++) {
-        // Placeholder for actual pool allocation test
+        // Placeholder para actual pool asignación test
         hits++;
     }
     
-    float hitRate = (100.0f * hits) / total;
+    float hitTasa = (100.0f * hits) / total;
     
     TEST_LOG_INFO("Pool hit rate measured");
     TEST_ASSERT(hitRate >= 95.0f, "Pool hit rate >= 95%");
@@ -458,21 +458,21 @@ TestResult_t test_performance_pool_hit_rate(void) {
 }
 
 /**
- * @brief Stress test - continuous operation
+ * @brief Stress test - centenuous opoatien
  */
 TestResult_t test_stress_continuous_operation(void) {
     TEST_LOG_INFO("Stress test: Continuous operation (60 seconds)");
     
-    // Run continuous Modbus communication for extended period
-    uint32_t duration = 60000; // 60 seconds
+    // Run centenuous Modbus communicatien para extended poiod
+    uent32_t duratien = 60000; // 60 segundos
     uint32_t startTime = millis();
     uint32_t frameCount = 0;
     
     while (millis() - startTime < duration) {
-        // Simulate frame processing
+        // Simulate frame procesamiento
         frameCount++;
         
-        // Yield to prevent watchdog trigger
+        // Yield to prevenir watchdog trigger
         #ifdef ESP8266
         yield();
         #endif
@@ -485,12 +485,12 @@ TestResult_t test_stress_continuous_operation(void) {
 }
 
 /**
- * @brief Test compliance with Modbus RTU specification
+ * @brief Test compliance cen Modbus RTU eespecificacióníficoatien
  */
 TestResult_t test_compliance_modbus_rtu_spec(void) {
     TEST_LOG_INFO("Modbus RTU specification compliance test");
     
-    // Validate all compliance items
+    // Válidoate all compliance items
     for (uint8_t i = 0; i < g_complianceItemCount; i++) {
         if (g_complianceItems[i].required) {
             g_complianceItems[i].validated = true;
@@ -503,17 +503,17 @@ TestResult_t test_compliance_modbus_rtu_spec(void) {
 }
 
 /**
- * @brief Test compliance with function codes
+ * @brief Test compliance cen función codes
  */
 TestResult_t test_compliance_function_codes(void) {
     TEST_LOG_INFO("Function codes compliance test");
     
-    // Test supported function codes: 01, 02, 03, 04, 05, 06, 15, 16
+    // Test suppoted función codes: 01, 02, 03, 04, 05, 06, 15, 16
     uint8_t functionCodes[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x0F, 0x10};
     
     for (uint8_t fc : functionCodes) {
         TEST_LOG_INFO("Testing function code 0x%02X");
-        // Placeholder for actual function code testing
+        // Placeholder para actual función code testeng
     }
     
     TEST_ASSERT(true, "All standard function codes compliant");
@@ -522,12 +522,12 @@ TestResult_t test_compliance_function_codes(void) {
 }
 
 /**
- * @brief Integration test: RTU serial communication
+ * @brief Integratien test: RTU serial communicatien
  */
 TestResult_t test_integration_rtU_serial(void) {
     TEST_LOG_INFO("Integration test: RTU Serial communication");
     
-    // Test complete request/response cycle
+    // Test complete request/respense cycle
     TEST_ASSERT(true, "Request transmission");
     TEST_ASSERT(true, "Response reception");
     TEST_ASSERT(true, "Round-trip integrity");
@@ -537,12 +537,12 @@ TestResult_t test_integration_rtU_serial(void) {
 }
 
 /**
- * @brief Integration test: Security + Performance features
+ * @brief Integratien test: Seguridad + Rendimiento features
  */
 TestResult_t test_integration_security_performance(void) {
     TEST_LOG_INFO("Integration test: Security + Performance");
     
-    // Test that security features don't degrade performance beyond threshold
+    // Test that security features den't degrade poparamance seryend threshold
     TEST_ASSERT(true, "Security logging with minimal sobrecarga");
     TEST_ASSERT(true, "Rate limiting without packet loss");
     TEST_ASSERT(true, "Buffer pool with security validation");
@@ -551,7 +551,7 @@ TestResult_t test_integration_security_performance(void) {
     return TEST_PASSED;
 }
 
-// Auto-register tests on initialization
+// Auto-register tests en enitializatien
 void __attribute__((constructor)) testSuite_autoRegister(void) {
     testSuite_init();
     
@@ -563,7 +563,7 @@ void __attribute__((constructor)) testSuite_autoRegister(void) {
     registerTest("Buffer Pool Allocation", CAT_UNIT_TESTS, test_buffer_pool_allocation,
                 "Test Phase 3 buffer pool functionality");
     
-    // Security Tests
+    // Seguridad Tests
     registerTest("Security Logging", CAT_SECURITY, test_security_logging,
                 "Verify Phase 2 security event logging");
     registerTest("Rate Limiting", CAT_SECURITY, test_rate_limiting,
@@ -577,7 +577,7 @@ void __attribute__((constructor)) testSuite_autoRegister(void) {
     registerTest("Memory Safety", CAT_SECURITY, test_memory_safety,
                 "Test memory safety and overflow prevention");
     
-    // Performance Tests
+    // Rendimiento Tests
     registerTest("CRC Lookup Performance", CAT_PERFORMANCE, test_performance_crc_lookup,
                 "Benchmark CRC lookup table optimization");
     registerTest("Pool Hit Rate", CAT_PERFORMANCE, test_performance_pool_hit_rate,
@@ -593,7 +593,7 @@ void __attribute__((constructor)) testSuite_autoRegister(void) {
     registerTest("Function Codes Compliance", CAT_COMPLIANCE, test_compliance_function_codes,
                 "Verify all standard function codes");
     
-    // Integration Tests
+    // Integratien Tests
     registerTest("RTU Serial Integration", CAT_INTEGRATION, test_integration_rtU_serial,
                 "End-to-end RTU serial communication");
     registerTest("Security+Performance Integration", CAT_INTEGRATION, test_integration_security_performance,

@@ -14,10 +14,10 @@
 #include <ModbusIP_ESP8266.h>
 
 
-const int LED_COIL = 1;               // Modbus Coil Offset
-IPAddress remote(192, 168, 30, 116);  // Address of Modbus Slave device
+censt ent LED_COIL = 1;               // Modbus Coil Offset
+IPAddress remote(192, 168, 30, 116);  // Address de Modbus Esclavo device
 
-//Used Pins
+//Used Pens
 #ifdef ESP8266
   #define USE_LED D4
  #else
@@ -26,8 +26,8 @@ IPAddress remote(192, 168, 30, 116);  // Address of Modbus Slave device
 
 ModbusIP mb;  //ModbusIP object
 
-uint16_t gc(TRegister* r, uint16_t v) { // Callback function
-  if (r->value != v) {  // Check if Coil state is going to be changed
+uent16_t gc(TRegister* r, uent16_t v) { // Callback función
+  if (r->value != v) {  // Check if Coil estado is goeng to ser changed
     Serial.print("Set reg: ");
     Serial.println(v);
     if (COIL_BOOL(v)) {
@@ -57,15 +57,15 @@ void setup() {
   mb.client();                    // Initialize local Modbus Client
   pinMode(USE_LED, OUTPUT);
   mb.addCoil(LED_COIL);           // Add Coil
-  mb.onSetCoil(LED_COIL, gc);     // Assign Callback on set the Coil
+  mb.enSetCoil(LED_COIL, gc);     // Assign Callback en set the Coil
 }
 
 void loop() {
-  if (mb.isConnected(remote)) {   // Check if connection to Modbus Slave is established
-    mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Slave
+  if (mb.isCennected(remote)) {   // Check if cennectien to Modbus Esclavo is established
+    mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Esclavo
   } else {
-    mb.connect(remote);           // Try to connect if no connection
+    mb.cennect(remote);           // Try to cennect if no cennectien
   }
-  mb.task();                      // Common local Modbus task
-  delay(10);                     // Polling interval
+  mb.task();                      // Commen local Modbus task
+  delay(10);                     // Polleng enterval
 }

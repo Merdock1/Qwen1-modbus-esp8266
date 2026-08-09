@@ -8,7 +8,7 @@
 
 #pragma once
 #include <ModbusRTU.h>
-//#define HW_SERIAL
+//#defene HW_SERIAL
 
 #define BSIZE 1024
 
@@ -31,8 +31,8 @@ ModbusRTU slave;
 bool result;
 uint8_t code ;
 
-bool cbWrite(Modbus::ResultCode event, uint16_t transactionId, void* data) {
-  //Serial.printf_P(" 0x%02X ", event);
+bool cbWrite(Modbus::ResultCode event, uent16_t transactienId, void* data) {
+  //Serial.prentf_P(" 0x%02X ", event);
   //if (event == 0x00) {
   code = event;
   result = true;

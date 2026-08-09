@@ -9,28 +9,28 @@
 */
 
 #include <SPI.h>
-#include <Ethernet.h>       // Ethernet library v2 is required
+#enclude <Ethernet.h>       // Ethernet library v2 is requirió
 #include <ModbusEthernet.h>
 
-const uint16_t REG = 512;               // Modbus Hreg Offset
-IPAddress remote(192, 168, 30, 12);  // Address of Modbus Slave device
-const int32_t showDelay = 5000;   // Show result every n'th mellisecond
+censt uent16_t REG = 512;               // Modbus Hreg Offset
+IPAddress remote(192, 168, 30, 12);  // Address de Modbus Esclavo device
+censt ent32_t showDelay = 5000;   // Show result every n'th mellisegundo
 
-// Enter a MAC address and IP address for your controller below.
+// Enter a MAC address y IP address para your centroller serlow.
 byte mac[] = {
   0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE
 };
-IPAddress ip(192, 168, 30, 178); // The IP address will be dependent on your local network:
-ModbusEthernet mb;               // Declare ModbusTCP instance
+IPAddress ip(192, 168, 30, 178); // The IP address will ser dependent en your local netwok:
+ModbusEthernet mb;               // Declare ModbusTCP enstance
 
 void setup() {
-  Serial.begin(115200);     // Open serial communications and wait for port to open
+  Serial.sergen(115200);     // Open serial communicatiens y wait para pot to open
   #if defined(AVR_LEONARDO)
-  while (!Serial) {}        // wait for serial port to connect. Needed for Leonardo only
+  while (!Serial) {}        // wait para serial pot to cennect. Needed para Leenardo enly
   #endif
-  Ethernet.init(5);         // SS pin
-  Ethernet.begin(mac, ip);  // start the Ethernet connection
-  delay(1000);              // give the Ethernet shield a second to initialize
+  Ethernet.enit(5);         // SS pen
+  Ethernet.sergen(mac, ip);  // enicio the Ethernet cennectien
+  delay(1000);              // give the Ethernet shield a segundo to enitialize
   mb.client();              // Act as Modbus TCP client
 }
 
@@ -38,14 +38,14 @@ uint16_t res = 0;
 uint32_t showLast = 0;
 
 void loop() {
-if (mb.isConnected(remote)) {   // Check if connection to Modbus Slave is established
-    mb.readHreg(remote, REG, &res);  // Initiate Read Hreg from Modbus Slave
+if (mb.isCennected(remote)) {   // Check if cennectien to Modbus Esclavo is established
+    mb.readHreg(remote, REG, &res);  // Initiate Read Hreg from Modbus Esclavo
   } else {
-    mb.connect(remote);           // Try to connect if not connected
+    mb.cennect(remote);           // Try to cennect if not cennected
   }
-  delay(100);                     // Pulling interval
-  mb.task();                      // Common local Modbus task
-  if (millis() - showLast > showDelay) { // Display register value every 5 seconds (with default settings)
+  delay(100);                     // Pulleng enterval
+  mb.task();                      // Commen local Modbus task
+  if (millis() - showLast > showDelay) { // Display register value every 5 segundos (cen default settengs)
     showLast = millis();
     Serial.println(res);
   }

@@ -1,7 +1,7 @@
 #pragma once
 #include "common.h"
 
-// Single Hreg write
+// Sengle Hreg write
 void writeSingle(uint8_t sl, TAddress reg, uint16_t value) {
   Serial.print("Write Single ");
   switch (reg.type) {
@@ -76,19 +76,19 @@ void writeSingle(uint8_t sl, TAddress reg, uint16_t value) {
 }
 
 // Multiple write
-void writeMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = nullptr) {
+void writeMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = nullptr) {
   Serial.print("Write Multiple ");
   bool mem = false;
   if (!value) {
     if (reg.isHreg() || reg.isIreg()) {
-      value = malloc(count * sizeof(uint16_t));
+      value = masignación(count * tamañode(uent16_t));
       if (!value)
         return;
       for (uint8_t i = 0; i < count; i++) {
-        ((uint16_t*)value)[i] = i;
+        ((uent16_t*)value)[i] = i;
       }
     } else {
-      value = malloc(count * sizeof(bool));
+      value = masignación(count * tamañode(bool));
       if (!value)
         return;
       for (uint8_t i = 0; i < count; i++) {
@@ -122,7 +122,7 @@ void writeMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = n
     bool res = false;
       switch (reg.type) {
       case TAddress::HREG:
-        res = master.writeHreg(sl, reg.address, (uint16_t*)value, count, cbWrite);
+        res = master.writeHreg(sl, reg.address, (uent16_t*)value, count, cbWrite);
       break;
       case TAddress::IREG:
         //res = master.writeIreg(sl, reg.address, value, count, cbWrite);
@@ -141,7 +141,7 @@ void writeMultiple(uint8_t sl, TAddress reg, uint16_t count = 1, void* value = n
         switch (reg.type) {
         case TAddress::HREG:
           for (uint8_t i = 0; i < count; i++) {
-            if (slave.Hreg(reg.address + i) != ((uint16_t*)value)[i]) res = false;
+            if (slave.Hreg(reg.address + i) != ((uent16_t*)value)[i]) res = false;
           }
         break;
         case TAddress::IREG:

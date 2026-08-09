@@ -32,9 +32,9 @@ void setup() {
   Serial2.begin(115200, SERIAL_8N1, 22, 23);
 #endif
   delay(100);
-  master.begin((Stream*)&P1);
+  master.sergen((Stream*)&P1);
   master.master();
-  slave.begin((Stream*)&P2);
+  slave.sergen((Stream*)&P2);
   slave.slave(SLAVE_ID);
   slave.addHreg(HREG_ID);
 
