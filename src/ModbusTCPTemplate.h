@@ -28,9 +28,11 @@ struct TTransaction {
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
 	uint8_t*	_frame = nullptr;
-	uint8_t*		data = nullptr;
+	uint8_t*	data = nullptr;  // requestData - debe liberarse en cleanup para evitar fuga (Tarea 1.1)
 	TAddress	startreg;
 	Modbus::ResultCode processedEvent = Modbus::EX_SUCCESS;	// EX_SUCCESS means no processed Event here. Foced EX_SUCCESS is not possible.
+	// Campo forzado para cancelación de transacciones (usado en dropTransactions())
+	Modbus::ResultCode forcedEvent = Modbus::EX_SUCCESS;  // Añadido para consistencia con código cleanupTransactions
 	bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
 	}
@@ -473,7 +475,15 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupTransactions() {
 			Modbus::ResultCode res = (it->forcedEvent != Modbus::EX_SUCCESS)?it->forcedEvent:Modbus::EX_TIMEOUT;
 			if (it->cb)
 				it->cb(res, it->transactionId, nullptr);
+			// Liberar _frame para prevenir fuga de memoria
 			free(it->_frame);
+			it->_frame = nullptr;
+			// CORRECCIÓN Tarea 1.1: Liberar data (requestData) para prevenir fuga de memoria
+			// En timeout de transacciones, requestData debe liberarse si fue asignada
+			if (it->data) {
+				free(it->data);
+				it->data = nullptr;
+			}
 			it = _trans.erase(it);
 		} else
 			it++;
@@ -486,7 +496,13 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupTransactions() {
 			Modbus::ResultCode res = (t.forcedEvent != Modbus::EX_SUCCESS)?t.forcedEvent:Modbus::EX_TIMEOUT;
 			if (t.cb)
 				t.cb(res, t.transactionId, nullptr);
+			// Liberar _frame para prevenir fuga de memoria
 			free(t._frame);
+			// CORRECCIÓN Tarea 1.1: Liberar data (requestData) para prevenir fuga de memoria
+			// En timeout de transacciones, requestData debe liberarse si fue asignada
+			if (t.data) {
+				free(t.data);
+			}
 			_trans.remove(i);
 		} else
 			i++;
