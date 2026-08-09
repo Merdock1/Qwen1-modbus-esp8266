@@ -1,9 +1,11 @@
 /*
-    Modbus Library for Arduino
-	ModbusRTU
-    Copyright (C) 2019-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
-	https://github.com/emelianov/modbus-esp8266
-	This code is licensed under the BSD New License. See LICENSE.txt for more info.
+    Biblioteca Modbus para Arduino
+    Protocolo Modbus RTU
+    Copyright (C) 2014 André Sarmento Barbosa
+                  2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file ModbusRTU.h
+    @brief Implementación del protocolo Modbus RTU sobre comunicación serial
 */
 #pragma once
 #include "ModbusAPI.h"
