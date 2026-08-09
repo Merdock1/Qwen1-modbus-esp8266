@@ -34,6 +34,13 @@ class ModbusRTUTemplate : public Modbus {
 		// Phase 2 Security: Security configuration and rate limiting
 		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
 		RateLimiter_t _rateLimiter = {0, 0, 0};
+		
+		// Phase 3 Performance: Buffer pool and performance statistics
+		BufferPoolConfig_t _bufferPoolConfig = BUFFER_POOL_CONFIG_DEFAULT;
+		PerformanceStats_t _perfStats = {0, 0, 0, 0, 0, 0};
+		uint8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
+		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
+		uint8_t _poolIndex = 0;
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
@@ -45,6 +52,11 @@ class ModbusRTUTemplate : public Modbus {
 		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
 		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
+		
+		// Phase 3: Buffer pool management
+		uint8_t* allocateBuffer(uint16_t size);
+		void freeBuffer(uint8_t* buffer);
+		void initBufferPool();
     public:
 		void setBaudrate(uint32_t baud = -1);
 		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
@@ -76,6 +88,15 @@ class ModbusRTUTemplate : public Modbus {
 		void enableDoSProtection(bool enable) {_securityConfig.enableDoSProtection = enable;}
 		void enableRateLimiting(bool enable) {_securityConfig.enableRateLimiting = enable;}
 		RateLimiter_t getRateLimiterStats() const {return _rateLimiter;}
+		
+		// Phase 3 Performance: Performance optimization API
+	public:
+		void initBufferPool();
+		void setBufferPoolConfig(const BufferPoolConfig_t& config) {_bufferPoolConfig = config;}
+		BufferPoolConfig_t getBufferPoolConfig() const {return _bufferPoolConfig;}
+		PerformanceStats_t getPerformanceStats() const {return _perfStats;}
+		void resetPerformanceStats() {_perfStats = {0, 0, 0, 0, 0, 0};}
+		void enableBufferPool(bool enable) {_bufferPoolConfig.enableBufferPool = enable;}
 };
 
 template <class T>

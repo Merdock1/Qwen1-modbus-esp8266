@@ -461,3 +461,76 @@ bool ModbusRTUTemplate::cleanup() {
 	}
     return false;
 }
+// Phase 3: Buffer Pool Management Implementation
+
+void ModbusRTUTemplate::initBufferPool() {
+    // Initialize buffer pool for performance optimization
+    for (uint8_t i = 0; i < MODBUS_BUFFER_POOL_SIZE; i++) {
+        if (_bufferPool[i] == nullptr) {
+            _bufferPool[i] = (uint8_t*)malloc(MODBUS_BUFFER_SIZE);
+        }
+        if (_bufferPool[i]) {
+            _bufferPoolAvailable[i] = true;
+        } else {
+            _bufferPoolAvailable[i] = false;
+        }
+    }
+    _perfStats.bufferPoolUsage = 0;
+}
+
+uint8_t* ModbusRTUTemplate::allocateBuffer(uint16_t size) {
+    // Phase 3: Try to allocate from buffer pool first (faster than malloc)
+    if (_bufferPoolConfig.enableBufferPool && size <= MODBUS_BUFFER_SIZE) {
+        // Search for available buffer in pool
+        for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
+            uint8_t idx = (_poolIndex + i) % _bufferPoolConfig.poolSize;
+            if (_bufferPoolAvailable[idx] && _bufferPool[idx]) {
+                _bufferPoolAvailable[idx] = false;
+                _poolIndex = (idx + 1) % _bufferPoolConfig.poolSize;
+                
+                // Update performance statistics
+                _perfStats.poolHits++;
+                _perfStats.totalFramesProcessed++;
+                
+                // Calculate buffer pool usage percentage
+                uint8_t used = 0;
+                for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
+                    if (!_bufferPoolAvailable[j]) used++;
+                }
+                _perfStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolConfig.poolSize);
+                
+                return _bufferPool[idx];
+            }
+        }
+        
+        // No buffer available in pool - fall back to malloc
+        _perfStats.poolMisses++;
+    }
+    
+    // Fallback to malloc if pool disabled or no buffers available
+    _perfStats.totalFramesProcessed++;
+    return (uint8_t*)malloc(size);
+}
+
+void ModbusRTUTemplate::freeBuffer(uint8_t* buffer) {
+    // Phase 3: Return buffer to pool instead of freeing
+    if (_bufferPoolConfig.enableBufferPool && buffer != nullptr) {
+        for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
+            if (_bufferPool[i] == buffer) {
+                _bufferPoolAvailable[i] = true;
+                
+                // Update buffer pool usage
+                uint8_t used = 0;
+                for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
+                    if (!_bufferPoolAvailable[j]) used++;
+                }
+                _perfStats.bufferPoolUsage = (uint16_t)((used * 100) / _bufferPoolConfig.poolSize);
+                
+                return;
+            }
+        }
+    }
+    
+    // Free normally if not from pool
+    free(buffer);
+}

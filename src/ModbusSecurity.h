@@ -1,9 +1,10 @@
 /*
     Modbus Library for Arduino
-    Security Constants and Logging - Phase 2 Hardening
+    Security Constants and Logging - Phase 2 & 3 Hardening
     
     Based on analysis of Modbus specification documents and security audit
     Phase 2: Security Event Logging and Additional Hardening
+    Phase 3: Performance Optimization Support
 */
 #pragma once
 
@@ -15,6 +16,14 @@
 #define MODBUS_MAX_PDU_LEN 253          // Max PDU size per Modbus spec (256 - overhead)
 #define MODBUS_SAFE_MALLOC_SIZE 512     // Safety limit for dynamic allocation to prevent DoS
 #define MODBUS_MAX_BUFFER_LEN 256       // Maximum allowed buffer length for any Modbus frame
+
+// Phase 3: Buffer Pool Configuration
+#define MODBUS_BUFFER_POOL_SIZE 8       // Number of buffers in the pool
+#define MODBUS_BUFFER_SIZE 256          // Size of each buffer in bytes
+
+// Phase 3: CRC Optimization
+#define CRC_USE_LOOKUP_TABLE 1          // Use lookup table for faster CRC calculation
+#define CRC_DMA_SUPPORT 0               // Enable DMA support (platform dependent)
 
 // Security validation macros
 #define MODBUS_VALIDATE_FRAME_LEN(len) \
@@ -123,3 +132,29 @@ typedef struct {
     uint32_t eventCount;
     uint32_t droppedEvents;
 } RateLimiter_t;
+
+// Phase 3: Performance Statistics Structure
+typedef struct {
+    uint32_t totalFramesProcessed;
+    uint32_t poolHits;                  // Number of times buffer pool was used
+    uint32_t poolMisses;                // Number of times malloc was needed
+    uint32_t crcCalculationTime;        // Total time spent in CRC calculation (microseconds)
+    uint32_t averageProcessingLatency;  // Average frame processing latency
+    uint16_t bufferPoolUsage;           // Current buffer pool usage percentage
+} PerformanceStats_t;
+
+// Phase 3: Buffer Pool Configuration
+typedef struct {
+    bool enableBufferPool;              // Enable/disable buffer pooling
+    uint8_t poolSize;                   // Number of buffers in pool
+    uint16_t bufferSize;                // Size of each buffer
+} BufferPoolConfig_t;
+
+// Default buffer pool configuration
+#define BUFFER_POOL_CONFIG_DEFAULT { \
+    .enableBufferPool = true, \
+    .poolSize = MODBUS_BUFFER_POOL_SIZE, \
+    .bufferSize = MODBUS_BUFFER_SIZE \
+}
+
+#endif
