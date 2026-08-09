@@ -88,8 +88,15 @@ uint16_t ModbusRTUTemplate::crc16_alt(uint8_t address, uint8_t* frame, uint8_t p
 }
 */
 
+// Constantes para Tarea 2.3: Timeouts Dinámicos
+#define MODBUS_MIN_BAUDRATE 1200
+#define MODBUS_MAX_BAUDRATE 921600
+#define MODBUS_TIMEOUT_MULTIPLIER 3  // Timeout = 3x inter-frame time for safety margin
+
 uint32_t ModbusRTUTemplate::charSendTime(uint32_t baud, uint8_t char_bits) {
-	return (uint32_t)char_bits * 1000000UL / baud;
+	if (baud == 0) return 0;
+	_charTime = (uint32_t)char_bits * 1000000UL / baud;
+	return _charTime;
 }
 
 uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits) {
@@ -111,15 +118,68 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 	// it can be set using char_bits = 10.
     
 	if (baud > 19200) {
-        return 1750UL;
-    } else {
-		return 3.5 * charSendTime(baud, char_bits);
-    }
+		_timeoutBase = 1750UL * MODBUS_TIMEOUT_MULTIPLIER;  // 5250 us timeout for high baudrates
+		return 1750UL;
+	} else {
+		uint32_t interFrameTime = 3.5 * charSendTime(baud, char_bits);
+		// Calcular timeout basado en baudrate real (Tarea 2.3)
+		_timeoutBase = interFrameTime * MODBUS_TIMEOUT_MULTIPLIER;
+		return interFrameTime;
+	}
 }
 
-// Kept for backward compatibility
-void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
-    setInterFrameTime(calculateMinimumInterFrameTime(baud));
+/**
+ * @brief Configura el baudrate y calcula automáticamente los timeouts
+ * Implementación de Tarea 2.3: Soporte completo para 1200-921600 baud
+ * 
+ * @param baud Baudrate deseado
+ * @return true si exitoso, false si baudrate fuera de rango válido
+ */
+bool ModbusRTUTemplate::setBaudrate(uint32_t baud) {
+	// Validar rango de baudrate según criterios de aceptación Tarea 2.3
+	if (baud < MODBUS_MIN_BAUDRATE || baud > MODBUS_MAX_BAUDRATE) {
+		if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+			SecurityEvent_t evt = {
+				.eventType = SEC_EVENT_INVALID_CONFIG,
+				.severity = SEC_SEVERITY_WARNING,
+				.timestamp = micros(),
+				.slaveId = 0,
+				.functionCode = 0,
+				.frameLength = 0,
+				.description = "Baudrate fuera de rango válido (1200-921600)"
+			};
+			_securityConfig.logCallback(&evt);
+		}
+		return false;
+	}
+	
+	_currentBaudrate = baud;
+	
+	// Calcular timeouts dinámicamente basados en baudrate real
+	uint32_t charTime = charSendTime(baud);
+	uint32_t interFrameTime = calculateMinimumInterFrameTime(baud);
+	
+	// Actualizar tiempo de inter-frame
+	_t = interFrameTime;
+	
+#if defined(MODBUSRTU_FLUSH_DELAY)
+	_t1 = charTime;
+#endif
+
+	if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+		SecurityEvent_t evt = {
+			.eventType = SEC_EVENT_CONFIG_CHANGED,
+			.severity = SEC_SEVERITY_INFO,
+			.timestamp = micros(),
+			.slaveId = 0,
+			.functionCode = 0,
+			.frameLength = 0,
+			.description = "Baudrate configurado"
+		};
+		_securityConfig.logCallback(&evt);
+	}
+	
+	return true;
 }
 
 void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
@@ -130,13 +190,23 @@ void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
 	// This is because it is detecting an interframe time between bytes of the Frame and thus it interprets one single Frame as two or more frames.
 	// In that case it is useful to be able to set a more "permissive" interframe time.
     _t = t_us;
+	
+	// Tarea 2.3: Cuando se establece manualmente el inter-frame time, 
+	// también actualizar el timeout base si auto-timeout está habilitado
+	if (_autoTimeoutEnabled) {
+		_timeoutBase = t_us * MODBUS_TIMEOUT_MULTIPLIER;
+	}
 }
 
 bool ModbusRTUTemplate::begin(Stream* port, int16_t txEnablePin, bool txEnableDirect) {
     _port = port;
-    _t = 1750UL;
+    // Tarea 2.3: Usar baudrate por defecto para calcular timeouts dinámicos
+    uint32_t defaultBaud = 9600;
+    _currentBaudrate = defaultBaud;
+    _t = calculateMinimumInterFrameTime(defaultBaud);
+    
 #if defined(MODBUSRTU_FLUSH_DELAY)
-	_t1 = charSendTime(0);
+	_t1 = charSendTime(defaultBaud);
 #endif
     if (txEnablePin >= 0) {
 	    _txEnablePin = txEnablePin;

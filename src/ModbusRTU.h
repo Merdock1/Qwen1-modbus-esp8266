@@ -46,6 +46,12 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
 		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
 		uint8_t _poolIndex = 0;
+		
+		// Tarea 2.3: Dynamic timeout calculation based on baudrate
+		uint32_t _currentBaudrate = 0;
+		uint32_t _timeoutBase = 0;
+		uint32_t _charTime = 0;
+		bool _autoTimeoutEnabled = true;
 
 #if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
 		std::mutex _taskMutex;  // Mutex para proteger operaciones en multi-hilo
@@ -106,6 +112,60 @@ class ModbusRTUTemplate : public Modbus {
 		PerformanceStats_t getPerformanceStats() const {return _perfStats;}
 		void resetPerformanceStats() {_perfStats = {0, 0, 0, 0, 0, 0};}
 		void enableBufferPool(bool enable) {_bufferPoolConfig.enableBufferPool = enable;}
+		
+		// Tarea 2.3: Dynamic timeout management API
+		/**
+		 * @brief Habilita o deshabilita el cálculo automático de timeouts basado en baudrate
+		 * @param enable true para habilitar, false para deshabilitar
+		 */
+		void enableAutoTimeout(bool enable) {_autoTimeoutEnabled = enable;}
+		
+		/**
+		 * @brief Configura el baudrate y calcula automáticamente los timeouts
+		 * @param baud Baudrate deseado (1200-921600)
+		 * @return true si exitoso, false si baudrate inválido
+		 */
+		bool setBaudrate(uint32_t baud);
+		
+		/**
+		 * @brief Obtiene el baudrate actual configurado
+		 * @return Baudrate actual en bps
+		 */
+		uint32_t getCurrentBaudrate() const {return _currentBaudrate;}
+		
+		/**
+		 * @brief Calcula el tiempo de inter-frame mínimo según especificación Modbus
+		 * @param baud Baudrate del puerto serial
+		 * @param char_bits Tamaño de carácter (default 11 bits según spec Modbus)
+		 * @return Tiempo en microsegundos
+		 */
+		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
+		
+		/**
+		 * @brief Establece manualmente el tiempo de inter-frame
+		 * @param t_us Tiempo en microsegundos
+		 */
+		void setInterFrameTime(uint32_t t_us);
+		
+		/**
+		 * @brief Calcula el tiempo de transmisión de un carácter
+		 * @param baud Baudrate del puerto
+		 * @param char_bits Tamaño de carácter en bits
+		 * @return Tiempo en microsegundos
+		 */
+		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
+		
+		/**
+		 * @brief Obtiene el timeout actual configurado
+		 * @return Timeout en microsegundos
+		 */
+		uint32_t getTimeout() const {return _timeoutBase;}
+		
+		/**
+		 * @brief Configura timeout personalizado para comunicación
+		 * @param timeout_us Timeout en microsegundos
+		 */
+		void setTimeout(uint32_t timeout_us) {_timeoutBase = timeout_us; _autoTimeoutEnabled = false;}
 };
 
 template <class T>
@@ -116,7 +176,11 @@ bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, bool txEnableDirect)
     #else
     baud = 9600;
     #endif
-	setInterFrameTime(calculateMinimumInterFrameTime(baud));
+    
+    // Tarea 2.3: Configurar baudrate y calcular timeouts dinámicamente
+    _currentBaudrate = baud;
+    setInterFrameTime(calculateMinimumInterFrameTime(baud));
+    
 #if defined(MODBUSRTU_FLUSH_DELAY)
 	_t1 = charSendTime(baud);
 #endif

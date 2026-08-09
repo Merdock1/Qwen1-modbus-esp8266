@@ -50,7 +50,9 @@ typedef enum {
     SEC_EVENT_BUFFER_OVERFLOW_ATTEMPT,  // Attempt to Write beyond Buffer
     SEC_EVENT_DOSS_ATTEMPT,             // Potential DoS attack detected
     SEC_EVENT_BROADCAST_RECEIVED,       // Broadcast message received
-    SEC_EVENT_SECURITY_CHECK_PASSED     // Security validation passed
+    SEC_EVENT_SECURITY_CHECK_PASSED,    // Security validation passed
+    SEC_EVENT_INVALID_CONFIG,           // Invalid configuration parameter (Tarea 2.3)
+    SEC_EVENT_CONFIG_CHANGED            // Configuration changed (Tarea 2.3)
 } SecurityEventType_t;
 
 // Security Event Severity Levels
