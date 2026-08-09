@@ -91,11 +91,14 @@ struct ModbusWebConfig {
     
     ModbusWebConfig() : modbusPort(502), modbusSlaveId(1),
                         enableAuth(false) {
-        strcpy(ssid, "");
-        strcpy(password, "");
-        strcpy(deviceName, "Modbus-Device");
-        strcpy(webUser, "admin");
-        strcpy(webPassword, "admin");
+        ssid[0] = '\0';              // Buffer vacío seguro
+        password[0] = '\0';          // Buffer vacío seguro
+        strncpy(deviceName, "Modbus-Device", sizeof(deviceName) - 1);
+        deviceName[sizeof(deviceName) - 1] = '\0';
+        strncpy(webUser, "admin", sizeof(webUser) - 1);
+        webUser[sizeof(webUser) - 1] = '\0';
+        strncpy(webPassword, "admin", sizeof(webPassword) - 1);
+        webPassword[sizeof(webPassword) - 1] = '\0';
     }
 };
 
@@ -268,9 +271,13 @@ ModbusWebServer::ModbusWebServer(Modbus* modbus)
 bool ModbusWebServer::begin(const char* ssid, const char* password) {
     // Configurar WiFi si se proporcionan credenciales
     if (ssid != nullptr && strlen(ssid) > 0) {
-        strcpy(_config.ssid, ssid);
+        // Copia segura con validación de límites
+        strncpy(_config.ssid, ssid, sizeof(_config.ssid) - 1);
+        _config.ssid[sizeof(_config.ssid) - 1] = '\0';
+        
         if (password != nullptr) {
-            strcpy(_config.password, password);
+            strncpy(_config.password, password, sizeof(_config.password) - 1);
+            _config.password[sizeof(_config.password) - 1] = '\0';
         }
         
 #if defined(ESP32)

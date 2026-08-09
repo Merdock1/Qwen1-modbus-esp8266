@@ -1151,7 +1151,11 @@ public:
         
         buf[0] = objId;
         buf[1] = strLen;
-        memcpy(buf + 2, value, strLen);
+        // Tarea 1.4: Validación de límites con SAFE_COPY para string
+        if (!SAFE_COPY(buf + 2, value, strLen, maxLen - 2)) {
+            MODBUS_LOG_ERROR("Copia de string fallida: buffer overflow prevenido");
+            return 0;
+        }
         
         return 2 + strLen;
     }

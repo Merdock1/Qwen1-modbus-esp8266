@@ -1,9 +1,7 @@
 ==========================================
-  Script de Verificación de Calidad
-  Modbus ESP8266/AVR Library
+  REPORTE DE CALIDAD DE CÓDIGO MODBUS
+  Fecha: Sun Aug  9 16:48:57 UTC 2026
 ==========================================
-
-Generando reporte: quality_report_20260809_164857.txt
 
 === FASE 1: Análisis de Estructura ===
 [INFO] Archivo crítico encontrado: src/Modbus.h

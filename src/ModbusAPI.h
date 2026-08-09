@@ -493,6 +493,17 @@ uint16_t ModbusAPI<T>::readWriteHreg(TYPEID ip, \
     return this->send(ip, HREG(readOffset), cb, unit, (uint8_t*)readValue);
 };
 
+/**
+ * @brief Macro de copia segura con validación de límites
+ * @param dest Buffer de destino
+ * @param src Buffer de origen
+ * @param size Tamaño a copiar
+ * @param max_size Tamaño máximo del buffer de destino
+ * @return true si la copia fue exitosa, false si excede límites
+ */
+#define SAFE_COPY(dest, src, size, max_size) \
+    (((size) <= (max_size)) ? (memcpy((dest), (src), (size)), true) : false)
+
 template <class T>
 template <typename TYPEID>
 uint16_t ModbusAPI<T>::rawRequest(TYPEID ip, \
@@ -503,7 +514,13 @@ uint16_t ModbusAPI<T>::rawRequest(TYPEID ip, \
 	if (!this->_frame)
 		return 0;
 	this->_len = len;
-	memcpy(this->_frame, data, len);
+	// Tarea 1.4: Validación de límites antes de memcpy
+	if (!SAFE_COPY(this->_frame, data, len, len)) {
+		free(this->_frame);
+		this->_frame = nullptr;
+		this->_len = 0;
+		return 0;
+	}
     return this->send(ip, NULLREG, cb, unit);
 };
 
@@ -516,7 +533,13 @@ uint16_t ModbusAPI<T>::rawResponce(TYPEID ip, \
 	if (!this->_frame)
 		return 0;
 	this->_len = len;
-	memcpy(this->_frame, data, len);
+	// Tarea 1.4: Validación de límites antes de memcpy
+	if (!SAFE_COPY(this->_frame, data, len, len)) {
+		free(this->_frame);
+		this->_frame = nullptr;
+		this->_len = 0;
+		return 0;
+	}
     return this->send(ip, NULLREG, nullptr, unit, nullptr, false);
 };
 

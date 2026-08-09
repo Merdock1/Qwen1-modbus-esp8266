@@ -183,10 +183,20 @@ protected:
      * @return true si exitoso
      */
     bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len) {
+        // Tarea 1.4: Validar longitud máxima antes de proceder
+        if (len > MODBUS_MAX_FRAME_SIZE) {
+            MODBUS_LOG_ERROR("Frame ASCII excede tamaño máximo: %d > %d", len, MODBUS_MAX_FRAME_SIZE);
+            return false;
+        }
+        
         // Calcular LRC sobre slaveId + frame
         uint8_t lrcData[len + 1];
         lrcData[0] = slaveId;
-        memcpy(&lrcData[1], frame, len);
+        // Tarea 1.4: Usar SAFE_COPY para memcpy
+        if (!SAFE_COPY(&lrcData[1], frame, len, sizeof(lrcData) - 1)) {
+            MODBUS_LOG_ERROR("Copia LRC fallida: buffer overflow prevenido");
+            return false;
+        }
         uint8_t lrc = calculateLRC(lrcData, len + 1);
         
         // Construir trama ASCII
@@ -468,7 +478,12 @@ public:
                             if (_frame) free(_frame);
                             _frame = (uint8_t*)malloc(binaryLen);
                             if (_frame) {
-                                memcpy(_frame, binaryFrame, binaryLen);
+                                // Tarea 1.4: Validación de límites con SAFE_COPY
+                                if (!SAFE_COPY(_frame, binaryFrame, binaryLen, binaryLen)) {
+                                    MODBUS_LOG_ERROR("Copia de frame binario fallida: buffer overflow prevenido");
+                                    free(_frame);
+                                    _frame = nullptr;
+                                }
                                 // Aquí iría la lógica de procesamiento Modbus estándar
                                 // Por simplicidad, delegamos al padre
                             }
