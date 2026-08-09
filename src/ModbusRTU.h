@@ -30,6 +30,10 @@ class ModbusRTUTemplate : public Modbus {
 		TAddress _sentReg = COIL(0);
 		uint16_t maxRegs = MODBUS_MAX_WORDS;
 		uint8_t address = 0;
+		
+		// Phase 2 Security: Security configuration and rate limiting
+		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
+		RateLimiter_t _rateLimiter = {0, 0, 0};
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
@@ -61,6 +65,17 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t server() { return _slaveId; }
 		inline uint8_t slave() { return server(); }
 		uint32_t eventSource() override {return address;}
+		
+		// Phase 2 Security: Security configuration API
+	public:
+		void setSecurityConfig(const SecurityConfig_t& config) {_securityConfig = config;}
+		SecurityConfig_t getSecurityConfig() const {return _securityConfig;}
+		void enableSecurityLogging(bool enable) {_securityConfig.enableLogging = enable;}
+		void setSecurityLogCallback(cbSecurityLog callback) {_securityConfig.logCallback = callback;}
+		void enableStrictValidation(bool enable) {_securityConfig.enableStrictValidation = enable;}
+		void enableDoSProtection(bool enable) {_securityConfig.enableDoSProtection = enable;}
+		void enableRateLimiting(bool enable) {_securityConfig.enableRateLimiting = enable;}
+		RateLimiter_t getRateLimiterStats() const {return _rateLimiter;}
 };
 
 template <class T>
