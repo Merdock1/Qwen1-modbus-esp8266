@@ -1,35 +1,48 @@
 ```
-# Directories
-__pycache__/
-*.egg-info/
-build/
-dist/
-.coverage
-coverage/
-htmlcov/
-.pytest_cache/
-.mypy_cache/
-.venv/
-venv/
-.env
-.env.local
-.vscode/
-.idea/
-
-# Files
-*.pyc
-*.pyo
-*.pyd
-*.so
-*.dylib
-*.dll
-*.exe
+# Compiled and build artifacts
 *.o
 *.obj
-*.log
-*.tmp
+*.exe
+*.dll
+*.so
+*.a
+*.out
+
+# Dependencies
+node_modules/
+venv/
+.venv/
+__pycache__/
+dist/
+build/
+target/
+.gradle/
+
+# Editors
+.vscode/
+.idea/
 *.swp
 *.swo
+
+# Logs and temp files
+*.log
+*.tmp
+
+# System files
 .DS_Store
 Thumbs.db
+.env
+.env.local
+*.env.*
+
+# Coverage
+coverage/
+htmlcov/
+.coverage
+
+# MyPy
+.mypy_cache/
+
+# PyTest
+.pytest_cache/
 ```
