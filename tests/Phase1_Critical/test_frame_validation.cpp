@@ -97,7 +97,7 @@ typedef struct {
     SecurityEvent_t lastEvent;
 } ValidationStats_t;
 
-static ValidationStats_t g_stats = {0};
+static ValidationStats_t g_stats = {0, 0, 0, 0, 0, 0, 0, {SEC_EVENT_NONE, SEC_SEVERITY_INFO, 0, 0, 0, 0, nullptr}};
 static SecurityConfig_t g_config = {
     .enableLogging = true,
     .enableStrictValidation = true,
@@ -361,7 +361,6 @@ bool validateTCPFrame(const uint8_t* frame, uint16_t length, uint16_t transactio
         return false;
     }
     
-    uint8_t functionCode = frame[0];
     uint16_t pduLength = length - 1;  // Restar solo functionCode
     
     if (!validatePDULength(pduLength)) {
@@ -383,7 +382,7 @@ int test_failed = 0;
 #define RUN_TEST(name) do { \
     test_count++; \
     printf("\n=== Test %d: %s ===\n", test_count, #name); \
-    g_stats = {0}; \
+    memset(&g_stats, 0, sizeof(g_stats)); \
     name(); \
     test_passed++; \
     printf("✓ PASSED\n"); \

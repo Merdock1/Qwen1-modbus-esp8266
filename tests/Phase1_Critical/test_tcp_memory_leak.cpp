@@ -46,7 +46,7 @@ typedef struct {
     size_t peak_usage;
 } MemoryStats;
 
-static MemoryStats g_mem_stats = {0};
+static MemoryStats g_mem_stats = {0, 0, 0, 0, 0, 0};
 
 // Wrapper para malloc que trackea asignaciones
 void* tracked_malloc(size_t size) {
