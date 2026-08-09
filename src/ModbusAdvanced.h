@@ -613,8 +613,10 @@ public:
 
 /**
  * @brief Tipos de objeto para identificación de dispositivo
+ * Según especificación Modbus Section 6.21
  */
 enum ModbusDeviceIdObjectType {
+    // Objetos básicos (mandatory) - 0x00 a 0x06
     OBJECT_VENDOR_NAME      = 0x00,
     OBJECT_PRODUCT_CODE     = 0x01,
     OBJECT_MAJOR_MINOR_REV  = 0x02,
@@ -622,16 +624,51 @@ enum ModbusDeviceIdObjectType {
     OBJECT_PRODUCT_NAME     = 0x04,
     OBJECT_MODEL_NAME       = 0x05,
     OBJECT_USER_APP_NAME    = 0x06,
+    
+    // Objetos reservados - 0x07 a 0x7F
     OBJECT_RESERVED_START   = 0x07,
     OBJECT_RESERVED_END     = 0x7F,
+    
+    // Objetos extendidos (opcionales/configurables) - 0x80 a 0xFF
     OBJECT_EXTENDED_START   = 0x80,
     OBJECT_EXTENDED_END     = 0xFF
 };
 
 /**
- * @brief Información de identificación del dispositivo
+ * @brief Nivel de conformidad del dispositivo
  */
-struct ModbusDeviceIdentification {
+enum ModbusConformityLevel {
+    CONFORMITY_BASIC    = 0x01,  // Solo objetos básicos 0x00-0x02
+    CONFORMITY_REGULAR  = 0x02,  // Objetos básicos + regulares 0x00-0x06
+    CONFORMITY_EXTENDED = 0x03   // Todos los objetos incluyendo extendidos
+};
+
+/**
+ * @brief Entrada para objeto extendido configurable
+ */
+struct ModbusExtendedObjectEntry {
+    uint8_t objectId;         // ID del objeto (0x80-0xFF)
+    const char* value;        // Valor del objeto
+    bool readAccess;          // Permiso de lectura
+    bool writeAccess;         // Permiso de escritura
+    
+    ModbusExtendedObjectEntry() : objectId(0), value(nullptr), 
+                                   readAccess(true), writeAccess(false) {}
+    ModbusExtendedObjectEntry(uint8_t id, const char* val, bool ra = true, bool wa = false)
+        : objectId(id), value(val), readAccess(ra), writeAccess(wa) {}
+};
+
+/**
+ * @brief Configuración máxima para objetos extendidos
+ */
+#ifndef MODBUS_MAX_EXTENDED_OBJECTS
+#define MODBUS_MAX_EXTENDED_OBJECTS 10
+#endif
+
+/**
+ * @brief Información de identificación del dispositivo (estructura de datos)
+ */
+struct ModbusDeviceIdInfo {
     const char* vendorName;
     const char* productCode;
     const char* majorMinorRevision;
@@ -640,8 +677,20 @@ struct ModbusDeviceIdentification {
     const char* modelName;
     const char* userApplicationName;
     const char* serialNumber;
+    const char* hardwareRevision;
+    const char* softwareRevision;
+    const char* deviceLocation;
     
-    ModbusDeviceIdentification() :
+    // Objetos extendidos configurables
+    ModbusExtendedObjectEntry extendedObjects[MODBUS_MAX_EXTENDED_OBJECTS];
+    uint8_t extendedObjectCount;
+    
+    // Niveles de conformidad
+    uint8_t conformityLevel;
+    bool individualReadSupport;   // Soporte para read dev id code 0x03
+    bool streamReadSupport;       // Soporte para read dev id code 0x04
+    
+    ModbusDeviceIdInfo() :
         vendorName("Unknown"),
         productCode("Unknown"),
         majorMinorRevision("1.0.0"),
@@ -649,19 +698,113 @@ struct ModbusDeviceIdentification {
         productName("Modbus Device"),
         modelName("Generic"),
         userApplicationName(""),
-        serialNumber("00000000") {}
+        serialNumber("00000000"),
+        hardwareRevision("1.0"),
+        softwareRevision("1.0.0"),
+        deviceLocation(""),
+        extendedObjectCount(0),
+        conformityLevel(CONFORMITY_EXTENDED),
+        individualReadSupport(true),
+        streamReadSupport(true) {}
 };
 
 /**
  * @brief Implementación de FC 0x2B Read Device Identification
+ * Conforme a especificación Modbus Section 6.21
+ * 
+ * Soporta:
+ * - Objetos básicos 0x00-0x06 (mandatory)
+ * - Objetos extendidos 0x80-0xFF (configurables)
+ * - Read/Write access control
+ * - Conteo correcto de objetos disponibles
+ * - Todos los read device id codes: 0x01, 0x02, 0x03, 0x04
  */
-class ModbusDeviceIdentification {
+class ModbusDeviceIdentificationHandler {
 private:
-    ModbusDeviceIdentification info;
+    ModbusDeviceIdInfo info;
     
+    /**
+     * @brief Obtener valor de objeto básico por ID
+     */
+    const char* getBasicObjectValue(uint8_t objId) {
+        switch(objId) {
+            case OBJECT_VENDOR_NAME:      return info.vendorName;
+            case OBJECT_PRODUCT_CODE:     return info.productCode;
+            case OBJECT_MAJOR_MINOR_REV:  return info.majorMinorRevision;
+            case OBJECT_VENDOR_URL:       return info.vendorURL;
+            case OBJECT_PRODUCT_NAME:     return info.productName;
+            case OBJECT_MODEL_NAME:       return info.modelName;
+            case OBJECT_USER_APP_NAME:    return info.userApplicationName;
+            default:                      return nullptr;
+        }
+    }
+    
+    /**
+     * @brief Obtener valor de objeto extendido por ID
+     */
+    const char* getExtendedObjectValue(uint8_t objId) {
+        for (uint8_t i = 0; i < info.extendedObjectCount; i++) {
+            if (info.extendedObjects[i].objectId == objId) {
+                return info.extendedObjects[i].readAccess ? info.extendedObjects[i].value : nullptr;
+            }
+        }
+        // Objeto extendido por defecto: Serial Number en 0x80
+        if (objId == 0x80) return info.serialNumber;
+        return nullptr;
+    }
+    
+    /**
+     * @brief Verificar si un objeto ID es válido y accesible
+     */
+    bool isObjectIdValid(uint8_t objId, bool checkReadAccess = true) {
+        if (objId >= OBJECT_EXTENDED_START) {
+            // Objeto extendido
+            for (uint8_t i = 0; i < info.extendedObjectCount; i++) {
+                if (info.extendedObjects[i].objectId == objId) {
+                    return !checkReadAccess || info.extendedObjects[i].readAccess;
+                }
+            }
+            // Serial Number por defecto en 0x80
+            return (objId == 0x80);
+        } else if (objId <= OBJECT_USER_APP_NAME) {
+            // Objeto básico - siempre válido
+            return true;
+        }
+        return false;
+    }
+    
+    /**
+     * @brief Contar número total de objetos disponibles
+     */
+    uint8_t countAvailableObjects() {
+        uint8_t count = 0;
+        
+        // Contar objetos básicos no vacíos
+        if (info.vendorName && strlen(info.vendorName) > 0) count++;
+        if (info.productCode && strlen(info.productCode) > 0) count++;
+        if (info.majorMinorRevision && strlen(info.majorMinorRevision) > 0) count++;
+        if (info.vendorURL && strlen(info.vendorURL) > 0) count++;
+        if (info.productName && strlen(info.productName) > 0) count++;
+        if (info.modelName && strlen(info.modelName) > 0) count++;
+        if (info.userApplicationName && strlen(info.userApplicationName) > 0) count++;
+        
+        // Contar objetos extendidos
+        count += info.extendedObjectCount;
+        
+        // Serial Number siempre cuenta como objeto extendido
+        if (info.serialNumber && strlen(info.serialNumber) > 0) count++;
+        
+        return count;
+    }
+
 public:
     /**
-     * @brief Configurar información del dispositivo
+     * @brief Constructor con valores por defecto
+     */
+    ModbusDeviceIdentificationHandler() {}
+    
+    /**
+     * @brief Configurar información básica del dispositivo
      */
     void setVendorName(const char* name) { info.vendorName = name; }
     void setProductCode(const char* code) { info.productCode = code; }
@@ -671,37 +814,118 @@ public:
     void setModelName(const char* name) { info.modelName = name; }
     void setUserApplicationName(const char* name) { info.userApplicationName = name; }
     void setSerialNumber(const char* sn) { info.serialNumber = sn; }
+    void setHardwareRevision(const char* rev) { info.hardwareRevision = rev; }
+    void setSoftwareRevision(const char* rev) { info.softwareRevision = rev; }
+    void setDeviceLocation(const char* loc) { info.deviceLocation = loc; }
     
     /**
-     * @brief Procesar solicitud de identificación
-     * @param readDeviceIdCode Código de lectura (0x01, 0x02, 0x03, 0x04)
+     * @brief Configurar nivel de conformidad
+     */
+    void setConformityLevel(uint8_t level) { 
+        info.conformityLevel = (level > CONFORMITY_EXTENDED) ? CONFORMITY_EXTENDED : level; 
+    }
+    
+    /**
+     * @brief Agregar objeto extendido configurable
+     * @param objectId ID del objeto (0x80-0xFF)
+     * @param value Valor del objeto
+     * @param readAccess Permiso de lectura (default: true)
+     * @param writeAccess Permiso de escritura (default: false)
+     * @return true si se agregó correctamente, false si no hay espacio
+     */
+    bool addExtendedObject(uint8_t objectId, const char* value, 
+                          bool readAccess = true, bool writeAccess = false) {
+        if (info.extendedObjectCount >= MODBUS_MAX_EXTENDED_OBJECTS) {
+            return false;
+        }
+        
+        // Verificar que el ID esté en rango extendido
+        if (objectId < OBJECT_EXTENDED_START || objectId > OBJECT_EXTENDED_END) {
+            return false;
+        }
+        
+        info.extendedObjects[info.extendedObjectCount].objectId = objectId;
+        info.extendedObjects[info.extendedObjectCount].value = value;
+        info.extendedObjects[info.extendedObjectCount].readAccess = readAccess;
+        info.extendedObjects[info.extendedObjectCount].writeAccess = writeAccess;
+        info.extendedObjectCount++;
+        
+        return true;
+    }
+    
+    /**
+     * @brief Actualizar valor de objeto extendido (si tiene write access)
      * @param objectId ID del objeto
+     * @param newValue Nuevo valor
+     * @return true si se actualizó correctamente
+     */
+    bool updateExtendedObject(uint8_t objectId, const char* newValue) {
+        for (uint8_t i = 0; i < info.extendedObjectCount; i++) {
+            if (info.extendedObjects[i].objectId == objectId) {
+                if (!info.extendedObjects[i].writeAccess) {
+                    return false; // No tiene permiso de escritura
+                }
+                info.extendedObjects[i].value = newValue;
+                return true;
+            }
+        }
+        return false; // Objeto no encontrado
+    }
+    
+    /**
+     * @brief Obtener conteo de objetos disponibles
+     */
+    uint8_t getObjectsCount() const { return info.extendedObjectCount + 7; } // 7 básicos + extendidos
+    
+    /**
+     * @brief Obtener nivel de conformidad actual
+     */
+    uint8_t getConformityLevel() const { return info.conformityLevel; }
+    
+    /**
+     * @brief Procesar solicitud de identificación completa
+     * @param readDeviceIdCode Código de lectura (0x01, 0x02, 0x03, 0x04)
+     * @param objectId ID del objeto (para códigos 0x03)
      * @param responseData Buffer de respuesta
      * @param maxLen Longitud máxima del buffer
-     * @return Longitud de datos escritos o código de error
+     * @return Longitud de datos escritos o código de error negativo
      */
     int process(uint8_t readDeviceIdCode, uint8_t objectId, 
                 uint8_t* responseData, uint8_t maxLen) {
-        uint8_t offset = 3; // Skip MEI type, read device id code, conformity level
+        if (maxLen < 5) return -1; // Buffer demasiado pequeño
+        
+        uint8_t offset = 3; // MEI type, read device id code, conformity level
         uint8_t written = 0;
         
-        // Conformity level (0x01 = basic, 0x02 = regular, 0x03 = extended)
-        responseData[2] = 0x03;
+        // MEI Type (siempre 0x0E para Read Device Identification)
+        responseData[0] = 0x0E;
+        
+        // Read Device Id Code
+        responseData[1] = readDeviceIdCode;
+        
+        // Conformity Level
+        responseData[2] = info.conformityLevel;
         
         switch (readDeviceIdCode) {
-            case 0x01: // Basic identification
+            case 0x01: // Basic identification (objetos 0x00-0x02)
                 written = writeBasicIdentification(responseData + offset, maxLen - offset);
                 break;
                 
-            case 0x02: // Regular identification
+            case 0x02: // Regular identification (objetos 0x00-0x06)
                 written = writeRegularIdentification(responseData + offset, maxLen - offset);
                 break;
                 
-            case 0x03: // Extended identification (one object)
+            case 0x03: // Extended identification (un objeto específico)
+                if (!info.individualReadSupport) {
+                    return -1; // No soportado
+                }
                 written = writeExtendedIdentification(objectId, responseData + offset, maxLen - offset);
                 break;
                 
-            case 0x04: // Extended identification (all objects)
+            case 0x04: // Extended identification (todos los objetos en modo stream)
+                if (!info.streamReadSupport) {
+                    return -1; // No soportado
+                }
                 written = writeAllExtendedIdentification(responseData + offset, maxLen - offset);
                 break;
                 
@@ -709,68 +933,99 @@ public:
                 return -1; // Illegal value
         }
         
+        if (written == 0 && readDeviceIdCode != 0x01) {
+            return -1; // Error: no se pudo escribir ningún dato
+        }
+        
         return written + offset;
     }
     
-private:
+    /**
+     * @brief Escribir identificación básica (objetos 0x00-0x02)
+     */
     uint8_t writeBasicIdentification(uint8_t* buf, uint8_t maxLen) {
         uint8_t pos = 0;
         
-        // Vendor Name
+        // Vendor Name (0x00)
         pos += writeObject(buf + pos, maxLen - pos, OBJECT_VENDOR_NAME, info.vendorName);
-        // Product Code
+        // Product Code (0x01)
         pos += writeObject(buf + pos, maxLen - pos, OBJECT_PRODUCT_CODE, info.productCode);
-        // Major Minor Revision
+        // Major Minor Revision (0x02)
         pos += writeObject(buf + pos, maxLen - pos, OBJECT_MAJOR_MINOR_REV, info.majorMinorRevision);
         
         return pos;
     }
     
+    /**
+     * @brief Escribir identificación regular (objetos 0x00-0x06)
+     */
     uint8_t writeRegularIdentification(uint8_t* buf, uint8_t maxLen) {
         uint8_t pos = writeBasicIdentification(buf, maxLen);
         
-        // Vendor URL
-        if (info.vendorURL && strlen(info.vendorURL) > 0) {
+        // Vendor URL (0x03) - solo si no está vacío
+        if (info.vendorURL && strlen(info.vendorURL) > 0 && pos < maxLen) {
             pos += writeObject(buf + pos, maxLen - pos, OBJECT_VENDOR_URL, info.vendorURL);
         }
-        // Product Name
-        pos += writeObject(buf + pos, maxLen - pos, OBJECT_PRODUCT_NAME, info.productName);
-        // Model Name
-        pos += writeObject(buf + pos, maxLen - pos, OBJECT_MODEL_NAME, info.modelName);
-        // User Application Name
-        if (info.userApplicationName && strlen(info.userApplicationName) > 0) {
+        // Product Name (0x04)
+        if (pos < maxLen) {
+            pos += writeObject(buf + pos, maxLen - pos, OBJECT_PRODUCT_NAME, info.productName);
+        }
+        // Model Name (0x05)
+        if (pos < maxLen) {
+            pos += writeObject(buf + pos, maxLen - pos, OBJECT_MODEL_NAME, info.modelName);
+        }
+        // User Application Name (0x06) - solo si no está vacío
+        if (info.userApplicationName && strlen(info.userApplicationName) > 0 && pos < maxLen) {
             pos += writeObject(buf + pos, maxLen - pos, OBJECT_USER_APP_NAME, info.userApplicationName);
         }
         
         return pos;
     }
     
+    /**
+     * @brief Escribir identificación extendida (un objeto específico)
+     */
     uint8_t writeExtendedIdentification(uint8_t objId, uint8_t* buf, uint8_t maxLen) {
-        const char* value = getExtendedValue(objId);
-        if (!value) return 0;
+        const char* value = getExtendedObjectValue(objId);
+        if (!value) {
+            return 0; // Objeto no encontrado o sin acceso de lectura
+        }
         
         return writeObject(buf, maxLen, objId, value);
     }
     
+    /**
+     * @brief Escribir todos los objetos extendidos (modo stream)
+     */
     uint8_t writeAllExtendedIdentification(uint8_t* buf, uint8_t maxLen) {
         uint8_t pos = 0;
         
-        // Serial Number
-        pos += writeObject(buf + pos, maxLen - pos, 0x80, info.serialNumber);
+        // Escribir Serial Number (0x80) si está disponible
+        if (info.serialNumber && strlen(info.serialNumber) > 0) {
+            pos += writeObject(buf + pos, maxLen - pos, 0x80, info.serialNumber);
+        }
+        
+        // Escribir objetos extendidos configurados
+        for (uint8_t i = 0; i < info.extendedObjectCount && pos < maxLen; i++) {
+            if (info.extendedObjects[i].readAccess && info.extendedObjects[i].value) {
+                pos += writeObject(buf + pos, maxLen - pos, 
+                                  info.extendedObjects[i].objectId, 
+                                  info.extendedObjects[i].value);
+            }
+        }
         
         return pos;
     }
     
-    const char* getExtendedValue(uint8_t objId) {
-        if (objId == 0x80) return info.serialNumber;
-        return nullptr;
-    }
-    
+    /**
+     * @brief Escribir un objeto individual en el buffer
+     * Formato: [ObjectId][Length][Value...]
+     */
     uint8_t writeObject(uint8_t* buf, uint8_t maxLen, uint8_t objId, const char* value) {
         if (!value || maxLen < 3) return 0;
         
         uint8_t strLen = strlen(value);
-        if (maxLen < 3 + strLen) return 0;
+        if (maxLen < 3 + strLen) return 0; // No cabe en el buffer
         
         buf[0] = objId;
         buf[1] = strLen;
