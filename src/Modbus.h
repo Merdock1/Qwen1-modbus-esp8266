@@ -30,7 +30,7 @@ static inline uint16_t __swap_16(uint16_t num) { return (num >> 8) | (num << 8);
 #define ISTS_VAL(v) (v?0xFF00:0x0000)
 #define ISTS_BOOL(v) (v==0xFF00)
 
-// For deprecated (v1.xx) enSet/enGet param compatibility
+// Para compatibilidad con parámetros enSet/enGet obsoletos (v1.xx)
 #define cbDefault nullptr
 
 struct TRegister;
@@ -380,7 +380,7 @@ typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t
 #endif
 
 #if defined(ARDUINO_SAM_DUE_STL)
-// Ardueno Due STL wokaround
+// Solución alternativa para Arduino Due con STL
 namespace std {
     void __throw_bad_function_call();
 }

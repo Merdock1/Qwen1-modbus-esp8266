@@ -156,12 +156,12 @@ class ModbusAPI : public T {
 	uint16_t errorResponce(TYPEID ip, Modbus::FunctionCode fn, Modbus::ResultCode excode, uint8_t unit = MODBUSIP_UNIT);
 };
 
-// FNAME	writeCoil, writeIsts, writeHreg, writeIreg
-// REG		COIL, ISTS, HREG, IREG
-// FUNC		Modbus function
-// MAXNUM	Register count límite
-// VALTYPE	bool, uint16_t
-// Value	
+// NOMBRE: writeCoil, writeIsts, writeHreg, writeIreg
+// REG: COIL, ISTS, HREG, IREG
+// FUNC: Función Modbus
+// MAXNUM: Límite de cantidad de registros
+// VALTYPE: bool, uint16_t
+// Valor
 #define IMPLEMENT_WRITEREG(FNAME, REG, FUNC, VALUE, VALTYPE) \
 template <class T> \
 template <typename TYPEID> \

@@ -70,7 +70,7 @@ class ModbusRTUTemplate : public Modbus {
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
 		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
 		
-		// Phase 3: Buffer Pool management
+		// Fase 3: Gestión de Buffer Pool
 		uint8_t* allocateBuffer(uint16_t size);
 		void freeBuffer(uint8_t* buffer);
 		void initBufferPool();
