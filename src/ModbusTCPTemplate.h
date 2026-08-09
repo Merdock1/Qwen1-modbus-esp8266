@@ -491,17 +491,19 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupTransactions() {
 	#else
 	size_t i = 0;
 	while (i < _trans.size()) {
-		TTransaction t =  _trans[i];
-		if (millis() - t.timestamp > MODBUSIP_TIMEOUT || t.forcedEvent != Modbus::EX_SUCCESS) {
-			Modbus::ResultCode res = (t.forcedEvent != Modbus::EX_SUCCESS)?t.forcedEvent:Modbus::EX_TIMEOUT;
-			if (t.cb)
-				t.cb(res, t.transactionId, nullptr);
+		TTransaction* t = _trans.entry(i);
+		if (millis() - t->timestamp > MODBUSIP_TIMEOUT || t->forcedEvent != Modbus::EX_SUCCESS) {
+			Modbus::ResultCode res = (t->forcedEvent != Modbus::EX_SUCCESS)?t->forcedEvent:Modbus::EX_TIMEOUT;
+			if (t->cb)
+				t->cb(res, t->transactionId, nullptr);
 			// Liberar _frame para prevenir fuga de memoria
-			free(t._frame);
+			free(t->_frame);
+			t->_frame = nullptr;
 			// CORRECCIÓN Tarea 1.1: Liberar data (requestData) para prevenir fuga de memoria
 			// En timeout de transacciones, requestData debe liberarse si fue asignada
-			if (t.data) {
-				free(t.data);
+			if (t->data) {
+				free(t->data);
+				t->data = nullptr;
 			}
 			_trans.remove(i);
 		} else
