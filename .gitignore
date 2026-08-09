@@ -1,1 +1,40 @@
-Nothing should be ignored based on the provided file changes. The only added file is `informe_analisis_codigo.md`, which appears to be a markdown document (source/config file), and there are no build artifacts, dependencies, or temporary files in the changes.
+```
+# Compiled and build artifacts
+*.o
+*.obj
+*.out
+
+# Dependencies
+*.a
+*.so
+*.dll
+*.exe
+
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+
+# Editors
+.vscode/
+.idea/
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Build directories
+build/
+dist/
+target/
+```
