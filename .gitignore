@@ -1,1 +1,39 @@
-(modified .gitignore content)
+```
+# Compiled and build artifacts
+*.o
+*.obj
+*.out
+
+# Dependencies
+*.a
+*.so
+*.dll
+*.exe
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Environment
+.env
+.env.local
+*.env.*
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Build directories
+build/
+dist/
+target/
+
+# Package manager caches
+node_modules/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.venv/
+venv/
+```

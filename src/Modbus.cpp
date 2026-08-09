@@ -6,6 +6,8 @@
 */
 #include "Modbus.h"
 
+
+#include "ModbusSecurity.h"
 #if defined(MODBUS_GLOBAL_REGS)
 #if defined(MODBUS_USE_STL)
  std::vector<TRegister> Modbus::_regs;
