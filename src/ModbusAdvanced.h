@@ -392,6 +392,8 @@ struct ModbusDiagnosticCounters {
     uint16_t queryData;                 // Sub-función 0x0000
     uint16_t restartComm;               // Sub-función 0x0001
     uint16_t diagnosticRegister;        // Sub-función 0x0002
+    uint16_t asciiInputDelimiter;       // Sub-función 0x0003 - Separador de entrada ASCII
+    uint16_t listenOnlyMode;            // Sub-función 0x0004 - Modo solo escucha
     uint16_t busMessageCount;           // Sub-función 0x000B
     uint16_t commErrorCount;            // Sub-función 0x000C
     uint16_t exceptionErrorCount;       // Sub-función 0x000D
@@ -410,6 +412,8 @@ struct ModbusDiagnosticCounters {
         queryData = 0;
         restartComm = 0;
         diagnosticRegister = 0;
+        asciiInputDelimiter = 0x0A;     // Valor por defecto: LF (Line Feed)
+        listenOnlyMode = 0x0000;        // 0x0000 = modo normal, 0xFFFF = listen only
         busMessageCount = 0;
         commErrorCount = 0;
         exceptionErrorCount = 0;
@@ -462,6 +466,12 @@ public:
                 
             case 0x0002: // Return Diagnostic Register
                 return handleReturnDiagnosticReg(responseData);
+                
+            case 0x0003: // Change ASCII Input Delimiter
+                return handleChangeAsciiDelimiter(data, responseData);
+                
+            case 0x0004: // Force Listen Only Mode
+                return handleForceListenOnlyMode(responseData);
                 
             case 0x000A: // Clear Counters and Diagnostic Register
                 return handleClearCounters(responseData);
@@ -525,6 +535,66 @@ public:
         responseData[0] = (counters.diagnosticRegister >> 8) & 0xFF;
         responseData[1] = counters.diagnosticRegister & 0xFF;
         return Modbus::EX_SUCCESS;
+    }
+    
+    /**
+     * @brief Sub-función 0x0003: Change ASCII Input Delimiter
+     * Cambia el delimitador de entrada ASCII (solo para modo ASCII)
+     * @param data Datos con el nuevo delimitador (byte alto y bajo)
+     * @param responseData Respuesta con el delimitador anterior
+     * @return EX_SUCCESS si válido, EX_ILLEGAL_VALUE si no soportado
+     */
+    Modbus::ResultCode handleChangeAsciiDelimiter(const uint8_t* data, uint8_t* responseData) {
+        // Los datos contienen el nuevo delimitador en los bytes 2-3 de la trama
+        // data[0] = byte alto, data[1] = byte bajo del nuevo delimitador
+        uint16_t oldDelimiter = counters.asciiInputDelimiter;
+        
+        // El nuevo delimitador debe estar en el rango 0x00-0x7F (ASCII imprimible/control)
+        uint16_t newDelimiter = ((uint16_t)data[0] << 8) | data[1];
+        
+        if (newDelimiter > 0x007F) {
+            // Delimitador inválido (debe ser ASCII de 7 bits)
+            counters.incrementException();
+            return Modbus::EX_ILLEGAL_VALUE;
+        }
+        
+        // Guardar el nuevo delimitador
+        counters.asciiInputDelimiter = newDelimiter;
+        
+        // Responder con el delimitador anterior
+        responseData[0] = (oldDelimiter >> 8) & 0xFF;
+        responseData[1] = oldDelimiter & 0xFF;
+        
+        MODBUS_LOG_INFO("Delimitador ASCII cambiado: 0x%04X -> 0x%04X", 
+                       oldDelimiter, newDelimiter);
+        return Modbus::EX_SUCCESS;
+    }
+    
+    /**
+     * @brief Sub-función 0x0004: Force Listen Only Mode
+     * Fuerza al dispositivo a modo solo escucha (no responde a solicitudes)
+     * @param responseData Respuesta vacía
+     * @return EX_SUCCESS
+     */
+    Modbus::ResultCode handleForceListenOnlyMode(uint8_t* responseData) {
+        listenOnlyMode = true;
+        counters.listenOnlyMode = 0xFFFF;  // Indicar modo listen only activo
+        
+        // En modo listen only, el dispositivo no responde excepto a esta solicitud
+        MODBUS_LOG_INFO("Modo Listen Only activado - dispositivo no responderá a otras solicitudes");
+        
+        responseData[0] = 0x00;
+        responseData[1] = 0x00;
+        return Modbus::EX_SUCCESS;
+    }
+    
+    /**
+     * @brief Desactivar modo Listen Only
+     */
+    void disableListenOnlyMode() {
+        listenOnlyMode = false;
+        counters.listenOnlyMode = 0x0000;
+        MODBUS_LOG_INFO("Modo Listen Only desactivado");
     }
     
     Modbus::ResultCode handleClearCounters(uint8_t* responseData) {
@@ -601,10 +671,62 @@ public:
         return Modbus::EX_SUCCESS;
     }
     
-    bool isListenOnlyMode() const { return listenOnlyMode; }
-    void setListenOnlyMode(bool mode) { listenOnlyMode = mode; }
+    /**
+     * @brief Obtener delimitador ASCII actual
+     * @return Delimitador configurado
+     */
+    uint16_t getAsciiDelimiter() const { return counters.asciiInputDelimiter; }
     
+    /**
+     * @brief Verificar si está en modo Listen Only
+     * @return true si modo Listen Only activo
+     */
+    bool isListenOnlyMode() const { return listenOnlyMode; }
+    
+    /**
+     * @brief Establecer modo Listen Only
+     * @param mode true para activar, false para desactivar
+     */
+    void setListenOnlyMode(bool mode) { 
+        listenOnlyMode = mode; 
+        counters.listenOnlyMode = mode ? 0xFFFF : 0x0000;
+    }
+    
+    /**
+     * @brief Obtener contadores de diagnóstico
+     * @return Referencia a los contadores
+     */
     const ModbusDiagnosticCounters& getCounters() const { return counters; }
+    
+    /**
+     * @brief Incrementar contador de mensajes de esclavo
+     * @note Usar desde la clase principal Modbus para tracking
+     */
+    void incrementSlaveMessageCounter() { counters.incrementSlaveMessage(); }
+    
+    /**
+     * @brief Incrementar contador de no respuesta
+     * @note Usar desde la clase principal Modbus para tracking
+     */
+    void incrementNoResponseCounter() { counters.incrementSlaveNoResponse(); }
+    
+    /**
+     * @brief Incrementar contador de NAK
+     * @note Usar desde la clase principal Modbus para tracking
+     */
+    void incrementNAKCounter() { counters.incrementSlaveNAK(); }
+    
+    /**
+     * @brief Incrementar contador de ocupado
+     * @note Usar desde la clase principal Modbus para tracking
+     */
+    void incrementBusyCounter() { counters.incrementSlaveBusy(); }
+    
+    /**
+     * @brief Incrementar contador de overrun
+     * @note Usar desde la clase principal Modbus para tracking
+     */
+    void incrementOverrunCounter() { counters.incrementOverrun(); }
 };
 
 // ============================================================================
