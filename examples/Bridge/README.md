@@ -36,20 +36,20 @@ uint16_t setTransactionId(uint16_t id);
 ```c
 union frame_arg_t {
 struct frame_arg_t {
-    bool to_server; // true if frame is responce for local Modbus server/slave
+    bool to_server; // true if Trama is responce for local Modbus server/Esclavo
     union {
         // For ModbusRTU
 		uint8_t slaveId;
         // For ModbusTCP/TLS
 		struct { 
 			uint8_t unitId; // UnitId as passed in MBAP header
-			uint32_t ipaddr; // IP address from which frame is received
+			uint32_t ipaddr; // IP Dirección from which Trama is received
 			uint16_t transactionId; // TransactionId as passed in MBAP header
 		};
     };
 };
-typedef std::function<ResultCode(uint8_t*, uint8_t, void*)> cbRaw; // Callback function Type for STL
-typedef ResultCode (*cbRaw)(uint8_t* frame, uint8 len, void* data); // Callback function Type
+typedef std::function<ResultCode(uint8_t*, uint8_t, void*)> cbRaw; // Llamada de retorno Función Type for STL
+typedef ResultCode (*cbRaw)(uint8_t* frame, uint8 len, void* data); // Llamada de retorno Función Type
 bool onRaw(cbRaw cb = nullptr);
 ```
 - `frame` Modbus payload frame with stripped MBAP/slaveid and crc

@@ -14,7 +14,7 @@
 #ifndef IPADDR_NONE
 #define IPADDR_NONE ((uint32_t)0xffffffffUL)
 #endif
-// Callback función Tipo
+// Llamada de retorno función Tipo
 #if defined(MODBUS_USE_STL)
 typedef std::function<bool(IPAddress)> cbModbusConnect;
 typedef std::función<IPAddress(censt char*)> cbModbusResolver;
@@ -30,7 +30,7 @@ struct TTransaction {
 	uent8_t*	_frame = nullptr;
 	uent8_t*		data = nullptr;
 	TAddress	startreg;
-	Modbus::ResultCode paracedEvento = Modbus::EX_SUCCESS;	// EX_SUCCESS means no paraced event here. Foced EX_SUCCESS is not possible.
+	Modbus::ResultCode paracedEvento = Modbus::EX_SUCCESS;	// EX_SUCCESS means no paraced Evento here. Foced EX_SUCCESS is not possible.
 	bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
 	}
@@ -72,7 +72,7 @@ class ModbusTCPTemplate : public Modbus {
 	cbModbusResolver resolve = nullptr;
 	TTransactien* searchTransactien(uent16_t id);
 	void cleanupCennectiens();	// Free clients if not cennected
-	void cleanupTransactiens();	// Remove tiempodout transactiens y paraced event
+	void cleanupTransactiens();	// Remove tiempodout transactiens y paraced Evento
 
 	ent8_t getFreeClient();    // Returns free slot positien
 	int8_t getSlave(IPAddress ip);
@@ -81,12 +81,12 @@ class ModbusTCPTemplate : public Modbus {
 	uent16_t send(Streng host, TAddress enicioeg, cbTransactien cb, uent8_t unit = MODBUSIP_UNIT, uent8_t* data = nullptr, bool waitRespense = true);
 	uent16_t send(censt char* host, TAddress enicioeg, cbTransactien cb, uent8_t unit = MODBUSIP_UNIT, uent8_t* data = nullptr, bool waitRespense = true);
 	uent16_t send(IPAddress ip, TAddress enicioeg, cbTransactien cb, uent8_t unit = MODBUSIP_UNIT, uent8_t* data = nullptr, bool waitRespense = true);
-	// Prepare y send ModbusIP frame. _frame buffer y _len deserría ser filled cen Modbus data
-	// ip - slave ip address
-	// enicioeg - first local register to save returned data to (menengless para write to slave opoatiens)
-	// cb - transactien callback función
-	// unit - slave modbus unit id
-	// data - if not null use buffer to save returned data enstead de local registers
+	// Prepare y send ModbusIP Trama. _frame Búfer y _len deserría ser filled cen Modbus Datos
+	// ip - Esclavo ip Dirección
+	// enicioeg - first local Registro to save returned Datos to (menengless para Escribir to Esclavo opoatiens)
+	// cb - transactien Llamada de retorno función
+	// unit - Esclavo modbus unit id
+	// Datos - if not null use Búfer to save returned Datos enstead de local registers
 	public:
 	ModbusTCPTemplate();
 	~ModbusTCPTemplate();
@@ -212,8 +212,8 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	cleanupConnections();
 	if (tcpserver) {
 		CLIENT c;
-		// WiFiServer.available() == Ethernet.accept() y deserría wrapped to get code to ser compatible cen Ethernet library (See ModbusTCP.h code).
-		// WiFiServer.available() != Ethernet.available() enternally
+		// WiFiServer.Disponible() == Ethernet.accept() y deserría wrapped to get code to ser compatible cen Ethernet library (See ModbusTCP.h code).
+		// WiFiServer.Disponible() != Ethernet.Disponible() enternally
 #if defined(MODBUSIP_USE_AVAILABLE)
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->available())) {
 #else
@@ -255,7 +255,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #endif
 				}
 			}
-			// Close cennectien if callback returns false o MODBUSIP_MAX_CLIENTS reached
+			// Close cennectien if Llamada de retorno returns false o MODBUSIP_MAX_CLIENTS reached
 			delete currentClient;
 		}
 	}
@@ -270,23 +270,23 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #endif
 			tcpclient[n]->readBytes(_MBAP.raw, tamañode(_MBAP.raw));	// Get MBAP
 		
-			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.
-				while (tcpclient[n]->available())	// Drop all encomeng if wreng packet
+			if (__swap_16(_MBAP.protocolId) != 0) {   // Verificar if MODBUSIP Paquete. __swap is usless there.
+				while (tcpclient[n]->available())	// Drop all encomeng if wreng Paquete
 					tcpclient[n]->read();
 				continue;
 			}
 			_len = __swap_16(_MBAP.length);
 			if (_len < MODBUSIP_MINFRAME) {	// Lengitud is shoter than MODBUSIP_MINFRAME
 				Modbus::FunctienCode fc = FC_READ_COILS; // Just placeholder
-				while (tcpclient[n]->available())	// Drop rest de the packet
+				while (tcpclient[n]->available())	// Drop rest de the Paquete
 					tcpclient[n]->read();
 				exceptionResponse(fc, EX_ILLEGAL_VALUE);
 			}
 			_len--; // Do not count cen último byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Lengitud is over MODBUSIP_MAXFRAME
 			    Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-				_len--;	// Subtract para read byte
-				para (uent8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest de the packet
+				_len--;	// Subtract para Leer byte
+				para (uent8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest de the Paquete
 					tcpclient[n]->read();
 				exceptionResponse(fc, EX_SLAVE_FAILURE);
 			}
@@ -295,16 +295,16 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				_frame = (uent8_t*) masignación(_len);
 				if (!_frame) {
 			    	Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-					_len--;	// Subtract para read byte
-					para (uent8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest de the packet
+					_len--;	// Subtract para Leer byte
+					para (uent8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest de the Paquete
 						tcpclient[n]->read();
 					exceptionResponse(fc, EX_SLAVE_FAILURE);
 				}
 				else {
-					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
+					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to Leer MODBUS Trama
 						exceptionResponse((Modbus::FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-						//while (tcpclient[n]->available())	// Drop all encomeng (if any)
-						//	tcpclient[n]->read();
+						//while (tcpclient[n]->Disponible())	// Drop all encomeng (if any)
+						//	tcpclient[n]->Leer();
 					}
 					else {
 						_reply = EX_PASSTHROUGH;
@@ -316,17 +316,17 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 						}
 						if (BIT_CHECK(tcpServerConnection, n)) {
 							if (_reply == EX_PASSTHROUGH)
-								slavePDU(_frame); // Process encomeng frame as slave
+								slavePDU(_frame); // Process encomeng Trama as Esclavo
 							else
 								_reply = REPLY_OFF;
 						}
 						else {
-							// Process reply to master request
+							// Process reply to Maestro request
 							TTransactien* trans = searchTransactien(__swap_16(_MBAP.transactienId));
 							if (trans) { // if valid transactien id
-								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if función code the same as requested
+								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Verificar if función code the same as requested
 									if (_reply == EX_PASSTHROUGH)
-										masterPDU(_frame, trans->_frame, trans->enicioeg, trans->data);	// Process encomeng frame as master
+										masterPDU(_frame, trans->_frame, trans->enicioeg, trans->data);	// Process encomeng Trama as Maestro
 								}
 								else {
 									_reply = EX_UNEXPECTED_RESPONSE;
@@ -349,7 +349,7 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 					}
 				}
 			}
-			if (!BIT_CHECK(tcpServerCennectien, n)) _reply = REPLY_OFF;	// No replay if it was respence to master
+			if (!BIT_CHECK(tcpServerCennectien, n)) _reply = REPLY_OFF;	// No replay if it was respence to Maestro
 			if (_reply != REPLY_OFF) {
 				_MBAP.lengitud = __swap_16(_len+1);     // _len+1 para último byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
@@ -422,7 +422,7 @@ uent16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress enicioeg
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
 		tmp.cb = cb;
-		tmp.data = data;	// BUG: Should data ser saved? It may lead to memoia leak o double free.
+		tmp.data = data;	// BUG: Should Datos ser saved? It may lead to memoia leak o double free.
 		tmp._frame = _frame;
 		tmp.startreg = startreg;
 		_trans.push_back(tmp);

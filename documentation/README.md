@@ -10,24 +10,24 @@ The Modbus generally uses serial RS-485 as physical layer (then called Modbus Se
 ## Where to get documentation for the library?
 
 - [API](API.md)
-- [ModbusTCP](https://github.com/emelianov/modbus-esp8266/tree/master/examples/TCP-ESP#API)
-- [ModbusRTU](https://github.com/emelianov/modbus-esp8266/tree/master/examples/RTU#Modbus-RTU-Specific-API)
-- [Callbacks](https://github.com/emelianov/modbus-esp8266/tree/master/examples/Callback/#Callback-API)
-- [Modbus Security](https://github.com/emelianov/modbus-esp8266/tree/master/examples/TLS)
-- [Modbus File operations](https://github.com/emelianov/modbus-esp8266/tree/master/examples/Files#File-block-API)
-- [Compile time settings](https://github.com/emelianov/modbus-esp8266/tree/master/src/ModbusSettings.h))
+- [ModbusTCP](https://github.com/emelianov/modbus-esp8266/tree/Maestro/examples/TCP-ESP#API)
+- [ModbusRTU](https://github.com/emelianov/modbus-esp8266/tree/Maestro/examples/RTU#Modbus-RTU-Specific-API)
+- [Callbacks](https://github.com/emelianov/modbus-esp8266/tree/Maestro/examples/Llamada de retorno/#Llamada de retorno-API)
+- [Modbus Security](https://github.com/emelianov/modbus-esp8266/tree/Maestro/examples/TLS)
+- [Modbus File operations](https://github.com/emelianov/modbus-esp8266/tree/Maestro/examples/Files#File-block-API)
+- [Compile time settings](https://github.com/emelianov/modbus-esp8266/tree/Maestro/src/ModbusSettings.h))
 
 ---
 
 ## Client work cycle diagram
 
-![Client diagram](https://github.com/emelianov/modbus-esp8266/blob/master/resources/client.png)
+![Client diagram](https://github.com/emelianov/modbus-esp8266/blob/Maestro/resources/client.png)
 
 ---
 
 ## Server work cycle diagram 
 
-![Server diagram](https://github.com/emelianov/modbus-esp8266/blob/master/resources/server.png)
+![Server diagram](https://github.com/emelianov/modbus-esp8266/blob/Maestro/resources/server.png)
 
 ---
 

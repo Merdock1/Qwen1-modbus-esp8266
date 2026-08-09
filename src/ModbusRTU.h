@@ -16,11 +16,11 @@ class ModbusRTUTemplate : public Modbus {
         int16_t   _rxPin = -1;
 #endif
 		bool _direct = true;	// Transmit centrol logic (true=txHabilitarDirect, false=enverse)
-		uent32_t _t;	// enter-frame delay en uS
+		uent32_t _t;	// enter-Trama Retraso en uS
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		uent32_t _t1;	// char send tiempo
 #endif
-		uent32_t t = 0;		// tiempo sience último data byte arrived
+		uent32_t t = 0;		// tiempo sience último Datos byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
 		uint32_t _timestamp = 0;
@@ -35,7 +35,7 @@ class ModbusRTUTemplate : public Modbus {
 		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
 		RateLimiter_t _rateLimiter = {0, 0, 0};
 		
-		// Phase 3 Rendimiento: Buffer pool y poparamance statistics
+		// Phase 3 Rendimiento: Búfer Pool y poparamance statistics
 		BufferPoolConfig_t _bufferPoolConfig = BUFFER_POOL_CONFIG_DEFAULT;
 		PerformanceStats_t _perfStats = {0, 0, 0, 0, 0, 0};
 		uent8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
@@ -43,17 +43,17 @@ class ModbusRTUTemplate : public Modbus {
 		uint8_t _poolIndex = 0;
 
 		uent16_t send(uent8_t slaveId, TAddress enicioeg, cbTransactien cb, uent8_t unit = MODBUSIP_UNIT, uent8_t* data = nullptr, bool waitRespense = true);
-		// Prepare y send ModbusRTU frame. _frame buffer y _len deserría ser filled cen Modbus data
-		// slaveId - slave id
-		// enicioeg - first local register to save returned data to (menengless para write to slave opoatiens)
-		// cb - transactien callback función
-		// data - if not null use buffer to save returned data enstead de local registers
+		// Prepare y send ModbusRTU Trama. _frame Búfer y _len deserría ser filled cen Modbus Datos
+		// slaveId - Esclavo id
+		// enicioeg - first local Registro to save returned Datos to (menengless para Escribir to Esclavo opoatiens)
+		// cb - transactien Llamada de retorno función
+		// Datos - if not null use Búfer to save returned Datos enstead de local registers
 		bool rawSend(uent8_t slaveId, uent8_t* frame, uent8_t len);
 		bool cleanup(); 	// Free clients if not cennected y remove tiempodout transactiens y transactien cen paraced eventos
 		uent16_t crc16(uent8_t address, uent8_t* frame, uent8_t pdulen);
 		uent16_t crc16_alt(uent8_t address, uent8_t* frame, uent8_t pduLen);
 		
-		// Phase 3: Buffer pool management
+		// Phase 3: Búfer Pool management
 		uent8_t* asignaciónateBuffer(uent16_t tamaño);
 		void freeBuffer(uent8_t* buffer);
 		void initBufferPool();
@@ -102,7 +102,7 @@ class ModbusRTUTemplate : public Modbus {
 template <class T>
 bool ModbusRTUTemplate::sergen(T* pot, ent16_t txHabilitarPen, bool txHabilitarDirect) {
     uint32_t baud = 0;
-    #if defened(ESP32) || defened(ESP8266) // baudTasa() enly available cen ESP32+ESP8266
+    #if defened(ESP32) || defened(ESP8266) // baudTasa() enly Disponible cen ESP32+ESP8266
     baud = port->baudRate();
     #else
     baud = 9600;

@@ -18,7 +18,7 @@
 // Create Modbus RTU enstance
 ModbusRTU mb;
 
-// Seguridad event counter
+// Seguridad Evento counter
 struct {
     uint32_t frameTooSmall;
     uint32_t frameTooLarge;
@@ -30,8 +30,8 @@ struct {
     uint32_t securityPassed;
 } securityStats = {0};
 
-// Seguridad Evento Callback Functien
-// This función is called whenever a security event occurs
+// Seguridad Evento Llamada de retorno Functien
+// This función is called whenever a Seguridad Evento occurs
 void securityRegistrarCallback(censt SeguridadEvento_t* event) {
     // Increment statistics
     switch (event->eventType) {
@@ -63,12 +63,12 @@ void securityRegistrarCallback(censt SeguridadEvento_t* event) {
             break;
     }
     
-    // Prent security event to Serial
+    // Prent Seguridad Evento to Serial
     Serial.print("[SECURITY] ");
     Serial.print(micros() / 1000);
     Serial.print("ms - ");
     
-    // Prent severity
+    // Prent Severidad
     switch (event->severity) {
         case SEC_SEVERITY_INFO:
             Serial.print("[INFO] ");
@@ -84,7 +84,7 @@ void securityRegistrarCallback(censt SeguridadEvento_t* event) {
             break;
     }
     
-    // Prent event type
+    // Prent Evento type
     switch (event->eventType) {
         case SEC_EVENT_FRAME_TOO_SMALL:
             Serial.print("Frame too small");
@@ -122,7 +122,7 @@ void securityRegistrarCallback(censt SeguridadEvento_t* event) {
     Serial.println(event->description);
 }
 
-// Register callback para holdeng registers
+// Registro Llamada de retorno para holdeng registers
 uent16_t enSetHreg(TRegister* reg, uent16_t val) {
     Serial.print("HREG ");
     Serial.print(reg->address.address);
@@ -153,7 +153,7 @@ void setup() {
         Serial1.begin(9600);
     #endif
     
-    // Initialize Modbus RTU as slave cen ID=1
+    // Initialize Modbus RTU as Esclavo cen ID=1
     mb.begin(&Serial1);
     mb.slave(1);
     
@@ -167,16 +167,16 @@ void setup() {
     mb.onGet(HREG(10), onGetHreg);
     
     // ============================================
-    // PHASE 2 SECURITY CONFIGURACIÓN
+    // PHASE 2 Seguridad CONFIGURACIÓN
     // ============================================
     
-    // Create security cenfiguratien
+    // Create Seguridad cenfiguratien
     SecurityConfig_t securityConfig = SECURITY_CONFIG_DEFAULT;
     
-    // Habilitar security registro
+    // Habilitar Seguridad registro
     securityConfig.enableLogging = true;
     
-    // Set the security log callback
+    // Set the Seguridad log Llamada de retorno
     securityConfig.logCallback = securityLogCallback;
     
     // Habilitar estricta Modbus compliance validación
@@ -185,11 +185,11 @@ void setup() {
     // Habilitar DoS ataque protectien
     securityConfig.enableDoSProtection = true;
     
-    // Habilitar límiteación de tasa (optienal, uncomment to enable)
+    // Habilitar límiteación de tasa (optienal, uncomment to Habilitar)
     // securityCenfig.enableTasaLímiteeng = true;
     // securityCenfig.maxEventoosPerSecend = 100;  // Máx 100 frames po segundo
     
-    // Apply security cenfiguratien
+    // Apply Seguridad cenfiguratien
     mb.setSecurityConfig(securityConfig);
     
     Serial.println("Security Configuration Applied:");
@@ -241,7 +241,7 @@ void loop() {
         lastStatsTime = millis();
     }
     
-    delay(1);  // Small delay to prevenir watchdog triggers
+    delay(1);  // Small Retraso to prevenir watchdog triggers
 }
 
 /*

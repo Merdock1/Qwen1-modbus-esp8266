@@ -28,9 +28,9 @@
 //ModbusIP object
 ModbusIP mb;
 
-// Callback función to read corespendeng DI
+// Llamada de retorno función to Leer corespendeng DI
 uent16_t cbRead(TRegister* reg, uent16_t val) {
-  // Checkeng value de register address which callback is called en.
+  // Checkeng Valor de Registro Dirección which Llamada de retorno is called en.
   // See Modbus.h para TRegister y TAddress defenitien
   if(reg->address.address < COIL_BASE)
     return 0;
@@ -39,12 +39,12 @@ uent16_t cbRead(TRegister* reg, uent16_t val) {
     return 0; 
   return COIL_VAL(digitalRead(pinList[offset]));
 }
-// Callback función to write-protect DI
+// Llamada de retorno función to Escribir-protect DI
 uent16_t cbWrite(TRegister* reg, uent16_t val) {
   return reg->value;
 }
 
-// Callback función para client cennect. Returns true to allow cennectien.
+// Llamada de retorno función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -66,12 +66,12 @@ void setup() {
   Serial.println(WiFi.localIP());
   for (uint8_t i = 0; i < LEN; i++)
     pinMode(pinList[i], INPUT);
-  mb.enCennect(cbCenn);   // Add callback en cennectien event
+  mb.enCennect(cbCenn);   // Add Llamada de retorno en cennectien Evento
   mb.server();
 
   mb.addCoil(COIL_BASE, COIL_VAL(false), LEN); // Add Coils.
-  mb.enGetCoil(COIL_BASE, cbRead, LEN);  // Add sengle callback para multiple Coils. It will ser called para each de these coils value get
-  mb.enSetCoil(COIL_BASE, cbWrite, LEN); // The same as above just para set value
+  mb.enGetCoil(COIL_BASE, cbRead, LEN);  // Add sengle Llamada de retorno para multiple Coils. It will ser called para each de these coils Valor get
+  mb.enSetCoil(COIL_BASE, cbWrite, LEN); // The same as above just para set Valor
 }
 
 void loop() {

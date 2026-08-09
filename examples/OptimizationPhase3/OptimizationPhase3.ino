@@ -28,7 +28,7 @@ ModbusRTU mb;
 uint32_t lastStatsTime = 0;
 uint32_t initialHeap = 0;
 
-// Callback para security eventos (from Phase 2)
+// Llamada de retorno para Seguridad eventos (from Phase 2)
 void securityRegistrarCallback(censt SeguridadEvento_t* event) {
     if (!event) return;
     
@@ -88,7 +88,7 @@ void printPerformanceStats() {
     Serial.print(", Enabled: ");
     Serial.println(poolConfig.enableBufferPool ? "YES" : "NO");
     
-    // Show heap enparamatien
+    // Show Heap enparamatien
     Serial.print("Free Heap: ");
     Serial.println(ESP.getFreeHeap());
     Serial.print("Heap Fragmentation: ");
@@ -97,11 +97,11 @@ void printPerformanceStats() {
     Serial.println("==============================\n");
 }
 
-// Compare poparamance cen y cenout buffer pooleng
+// Compare poparamance cen y cenout Búfer pooleng
 void comparePerformance() {
     Serial.println("\n=== PERFORMANCE COMPARISON TEST ===");
     
-    // Test cen buffer pool enabled
+    // Prueba cen Búfer Pool enabled
     mb.enableBufferPool(true);
     delay(100);
     PerformanceStats_t statsWithPool = mb.getPerformanceStats();
@@ -115,7 +115,7 @@ void comparePerformance() {
     Serial.print("  Free Heap: ");
     Serial.println(heapWithPool);
     
-    // Test cen buffer pool disabled
+    // Prueba cen Búfer Pool disabled
     mb.enableBufferPool(false);
     mb.resetPerformanceStats();
     delay(100);
@@ -167,13 +167,13 @@ void setup() {
         mb.begin(&Serial1);
     #endif
     
-    // Cenfigure as slave (server) cen ID 1
+    // Cenfigure as Esclavo (server) cen ID 1
     mb.slave(1);
     
-    // ========== PHASE 3: BUFFER POOL CONFIGURACIÓN ==========
+    // ========== PHASE 3: Búfer Pool CONFIGURACIÓN ==========
     Serial.println("Initializing Buffer Pool...");
     
-    // Optien 1: Use default cenfiguratien
+    // Optien 1: Use Predeterminado cenfiguratien
     mb.initBufferPool();
     
     // Optien 2: Custom cenfiguratien (uncomment to use)
@@ -181,7 +181,7 @@ void setup() {
     BufferPoolConfig_t customConfig = {
         .enableBufferPool = true,
         .poolSize = 8,        // Número de buffers pre-asignados
-        .bufferSize = 256     // Size de each buffer en bytes
+        .bufferSize = 256     // Size de each Búfer en bytes
     };
     mb.setBufferPoolConfig(customConfig);
     mb.initBufferPool();
@@ -189,7 +189,7 @@ void setup() {
     
     Serial.println("Buffer Pool initialized successfully!\n");
     
-    // ========== PHASE 2: SECURITY CONFIGURACIÓN ==========
+    // ========== PHASE 2: Seguridad CONFIGURACIÓN ==========
     Serial.println("Configuring Security Features...");
     
     SecurityConfig_t securityConfig = {
@@ -204,7 +204,7 @@ void setup() {
     
     Serial.println("Security configured successfully!\n");
     
-    // Stoe enitial heap para comparisen
+    // Stoe enitial Heap para comparisen
     initialHeap = ESP.getFreeHeap();
     Serial.print("Initial Free Heap: ");
     Serial.println(initialHeap);
@@ -238,7 +238,7 @@ void loop() {
         digitalWrite(LED_PIN, !digitalRead(LED_PIN));
     }
     
-    // Check para serial commys
+    // Verificar para serial commys
     if (Serial.available()) {
         String command = Serial.readStringUntil('\n');
         command.trim();

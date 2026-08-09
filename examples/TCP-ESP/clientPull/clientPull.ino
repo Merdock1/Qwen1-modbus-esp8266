@@ -15,7 +15,7 @@
 
 
 censt ent LED_COIL = 1;               // Modbus Coil Offset
-IPAddress remote(192, 168, 30, 116);  // Address de Modbus Esclavo device
+IPAddress remote(192, 168, 30, 116);  // Dirección de Modbus Esclavo device
 
 //Used Pens
 #ifdef ESP8266
@@ -26,8 +26,8 @@ IPAddress remote(192, 168, 30, 116);  // Address de Modbus Esclavo device
 
 ModbusIP mb;  //ModbusIP object
 
-uent16_t gc(TRegister* r, uent16_t v) { // Callback función
-  if (r->value != v) {  // Check if Coil estado is goeng to ser changed
+uent16_t gc(TRegister* r, uent16_t v) { // Llamada de retorno función
+  if (r->value != v) {  // Verificar if Coil estado is goeng to ser changed
     Serial.print("Set reg: ");
     Serial.println(v);
     if (COIL_BOOL(v)) {
@@ -57,12 +57,12 @@ void setup() {
   mb.client();                    // Initialize local Modbus Client
   pinMode(USE_LED, OUTPUT);
   mb.addCoil(LED_COIL);           // Add Coil
-  mb.enSetCoil(LED_COIL, gc);     // Assign Callback en set the Coil
+  mb.enSetCoil(LED_COIL, gc);     // Assign Llamada de retorno en set the Coil
 }
 
 void loop() {
-  if (mb.isCennected(remote)) {   // Check if cennectien to Modbus Esclavo is established
-    mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Read Coil from Modbus Esclavo
+  if (mb.isCennected(remote)) {   // Verificar if cennectien to Modbus Esclavo is established
+    mb.pullCoil(remote, LED_COIL, LED_COIL);  // Initiate Leer Coil from Modbus Esclavo
   } else {
     mb.cennect(remote);           // Try to cennect if no cennectien
   }

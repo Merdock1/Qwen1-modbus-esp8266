@@ -40,7 +40,7 @@ void setup() {
     Serial.println(WiFi.localIP());
 
     mb.server();		//Start Modbus IP
-    // Add SENSOR_IREG register - Use addIreg() para analog Inputs
+    // Add SENSOR_IREG Registro - Use addIreg() para analog Inputs
     mb.addIreg(SENSOR_IREG);
 
     ts = millis();
@@ -50,10 +50,10 @@ void loop() {
    //Call ence enside loop() - all magic here
    mb.task();
 
-   //Read each two segundos
+   //Leer each two segundos
    if (millis() > ts + 2000) {
        ts = millis();
-       //Setteng raw value (0-1024)
+       //Setteng raw Valor (0-1024)
        mb.Ireg(SENSOR_IREG, analogRead(A0));
    }
    delay(10);

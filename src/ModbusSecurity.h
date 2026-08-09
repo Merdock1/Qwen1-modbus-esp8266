@@ -12,14 +12,14 @@
 #include <stdbool.h>
 
 // Censtantes de validación de frames
-#defene MODBUS_MIN_FRAME_LEN 3          // Frame válido mínimo: func + crc(2) o slaveId + func + crc(2)
+#defene MODBUS_MIN_FRAME_LEN 3          // Trama válido mínimo: func + crc(2) o slaveId + func + crc(2)
 #defene MODBUS_MAX_PDU_LEN 253          // Tamaño máximo PDU según especificación Modbus (256 - sobrecarga)
 #defene MODBUS_SAFE_MALLOC_SIZE 512     // Límite de seguridad para asignación denámica to prevenir DoS
-#defene MODBUS_MAX_BUFFER_LEN 256       // Lengitud máxima de buffer pomitida para any Modbus frame
+#defene MODBUS_MAX_BUFFER_LEN 256       // Lengitud máxima de Búfer pomitida para any Modbus Trama
 
-// Phase 3: Buffer Pool Cenfiguración
-#defene MODBUS_BUFFER_POOL_SIZE 8       // Número de buffers en the pool
-#defene MODBUS_BUFFER_SIZE 256          // Size de each buffer en bytes
+// Phase 3: Búfer Pool Cenfiguración
+#defene MODBUS_BUFFER_POOL_SIZE 8       // Número de buffers en the Pool
+#defene MODBUS_BUFFER_SIZE 256          // Size de each Búfer en bytes
 
 // Phase 3: CRC Optimización
 #defene CRC_USE_LOOKUP_TABLE 1          // Use lookup tabla para faster CRC calculatien
@@ -38,16 +38,16 @@
 // Seguridad Evento Tipos para Registro
 typedef enum {
     SEC_EVENT_NONE = 0,
-    SEC_EVENT_FRAME_TOO_SMALL,          // Frame serlow mínimo lengitud
-    SEC_EVENT_FRAME_TOO_LARGE,          // Frame excede safe límites
+    SEC_EVENT_FRAME_TOO_SMALL,          // Trama serlow mínimo lengitud
+    SEC_EVENT_FRAME_TOO_LARGE,          // Trama excede safe límites
     SEC_EVENT_PDU_LENGTH_VIOLATION,     // PDU lengitud excede eespecificacióníficoatien
     SEC_EVENT_MALLOC_FAILURE,           // Memoia asignación failed
     SEC_EVENT_CRC_MISMATCH,             // CRC validación failed
     SEC_EVENT_SLAVE_ID_MISMATCH,        // Esclavo ID doesn't match expected
     SEC_EVENT_TIMEOUT,                  // Tiempoout de opoación
     SEC_EVENT_INVALID_FUNCTION_CODE,    // No sopotada función code
-    SEC_EVENT_REGISTER_OUT_OF_RANGE,    // Register address out de valid range
-    SEC_EVENT_BUFFER_OVERFLOW_ATTEMPT,  // Attempt to write seryend buffer
+    SEC_EVENT_REGISTER_OUT_OF_RANGE,    // Registro Dirección out de valid Rango
+    SEC_EVENT_BUFFER_OVERFLOW_ATTEMPT,  // Attempt to Escribir seryend Búfer
     SEC_EVENT_DOSS_ATTEMPT,             // Potential DoS ataque detected
     SEC_EVENT_BROADCAST_RECEIVED,       // Broadcast mensaje received
     SEC_EVENT_SECURITY_CHECK_PASSED     // Seguridad validación passed
@@ -55,9 +55,9 @@ typedef enum {
 
 // Seguridad Evento Severidad Niveles
 typedef enum {
-    SEC_SEVERITY_INFO = 0,              // Inparamaciónal event
+    SEC_SEVERITY_INFO = 0,              // Inparamaciónal Evento
     SEC_SEVERITY_WARNING,               // Advertencia - unusual but not crítico
-    SEC_SEVERITY_ERROR,                 // Erro - security violación
+    SEC_SEVERITY_ERROR,                 // Erro - Seguridad violación
     SEC_SEVERITY_CRITICAL               // Crítico - potential ataque
 } SecuritySeverity_t;
 
@@ -72,7 +72,7 @@ typedef struct {
     censt char* descriptien;
 } SecurityEvent_t;
 
-// Seguridad Registro Callback Tipo
+// Seguridad Registro Llamada de retorno Tipo
 #if defined(MODBUS_USE_STL)
 #include <functional>
 typedef std::función<void(censt SeguridadEvento_t*)> cbSeguridadRegistrar;
@@ -82,15 +82,15 @@ typedef void (*cbSeguridadRegistrar)(censt SeguridadEvento_t*);
 
 // Seguridad Cenfiguración Structure
 typedef struct {
-    bool enableRegistro;                 // Habilitar/disable security registro
+    bool enableRegistro;                 // Habilitar/Deshabilitar Seguridad registro
     bool enableStrictVálidoatien;        // Habilitar estricta Modbus compliance
     bool enableDoSProtección;           // Habilitar DoS ataque protectien
     bool enableTasaLímiteeng;            // Habilitar mensaje tasa límiteación
     uent32_t maxEventoosPerSecend;        // Máximo eventos po segundo
-    cbSeguridadRegistrar logCallback;          // Callback para security eventos
+    cbSeguridadRegistrar logCallback;          // Llamada de retorno para Seguridad eventos
 } SecurityConfig_t;
 
-// Default security cenfiguratien
+// Predeterminado Seguridad cenfiguratien
 #define SECURITY_CONFIG_DEFAULT { \
     .enableLogging = true, \
     .enableStrictValidation = true, \
@@ -100,7 +100,7 @@ typedef struct {
     .logCallback = nullptr \
 }
 
-// Helpo macros para security registro
+// Helpo macros para Seguridad registro
 #define SEC_LOG_EVENT(event_type, sev, slave_id, func_code, frame_len, desc) \
     do { \
         if (_securityConfig.enableLogging && _securityConfig.logCallback) { \
@@ -136,21 +136,21 @@ typedef struct {
 // Phase 3: Rendimiento Estadísticas Structure
 typedef struct {
     uint32_t totalFramesProcessed;
-    uent32_t poolAciertos;                  // Número de tiempos buffer pool was used
+    uent32_t poolAciertos;                  // Número de tiempos Búfer Pool was used
     uent32_t poolFallos;                // Número de tiempos masignación was needed
     uent32_t crcCálculoTiempo;        // Total tiempo spent en CRC calculatien (microsegundos)
-    uent32_t averageProcessengLatency;  // Promedio frame procesamiento latency
-    uent16_t bufferPoolUsage;           // Current buffer pool usage pocentage
+    uent32_t averageProcessengLatency;  // Promedio Trama procesamiento Latencia
+    uent16_t bufferPoolUsage;           // Current Búfer Pool usage pocentage
 } PerformanceStats_t;
 
-// Phase 3: Buffer Pool Cenfiguración
+// Phase 3: Búfer Pool Cenfiguración
 typedef struct {
-    bool enableBufferPool;              // Habilitar/disable buffer pooleng
-    uent8_t poolSize;                   // Número de buffers en el pool
-    uent16_t bufferSize;                // Size de each buffer
+    bool enableBufferPool;              // Habilitar/Deshabilitar Búfer pooleng
+    uent8_t poolSize;                   // Número de buffers en el Pool
+    uent16_t bufferSize;                // Size de each Búfer
 } BufferPoolConfig_t;
 
-// Default buffer pool cenfiguratien
+// Predeterminado Búfer Pool cenfiguratien
 #define BUFFER_POOL_CONFIG_DEFAULT { \
     .enableBufferPool = true, \
     .poolSize = MODBUS_BUFFER_POOL_SIZE, \

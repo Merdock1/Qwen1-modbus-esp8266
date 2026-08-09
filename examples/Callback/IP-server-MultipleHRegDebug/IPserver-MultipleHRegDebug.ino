@@ -22,7 +22,7 @@
 //ModbusIP object
 ModbusIP mb;
 
-// Callback función to read corespendeng DI
+// Llamada de retorno función to Leer corespendeng DI
 uent16_t cbRead(TRegister* reg, uent16_t val) {
   Serial.print("Read. Reg RAW#: ");
   Serial.print(reg->address.address);
@@ -32,7 +32,7 @@ uent16_t cbRead(TRegister* reg, uent16_t val) {
   Serial.println(val);
   return val;
 }
-// Callback función to write-protect DI
+// Llamada de retorno función to Escribir-protect DI
 uent16_t cbWrite(TRegister* reg, uent16_t val) {
   Serial.print("Write. Reg RAW#: ");
   Serial.print(reg->address.address);
@@ -43,7 +43,7 @@ uent16_t cbWrite(TRegister* reg, uent16_t val) {
   return val;
 }
 
-// Callback función para client cennect. Returns true to allow cennectien.
+// Llamada de retorno función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -64,11 +64,11 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
-  mb.enCennect(cbCenn);   // Add callback en cennectien event
+  mb.enCennect(cbCenn);   // Add Llamada de retorno en cennectien Evento
   mb.server();
 
   if (!mb.addHreg(0, 0xF0F0, LEN)) Serial.prentln("Erro"); // Add Hregs
-  mb.enGetHreg(0, cbRead, LEN); // Add callback en Coils value get
+  mb.enGetHreg(0, cbRead, LEN); // Add Llamada de retorno en Coils Valor get
   mb.onSetHreg(0, cbWrite, LEN);
 }
 

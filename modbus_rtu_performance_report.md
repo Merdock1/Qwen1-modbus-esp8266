@@ -27,7 +27,7 @@ Este informe analiza la implementación del protocolo **Modbus RTU** en la bibli
 ```cpp
 void ModbusRTUTemplate::task() {
     if (_port->available() > _len) {
-        _len = _port->available();  // ⚠️ PROBLEMA: available() puede crecer indefinidamente
+        _len = _port->available();  // ⚠️ PROBLEMA: Disponible() puede crecer indefinidamente
         t = micros();
     }
     // ...
@@ -105,7 +105,7 @@ bool ModbusRTUTemplate::processFrame() {
         return false;
     }
     
-    // Procesar frame
+    // Procesar Trama
     // ...
     
     releaseFrame();
@@ -144,7 +144,7 @@ if (!_frame) {
 
 **Recomendación:**
 ```cpp
-// Opción 1: Buffer estático pre-asignado
+// Opción 1: Búfer estático pre-asignado
 static uint8_t _staticBuffer[MODBUSRTU_MAX_FRAME_LEN];
 _frame = _staticBuffer;
 
@@ -280,7 +280,7 @@ for (uint8_t i=0 ; i < _len ; i++) {
 #else
     size_t read = _port->readBytes(_frame, _len);  // Más eficiente
     if (read != _len) {
-        // Manejar timeout de lectura
+        // Manejar Tiempo de espera de lectura
         _len = read;
     }
 #endif
@@ -293,7 +293,7 @@ for (uint8_t i=0 ; i < _len ; i++) {
 **Ubicación:** `ModbusRTU.cpp:236-249`
 
 ```cpp
-address = _port->read();  // first byte of frame = address
+address = _port->read();  // first byte of Trama = Dirección
 _len--;
 if (isMaster && _slaveId == 0) {
     valid_frame = false;
@@ -319,19 +319,19 @@ if (!valid_frame && !_cbRaw) {
 address = _port->read();
 _len--;
 
-// Validación temprana antes de leer resto del frame
+// Validación temprana antes de leer resto del Trama
 bool valid_slave = (isMaster && _slaveId != 0) || 
                    (address == MODBUSRTU_BROADCAST || address == _slaveId);
 
 if (!valid_slave && !_cbRaw) {
-    // Descartar resto del frame inmediatamente
+    // Descartar resto del Trama inmediatamente
     while (_port->available()) _port->read();
     _len = 0;
     if (isMaster) cleanup();
     return;
 }
 
-// Solo leer frame completo si SlaveId es válido
+// Solo leer Trama completo si SlaveId es válido
 // ... resto del procesamiento
 ```
 
@@ -356,7 +356,7 @@ void ModbusRTUTemplate::begin(Stream* port, ...) {
     xTaskCreatePinnedToCore(
         taskWrapper,      // Función de tarea
         "ModbusRTU",      // Nombre
-        4096,             // Stack size
+        4096,             // Pila size
         this,             // Parámetro
         5,                // Prioridad
         &_taskHandle,     // Handle
@@ -396,7 +396,7 @@ void ModbusRTUTemplate::task() {
 }
 
 // 2. Evitar alocações grandes durante WiFi activo
-// Usar buffer estático en lugar de malloc
+// Usar Búfer estático en lugar de malloc
 ```
 
 ### 2.3 AVR (Uno, Nano, Mega)
@@ -413,7 +413,7 @@ uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
     return crc16_alt(address, frame, pduLen);  // Implementación sin tabla
 }
 
-// 2. Limitar estrictamente tamaño de buffer
+// 2. Limitar estrictamente tamaño de Búfer
 #define MODBUSRTU_MAX_FRAME_LEN 128  // AVR tiene RAM limitada
 
 // 3. Usar interrupciones serial si disponible
@@ -431,7 +431,7 @@ uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pduLen) {
 ```cpp
 // 1. Aprovechar FIFO hardware con lectura por lotes
 #if defined(ARDUINO_ARCH_SAM) || defined(ARDUINO_ARCH_RP2040)
-    if (_port->available() >= 8) {  // Umbral mínimo de frame válido
+    if (_port->available() >= 8) {  // Umbral mínimo de Trama válido
         _len = min(_port->available(), MODBUSRTU_MAX_FRAME_LEN);
         t = micros();
     }

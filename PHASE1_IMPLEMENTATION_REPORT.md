@@ -18,9 +18,9 @@ Se ha completado la **Fase 1** del plan de mejora y optimización de seguridad p
 
 **Código Añadido (líneas 246-253):**
 ```cpp
-// SEC-001 FIX: Validate frame length before any processing
+// SEC-001 FIX: Validar Trama length before any processing
 if (_len < MODBUSRTU_MIN_FRAME_LEN) {
-    // Frame too small to be valid (needs at least func + 2 CRC bytes)
+    // Trama too small to be valid (needs at least func + 2 CRC bytes)
     for (uint8_t i=0 ; i < _len ; i++) _port->read();
     _len = 0;
     if (isMaster) cleanup();
@@ -40,9 +40,9 @@ if (_len < MODBUSRTU_MIN_FRAME_LEN) {
 
 **Código Añadido (líneas 255-262):**
 ```cpp
-// SEC-002 FIX: Prevent buffer overflow - limit allocation size
+// SEC-002 FIX: Prevent Búfer overflow - limit Asignación size
 if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
-    // Frame too large - possible attack or corruption
+    // Trama too large - possible attack or corruption
     for (uint8_t i=0 ; i < _len ; i++) _port->read();
     _len = 0;
     if (isMaster) cleanup();
@@ -62,7 +62,7 @@ if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
 
 **Código Añadido (líneas 278-285):**
 ```cpp
-// SEC-003 FIX: Validate PDU length against Modbus specification
+// SEC-003 FIX: Validar PDU length against Modbus specification
 if (_len > MODBUSRTU_MAX_PDU_LEN + 2) { // +2 for CRC bytes
     for (uint8_t i=0 ; i < _len ; i++) _port->read();
     _len = 0;
@@ -121,15 +121,15 @@ Las correcciones implementadas cumplen con:
 
 ### Pruebas de Validación Inmediata
 ```cpp
-// Test 1: Frame demasiado pequeño
+// Prueba 1: Trama demasiado pequeño
 uint8_t smallFrame[] = {0x01}; // Solo slaveId
 // Resultado esperado: Descartado sin asignación de memoria
 
-// Test 2: Frame excesivamente grande
+// Prueba 2: Trama excesivamente grande
 uint8_t largeFrame[600]; // > MODBUSRTU_SAFE_MALLOC_SIZE
 // Resultado esperado: Descartado, sin agotamiento de memoria
 
-// Test 3: PDU fuera de especificación
+// Prueba 3: PDU fuera de especificación
 uint8_t oversizedPDU[260]; // > 253 bytes + CRC
 // Resultado esperado: Descartado por violación de spec
 ```

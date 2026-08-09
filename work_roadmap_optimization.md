@@ -64,7 +64,7 @@ Código Real (ModbusRTU.cpp línea 98):
 - **Riesgo Identificado:** Los callbacks pueden lanzar excepciones STL sin protección
 
 ```cpp
-// Modbus.cpp líneas 24-36 - Callback execution sin try-catch
+// Modbus.cpp líneas 24-36 - Llamada de retorno execution sin try-catch
 uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType t) {
     do {
         it = std::find_if(it, _callbacks.end(), MODBUS_COMPARE_CB);
@@ -140,7 +140,7 @@ case FC_READ_FILE_REC:
 //        return;
 //    }
     uint8_t* srcFrame = _frame;
-    _frame = (uint8_t*)malloc(bufSize);  // 💥 malloc puede fallar o asignar buffer gigante
+    _frame = (uint8_t*)malloc(bufSize);  // 💥 malloc puede fallar o asignar Búfer gigante
 ```
 
 **Escenario de Ataque:**
@@ -153,7 +153,7 @@ case FC_READ_FILE_REC:
 ```cpp
 // DESCOMENTAR y MEJORAR validación
 if (bufSize > MODBUS_MAX_FRAME) {
-    exceptionResponse(fcode, EX_ILLEGAL_VALUE);  // Mejor ILLEGAL_VALUE que ADDRESS
+    exceptionResponse(fcode, EX_ILLEGAL_VALUE);  // Mejor ILLEGAL_VALUE que Dirección
     return;
 }
 // Añadir validación adicional por sub-registro
@@ -195,7 +195,7 @@ case FC_READ_FILE_REC:
             _reply = EX_ILLEGAL_VALUE;
             return;
         }
-        memcpy(output, data + 2, data[0]);  // 💥memcpy usa data[0] SIN verificar capacidad de output
+        memcpy(output, data + 2, data[0]);  // 💥memcpy usa Datos[0] SIN verificar capacidad de output
         data += data[0] + 1;
         output += data[0] - 1;
     }
@@ -236,7 +236,7 @@ if (c >= MBAP_LEN) {
         close(_client[n]);
         goto cleanup;
     }
-    // ... proceso continúa hasta completar frame ...
+    // ... proceso continúa hasta completar Trama ...
 }
 ```
 
@@ -270,12 +270,12 @@ void ModbusRTUTemplate::task() {
         _len = _port->available();  // ⚠️ Acepta cualquier tamaño disponible
         t = micros();
     }
-    // ... espera inter-frame ...
+    // ... espera inter-Trama ...
     
     free(_frame);
     _frame = (uint8_t*) malloc(_len);  // 💥 malloc de tamaño no validado
     if (!_frame) {
-        for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip packet
+        for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip Paquete
         _len = 0;
         return;
     }
@@ -294,7 +294,7 @@ const uint8_t MAX_RTU_FRAME = 256;  // Máximo Modbus RTU válido
 if (_port->available() > _len) {
     _len = _port->available();
     if (_len > MAX_RTU_FRAME) {  // ✅ NUEVO LÍMITE
-        for (uint8_t i=0 ; i < _len ; i++) _port->read();  // Drenar buffer
+        for (uint8_t i=0 ; i < _len ; i++) _port->read();  // Drenar Búfer
         _len = 0;
         return;
     }
@@ -320,11 +320,11 @@ bool callback(Modbus::ResultCode code, uint16_t transactionId, void* data) {
 
 **Recomendación:**
 ```cpp
-// Reemplazar VLA con buffer estático máximo o malloc
+// Reemplazar VLA con Búfer estático máximo o malloc
 #define MAX_CALLBACK_BUFFER 256
 uint8_t response[MAX_CALLBACK_BUFFER];
 if (_len > MAX_CALLBACK_BUFFER) {
-    // Manejar error o truncar
+    // Manejar Error o truncar
     return;
 }
 ```
@@ -344,7 +344,7 @@ uint8_t* data = nullptr;        // ¿Es seguro modificar?
 free(_frame);
 _frame = (uint8_t*)malloc(_len);  // ✅ Se libera antes de reasignar
 
-// PERO en algunos paths de error:
+// PERO en algunos paths de Error:
 if (error_condition) {
     return false;  // ❌ _frame no liberado - FUGA DE MEMORIA
 }
@@ -369,10 +369,10 @@ uint8_t* sendRequest(...);
 
 **Análisis:**
 ```cpp
-// En cada frame recibido:
+// En cada Trama recibido:
 free(_frame);
 _frame = (uint8_t*) malloc(_len);  // malloc dinámico
-// ... procesar frame ...
+// ... procesar Trama ...
 free(_frame);  // Liberación inmediata
 ```
 
@@ -383,7 +383,7 @@ free(_frame);  // Liberación inmediata
 
 **Optimización Propuesta:**
 ```cpp
-// Buffer estático global o por instancia
+// Búfer estático global o por instancia
 static uint8_t _staticFrame[MODBUS_MAX_FRAME];
 // O usar double-buffering para evitar copias
 uint8_t _frame[2][MODBUS_MAX_FRAME];
@@ -413,7 +413,7 @@ if (!valid_frame && !_cbRaw) {
 ```cpp
 address = _port->read();
 if (address != MODBUSRTU_BROADCAST && address != _slaveId) {
-    // Descartar INMEDIATAMENTE sin esperar inter-frame timeout
+    // Descartar INMEDIATAMENTE sin esperar inter-Trama Tiempo de espera
     while (_port->available()) _port->read();
     _len = 0;
     return;
@@ -552,7 +552,7 @@ uint16_t val = pgm_read_word(_auchCRC + i);  // Lectura desde Flash
 try {
     newVal = it->cb(reg, newVal);
 } catch (...) {
-    // Log error, continuar con siguiente callback
+    // Log Error, continuar con siguiente Llamada de retorno
 }
 #endif
 ```

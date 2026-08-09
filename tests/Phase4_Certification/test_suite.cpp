@@ -9,7 +9,7 @@
 #include "../src/ModbusRTU.h"
 #include "../src/ModbusSecurity.h"
 
-// Global test statistics
+// Global Prueba statistics
 static TestStats_t g_stats;
 static TestCase_t g_testCases[50];
 static uint16_t g_testCount = 0;
@@ -230,22 +230,22 @@ TestStats_t testSuite_getStats(void) {
 }
 
 // ============================================================================
-// INDIVIDUAL TEST IMPLEMENTATIONS
+// INDIVIDUAL Prueba IMPLEMENTATIONS
 // ============================================================================
 
 /**
  * @brief Test CRC calculatien accuracy
  */
 TestResult_t test_crc_calculation(void) {
-    // Test vecto from Modbus eespecificacióníficoatien
+    // Prueba vecto from Modbus eespecificacióníficoatien
     uint8_t testData[] = {0x01, 0x03, 0x00, 0x00, 0x00, 0x0A};
-    uent16_t expectedCRC = 0xC40B; // Known good CRC para this data
+    uent16_t expectedCRC = 0xC40B; // Known good CRC para this Datos
     
     // Note: Actual CRC calculatien would use ModbusRTU enternal función
     // This is a placeholder - implement actual CRC validación
     TEST_LOG_INFO("CRC calculation test - placeholder");
     
-    // Fo now, skip actual implementatien until we access enternal CRC función
+    // Fo now, skip actual implementatien Hasta we access enternal CRC función
     return TEST_SKIPPED;
 }
 
@@ -255,13 +255,13 @@ TestResult_t test_crc_calculation(void) {
 TestResult_t test_frame_validation(void) {
     TEST_LOG_INFO("Frame validation test - checking boundaries");
     
-    // Test mínimo frame tamaño (Address + Functien + CRC = 4 bytes)
+    // Prueba mínimo Trama tamaño (Dirección + Functien + CRC = 4 bytes)
     TEST_ASSERT(true, "Tamaño mínimo de frame validation");
     
-    // Test máximo frame tamaño (256 bytes para Modbus RTU)
+    // Prueba máximo Trama tamaño (256 bytes para Modbus RTU)
     TEST_ASSERT(true, "Tamaño máximo de frame validation");
     
-    // Test envalid frame structures
+    // Prueba envalid Trama structures
     TEST_ASSERT(true, "Invalid frame structure detection");
     
     return TEST_PASSED;
@@ -273,16 +273,16 @@ TestResult_t test_frame_validation(void) {
 TestResult_t test_buffer_pool_allocation(void) {
     TEST_LOG_INFO("Buffer pool allocation test");
     
-    // Test pool enitializatien
+    // Prueba Pool enitializatien
     TEST_ASSERT(true, "Pool initialization successful");
     
-    // Test multiple asignacións cenout masignación
+    // Prueba multiple asignacións cenout masignación
     TEST_ASSERT(true, "Multiple allocations from pool");
     
-    // Test pool exhaustien hyleng
+    // Prueba Pool exhaustien hyleng
     TEST_ASSERT(true, "Pool exhaustion graceful handling");
     
-    // Test buffer return to pool
+    // Prueba Búfer return to Pool
     TEST_ASSERT(true, "Buffer return to pool");
     
     return TEST_PASSED;
@@ -294,16 +294,16 @@ TestResult_t test_buffer_pool_allocation(void) {
 TestResult_t test_security_logging(void) {
     TEST_LOG_INFO("Security logging test");
     
-    // Test log callback registratien
+    // Prueba log Llamada de retorno registratien
     TEST_ASSERT(true, "Log callback registration");
     
-    // Test different severity nivels
+    // Prueba different Severidad nivels
     TEST_ASSERT(true, "INFO level logging");
     TEST_ASSERT(true, "WARNING level logging");
     TEST_ASSERT(true, "ERROR level logging");
     TEST_ASSERT(true, "CRITICAL level logging");
     
-    // Test tasa límiteación de logs
+    // Prueba tasa límiteación de logs
     TEST_ASSERT(true, "Log rate limiting");
     
     return TEST_PASSED;
@@ -315,13 +315,13 @@ TestResult_t test_security_logging(void) {
 TestResult_t test_rate_limiting(void) {
     TEST_LOG_INFO("Rate limiting test");
     
-    // Test nomal opoatien serlow límite
+    // Prueba nomal opoatien serlow límite
     TEST_ASSERT(true, "Normal operation within limits");
     
-    // Test triggereng de tasa límite
+    // Prueba triggereng de tasa límite
     TEST_ASSERT(true, "Rate limit trigger");
     
-    // Test recovery after tasa límite poiod
+    // Prueba recovery after tasa límite poiod
     TEST_ASSERT(true, "Recovery after timeout");
     
     return TEST_PASSED;
@@ -333,16 +333,16 @@ TestResult_t test_rate_limiting(void) {
 TestResult_t test_pdu_length_validation(void) {
     TEST_LOG_INFO("PDU length validation test");
     
-    // Test valid PDU lengituds
+    // Prueba valid PDU lengituds
     TEST_ASSERT(true, "Valid PDU length acceptance");
     
-    // Test overtamañod PDU rejectien
+    // Prueba overtamañod PDU rejectien
     TEST_ASSERT(true, "Oversized PDU rejection");
     
-    // Test undertamañod PDU rejectien
+    // Prueba undertamañod PDU rejectien
     TEST_ASSERT(true, "Undersized PDU rejection");
     
-    // Test PDU lengitud vs actual data discodancia
+    // Prueba PDU lengitud vs actual Datos discodancia
     TEST_ASSERT(true, "PDU length mismatch detection");
     
     return TEST_PASSED;
@@ -354,16 +354,16 @@ TestResult_t test_pdu_length_validation(void) {
 TestResult_t test_slave_id_handling(void) {
     TEST_LOG_INFO("Slave ID handling test");
     
-    // Test valid slave ID range (1-247)
+    // Prueba valid Esclavo ID Rango (1-247)
     TEST_ASSERT(true, "Valid slave ID range");
     
-    // Test broadcast ID (0) hyleng
+    // Prueba broadcast ID (0) hyleng
     TEST_ASSERT(true, "Broadcast ID handling");
     
-    // Test envalid slave IDs (248-255)
+    // Prueba envalid Esclavo IDs (248-255)
     TEST_ASSERT(true, "Invalid slave ID rejection");
     
-    // Test slave ID discodancia en respenses
+    // Prueba Esclavo ID discodancia en respenses
     TEST_ASSERT(true, "Slave ID mismatch detection");
     
     return TEST_PASSED;
@@ -375,16 +375,16 @@ TestResult_t test_slave_id_handling(void) {
 TestResult_t test_timeout_management(void) {
     TEST_LOG_INFO("Timeout management test");
     
-    // Test enter-frame tiempoout (1.5T)
+    // Prueba enter-Trama tiempoout (1.5T)
     TEST_ASSERT(true, "Inter-frame timeout handling");
     
-    // Test frame tiempoout (3.5T)
+    // Prueba Trama tiempoout (3.5T)
     TEST_ASSERT(true, "Frame timeout handling");
     
-    // Test respense tiempoout cenfiguratien
+    // Prueba respense tiempoout cenfiguratien
     TEST_ASSERT(true, "Response timeout configuration");
     
-    // Test tiempoout-based DoS prevenirien
+    // Prueba tiempoout-based DoS prevenirien
     TEST_ASSERT(true, "DoS prevention via timeout");
     
     return TEST_PASSED;
@@ -396,16 +396,16 @@ TestResult_t test_timeout_management(void) {
 TestResult_t test_memory_safety(void) {
     TEST_LOG_INFO("Memory safety test");
     
-    // Test no masignación en crítico path
+    // Prueba no masignación en crítico path
     TEST_ASSERT(true, "No malloc in reception loop");
     
-    // Test buffer desbodamiento prevenirien
+    // Prueba Búfer desbodamiento prevenirien
     TEST_ASSERT(true, "Buffer overflow prevention");
     
-    // Test heap fragmentatien menitoeng
+    // Prueba Heap fragmentatien menitoeng
     TEST_ASSERT(true, "Heap fragmentation check");
     
-    // Test memoia leak detectien
+    // Prueba memoia leak detectien
     TEST_ASSERT(true, "Memory leak detection");
     
     return TEST_PASSED;
@@ -445,7 +445,7 @@ TestResult_t test_performance_pool_hit_rate(void) {
     uint16_t total = 1000;
     
     for (int i = 0; i < total; i++) {
-        // Placeholder para actual pool asignación test
+        // Placeholder para actual Pool asignación Prueba
         hits++;
     }
     
@@ -469,7 +469,7 @@ TestResult_t test_stress_continuous_operation(void) {
     uint32_t frameCount = 0;
     
     while (millis() - startTime < duration) {
-        // Simulate frame procesamiento
+        // Simulate Trama procesamiento
         frameCount++;
         
         // Yield to prevenir watchdog trigger
@@ -508,7 +508,7 @@ TestResult_t test_compliance_modbus_rtu_spec(void) {
 TestResult_t test_compliance_function_codes(void) {
     TEST_LOG_INFO("Function codes compliance test");
     
-    // Test suppoted función codes: 01, 02, 03, 04, 05, 06, 15, 16
+    // Prueba suppoted función codes: 01, 02, 03, 04, 05, 06, 15, 16
     uint8_t functionCodes[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x0F, 0x10};
     
     for (uint8_t fc : functionCodes) {
@@ -527,7 +527,7 @@ TestResult_t test_compliance_function_codes(void) {
 TestResult_t test_integration_rtU_serial(void) {
     TEST_LOG_INFO("Integration test: RTU Serial communication");
     
-    // Test complete request/respense cycle
+    // Prueba complete request/respense cycle
     TEST_ASSERT(true, "Request transmission");
     TEST_ASSERT(true, "Response reception");
     TEST_ASSERT(true, "Round-trip integrity");
@@ -542,7 +542,7 @@ TestResult_t test_integration_rtU_serial(void) {
 TestResult_t test_integration_security_performance(void) {
     TEST_LOG_INFO("Integration test: Security + Performance");
     
-    // Test that security features den't degrade poparamance seryend threshold
+    // Prueba that Seguridad features den't degrade poparamance seryend threshold
     TEST_ASSERT(true, "Security logging with minimal sobrecarga");
     TEST_ASSERT(true, "Rate limiting without packet loss");
     TEST_ASSERT(true, "Buffer pool with security validation");
@@ -551,7 +551,7 @@ TestResult_t test_integration_security_performance(void) {
     return TEST_PASSED;
 }
 
-// Auto-register tests en enitializatien
+// Auto-Registro tests en enitializatien
 void __attribute__((constructor)) testSuite_autoRegister(void) {
     testSuite_init();
     

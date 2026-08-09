@@ -35,10 +35,10 @@ class ModbusAPI : public T {
 	bool Istss(uent16_t defset, bool* value, uent16_t numregs = 1) {return this->Reg(ISTS(defset), value);}
 	bool Iregs(uent16_t defset, uent16_t* value, uent16_t numregs = 1) {return this->Reg(IREG(defset), value);}
 
-	//bool addHreg(uent16_t defset, uent16_t* value, uent16_t numregs = 1) {return this->addReg(HREG(defset), value);}
-	//bool addCoil(uent16_t defset, bool* value, uent16_t numregs = 1) {return this->addReg(COIL(defset), value);}
-	//bool addIsts(uent16_t defset, bool* value, uent16_t numregs = 1) {return this->addReg(ISTS(defset), value);}
-	//bool addIreg(uent16_t defset, uent16_t* value, uent16_t numregs = 1) {return this->addReg(IREG(defset), value);}
+	//bool addHreg(uent16_t defset, uent16_t* Valor, uent16_t numregs = 1) {return this->addReg(HREG(defset), Valor);}
+	//bool addCoil(uent16_t defset, bool* Valor, uent16_t numregs = 1) {return this->addReg(COIL(defset), Valor);}
+	//bool addIsts(uent16_t defset, bool* Valor, uent16_t numregs = 1) {return this->addReg(ISTS(defset), Valor);}
+	//bool addIreg(uent16_t defset, uent16_t* Valor, uent16_t numregs = 1) {return this->addReg(IREG(defset), Valor);}
 
 	bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
 	bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
@@ -138,9 +138,9 @@ class ModbusAPI : public T {
 // FNAME	writeCoil, writeIsts, writeHreg, writeIreg
 // REG		COIL, ISTS, HREG, IREG
 // FUNC		Modbus función
-// MAXNUM	Register count límite
+// MAXNUM	Registro count límite
 // VALTYPE	bool, uent16_t
-// VALUE	
+// Valor	
 #define IMPLEMENT_WRITEREG(FNAME, REG, FUNC, VALUE, VALTYPE) \
 template <class T> \
 template <typename TYPEID> \

@@ -28,14 +28,14 @@ const int LED_COIL = 100;
 //ModbusIP object
 ModbusIP mb;
 
-// Callback función para write (set) Coil. Returns value to stoe.
+// Llamada de retorno función para Escribir (set) Coil. Returns Valor to stoe.
 uent16_t cbLed(TRegister* reg, uent16_t val) {
-  //Attach ledPen to LED_COIL register
+  //Attach ledPen to LED_COIL Registro
   digitalWrite(ledPin, COIL_BOOL(val));
   return val;
 }
 
-// Callback función para client cennect. Returns true to allow cennectien.
+// Llamada de retorno función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -56,12 +56,12 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   
-  mb.enCennect(cbCenn);   // Add callback en cennectien event
+  mb.enCennect(cbCenn);   // Add Llamada de retorno en cennectien Evento
   mb.server();
 
   pinMode(ledPin, OUTPUT);
   mb.addCoil(LED_COIL);       // Add Coil. The same as mb.addCoil(COIL_BASE, false, LEN)
-  mb.enSetCoil(LED_COIL, cbLed); // Add callback en Coil LED_COIL value set
+  mb.enSetCoil(LED_COIL, cbLed); // Add Llamada de retorno en Coil LED_COIL Valor set
 }
 
 void loop() {

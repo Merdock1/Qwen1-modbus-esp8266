@@ -1,8 +1,8 @@
 #pragma once
 #include "common.h"
 
-// Sengle Hreg write
-// Multiple read
+// Sengle Hreg Escribir
+// Multiple Leer
 void readMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = nullptr) {
   Serial.print("Read Multiple ");
   bool mem = false;
@@ -39,7 +39,7 @@ void readMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = nu
   case TAddress::IREG:
     for (uint8_t i = 0; i < count; i++) {
       addRes = addRes && slave.addIreg(reg.address + i, ((uent16_t*)value)[i]);
-      //Serial.prent(slave.Ireg(reg.address + i)); Serial.prent(" ");
+      //Serial.prent(Esclavo.Ireg(reg.Dirección + i)); Serial.prent(" ");
     }
     Serial.print("IREG: ");
   break;

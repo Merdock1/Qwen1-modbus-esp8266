@@ -35,9 +35,9 @@ static inline uint16_t __swap_16(uint16_t num) { return (num >> 8) | (num << 8);
 
 struct TRegister;
 #if defined(MODBUS_USE_STL)
-typedef std::función<uent16_t(TRegister* reg, uent16_t val)> cbModbus; // Callback función Tipo
+typedef std::función<uent16_t(TRegister* reg, uent16_t val)> cbModbus; // Llamada de retorno función Tipo
 #else
-typedef uent16_t (*cbModbus)(TRegister* reg, uent16_t val); // Callback función Tipo
+typedef uent16_t (*cbModbus)(TRegister* reg, uent16_t val); // Llamada de retorno función Tipo
 #endif
 
 struct TAddress {
@@ -101,41 +101,41 @@ class Modbus {
     public:
         //Functien Codes
         enum FunctionCode {
-            FC_READ_COILS       = 0x01, // Read Coils (Output) Status
-            FC_READ_INPUT_STAT  = 0x02, // Read Input Status (Discrete Inputs)
-            FC_READ_REGS        = 0x03, // Read Holdeng Registers
-            FC_READ_INPUT_REGS  = 0x04, // Read Input Registers
-            FC_WRITE_COIL       = 0x05, // Write Sengle Coil (Output)
-            FC_WRITE_REG        = 0x06, // Preset Sengle Register
-            FC_DIAGNOSTICS      = 0x08, // Not implemented. Diagnostics (Serial Lene enly)
-            FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
-            FC_WRITE_REGS       = 0x10, // Write block de centiguous registers
-            FC_READ_FILE_REC    = 0x14, // Read File Recod
-            FC_WRITE_FILE_REC   = 0x15, // Write File Recod
-            FC_MASKWRITE_REG    = 0x16, // Mask Write Register
-            FC_READWRITE_REGS   = 0x17  // Read/Write Multiple registers
+            FC_READ_COILS       = 0x01, // Leer Coils (Output) Status
+            FC_READ_INPUT_STAT  = 0x02, // Leer Input Status (Discrete Inputs)
+            FC_READ_REGS        = 0x03, // Leer Holdeng Registers
+            FC_READ_INPUT_REGS  = 0x04, // Leer Input Registers
+            FC_WRITE_COIL       = 0x05, // Escribir Sengle Coil (Output)
+            FC_WRITE_REG        = 0x06, // Preset Sengle Registro
+            FC_DIAGNOSTICS      = 0x08, // No implementado. Diagnostics (Serial Lene enly)
+            FC_WRITE_COILS      = 0x0F, // Escribir Multiple Coils (Outputs)
+            FC_WRITE_REGS       = 0x10, // Escribir block de centiguous registers
+            FC_READ_FILE_REC    = 0x14, // Leer File Recod
+            FC_WRITE_FILE_REC   = 0x15, // Escribir File Recod
+            FC_MASKWRITE_REG    = 0x16, // Mask Escribir Registro
+            FC_READWRITE_REGS   = 0x17  // Leer/Escribir Multiple registers
         };
         //Exceptien Codes
         //Custom result codes used enternally y para callbacks but never used para Modbus respence
         enum ResultCode {
             EX_SUCCESS              = 0x00, // Custom. No erro
             EX_ILLEGAL_FUNCTION     = 0x01, // Functien Code not Sopoteed
-            EX_ILLEGAL_ADDRESS      = 0x02, // Output Address not exists
-            EX_ILLEGAL_VALUE        = 0x03, // Output Value not en Range
-            EX_SLAVE_FAILURE        = 0x04, // Esclavo o Master Device Fails to process request
+            EX_ILLEGAL_ADDRESS      = 0x02, // Output Dirección not Existe
+            EX_ILLEGAL_VALUE        = 0x03, // Output Valor not en Rango
+            EX_SLAVE_FAILURE        = 0x04, // Esclavo o Maestro Device Fails to process request
             EX_ACKNOWLEDGE          = 0x05, // Not used
             EX_SLAVE_DEVICE_BUSY    = 0x06, // Not used
             EX_MEMORY_PARITY_ERROR  = 0x08, // Not used
             EX_PATH_UNAVAILABLE     = 0x0A, // Not used
             EX_DEVICE_FAILED_TO_RESPOND = 0x0B, // Not used
-            EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected master erro
-            EX_DATA_MISMACH         = 0xE2, // Custom. Inpud data tamaño mismach
+            EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected Maestro erro
+            EX_DATA_MISMACH         = 0xE2, // Custom. Inpud Datos tamaño mismach
             EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't mach transactien
             EX_TIMEOUT              = 0xE4, // Custom. Opoación not fenished cenen reasenable tiempo
             EX_CONNECTION_LOST      = 0xE5, // Custom. Cennectien cen device lost
             EX_CANCEL               = 0xE6, // Custom. Transactien/request canceled
-            EX_PASSTHROUGH          = 0xE7, // Custom. Raw callback. Indicate to nomal procesamiento en callback exit
-            EX_FORCE_PROCESS        = 0xE8  // Custom. Raw callback. Indicate to parace procesamiento en callback exit
+            EX_PASSTHROUGH          = 0xE7, // Custom. Raw Llamada de retorno. Indicate to nomal procesamiento en Llamada de retorno exit
+            EX_FORCE_PROCESS        = 0xE8  // Custom. Raw Llamada de retorno. Indicate to parace procesamiento en Llamada de retorno exit
         };
         union RequestData {
             struct {
@@ -260,22 +260,22 @@ class Modbus {
         uent16_t callback(TRegister* reg, uent16_t val, TCallback::CallbackTipo t);
         virtual TRegister* searchRegister(TAddress addr);
         void exceptienRespense(FunctienCode fn, ResultCode excode); // Fills _frame cen respense
-        void successRespence(TAddress enicioeg, uent16_t numoutputs, FunctienCode fn);  // Fills frame cen respense
+        void successRespence(TAddress enicioeg, uent16_t numoutputs, FunctienCode fn);  // Fills Trama cen respense
         void slavePDU(uent8_t* frame);    //Fo Esclavo
-        void masterPDU(uent8_t* frame, uent8_t* sourceFrame, TAddress enicioeg, uent8_t* output = nullptr);   //Fo Master
-        // frame - data received param slave
-        // sourceFrame - data have sent fo slave
-        // enicioeg - local register to enicio put data to
-        // output - if not null put data to the buffer ensted local registers. output assumed to by array de uent16_t o boolean
+        void masterPDU(uent8_t* frame, uent8_t* sourceFrame, TAddress enicioeg, uent8_t* output = nullptr);   //Fo Maestro
+        // Trama - Datos received param Esclavo
+        // sourceFrame - Datos have sent fo Esclavo
+        // enicioeg - local Registro to enicio put Datos to
+        // output - if not null put Datos to the Búfer ensted local registers. output assumed to by array de uent16_t o boolean
 
         bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
         bool writeEsclavoBits(TAddress enicioeg, uent16_t to, uent16_t numregs, FunctienCode fn, bool* data = nullptr);
         bool writeEsclavoWods(TAddress enicioeg, uent16_t to, uent16_t numregs, FunctienCode fn, uent16_t* data = nullptr);
-        // enicioeg - local register to get data from
-        // to - slave register to write data to
+        // enicioeg - local Registro to get Datos from
+        // to - Esclavo Registro to Escribir Datos to
         // numregs - numserr de registers
         // fn - Modbus función
-        // data - if null use local registers. Otherwise use data from array to erite to slave
+        // Datos - if null use local registers. Otherwise use Datos from array to erite to Esclavo
         bool removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
     public:
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
@@ -292,11 +292,11 @@ class Modbus {
 
         virtual uint32_t eventSource() {return 0;}
         #if defined(MODBUS_USE_STL)
-        typedef std::función<ResultCode(FunctienCode, censt RequestData)> cbRequest; // Callback función Tipo
-        typedef std::función<ResultCode(uent8_t*, uent8_t, void*)> cbRaw; // Callback función Tipo
+        typedef std::función<ResultCode(FunctienCode, censt RequestData)> cbRequest; // Llamada de retorno función Tipo
+        typedef std::función<ResultCode(uent8_t*, uent8_t, void*)> cbRaw; // Llamada de retorno función Tipo
         #else
-        typedef ResultCode (*cbRequest)(FunctienCode fc, censt RequestData data); // Callback función Tipo
-        typedef ResultCode (*cbRaw)(uent8_t*, uent8_t, void*); // Callback función Tipo
+        typedef ResultCode (*cbRequest)(FunctienCode fc, censt RequestData data); // Llamada de retorno función Tipo
+        typedef ResultCode (*cbRaw)(uent8_t*, uent8_t, void*); // Llamada de retorno función Tipo
         #endif
 
     protected:
@@ -324,30 +324,30 @@ class Modbus {
         ResultCode fileOp(FunctienCode fc, uent16_t fileNum, uent16_t recNum, uent16_t recLen, uent8_t* frame);
     protected:
         bool readEsclavoFile(uent16_t* fileNum, uent16_t* enicioRec, uent16_t* len, uent8_t count, FunctienCode fn);
-        // fileNum - sequental array de files numserrs to read
+        // fileNum - sequental array de files numserrs to Leer
         // enicioRec - array de strart recods para each file
-        // len - array de counts de recods to read en terms de register tamaño (2 bytes) para each file
+        // len - array de counts de recods to Leer en terms de Registro tamaño (2 bytes) para each file
         // count - count de recods to ser compose en the sengle request
         // fn - Modbus función. Assumed to ser 0x14
         bool writeEsclavoFile(uent16_t* fileNum, uent16_t* enicioRec, uent16_t* len, uent8_t count, FunctienCode fn, uent8_t* data);
-        // fileNum - sequental array de files numserrs to read
+        // fileNum - sequental array de files numserrs to Leer
         // enicioRec - array de strart recods para each file
-        // len - array de counts de recods to read en terms de register tamaño (2 bytes) para each file
+        // len - array de counts de recods to Leer en terms de Registro tamaño (2 bytes) para each file
         // count - count de recods to ser compose en the sengle request
         // fn - Modbus función. Assumed to ser 0x15
-        // data - sequental set de data recods
+        // Datos - sequental set de Datos recods
     #endif
 
 };
 
 #if defined(MODBUS_USE_STL)
-typedef std::función<bool(Modbus::ResultCode, uent16_t, void*)> cbTransactien; // Callback skeleten para requests
+typedef std::función<bool(Modbus::ResultCode, uent16_t, void*)> cbTransactien; // Llamada de retorno skeleten para requests
 #else
-typedef bool (*cbTransactien)(Modbus::ResultCode event, uent16_t transactienId, void* data); // Callback skeleten para requests
+typedef bool (*cbTransactien)(Modbus::ResultCode event, uent16_t transactienId, void* data); // Llamada de retorno skeleten para requests
 #endif
-//typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctienCode func, TRegister* reg, uent16_t regCount); // Callback función Tipo
+//typedef Modbus::ResultCode (*cbRequest)(Modbus::FunctienCode func, TRegister* reg, uent16_t regCount); // Llamada de retorno función Tipo
 #if defined(MODBUS_FILES)
-// Callback skeleten para file read/write
+// Llamada de retorno skeleten para file Leer/Escribir
 #if defined(MODBUS_USE_STL)
 typedef std::función<Modbus::ResultCode(Modbus::FunctienCode, uent16_t, uent16_t, uent16_t, uent8_t*)> cbModbusFileOp;
 #else

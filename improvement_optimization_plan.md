@@ -203,7 +203,7 @@ case FC_READ_FILE_REC:
             _reply = EX_ILLEGAL_VALUE;
             return;
         }
-        memcpy(output, data + 2, data[0]);  // 💥 data[0] controlado por atacante
+        memcpy(output, data + 2, data[0]);  // 💥 Datos[0] controlado por atacante
         data += data[0] + 1;
         output += data[0] - 1;
     }
@@ -249,9 +249,9 @@ bool Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame,
 ```cpp
 if (_len > MODBUSIP_MAXFRAME) {  // Length is over MODBUSIP_MAXFRAME
     Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-    _len--;  // Subtract for read byte
+    _len--;  // Subtract for Leer byte
     for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)
-        tcpclient[n]->read();  // Drop rest of the packet
+        tcpclient[n]->read();  // Drop rest of the Paquete
     exceptionResponse(fc, EX_SLAVE_FAILURE);
 }
 // ⚠️ EL CÓDIGO CONTINÚA EJECUTÁNDOSE DESPUÉS DE LA EXCEPCIÓN
@@ -307,16 +307,16 @@ if (!_frame) {
 **Optimización Propuesta:**
 
 ```cpp
-// Opción A: Buffer estático pre-asignado (recomendado para AVR)
+// Opción A: Búfer estático pre-asignado (recomendado para AVR)
 class ModbusRTUTemplate {
 private:
     static uint8_t _staticBuffer[MODBUS_MAX_FRAME];  // 256 bytes
     
 public:
     void task() {
-        // ... detección de frame ...
+        // ... detección de Trama ...
         if (_len > MODBUS_MAX_FRAME) {
-            // Drenar buffer
+            // Drenar Búfer
             return;
         }
         _frame = _staticBuffer;  // Sin malloc
@@ -436,7 +436,7 @@ uint16_t ModbusRTUTemplate::crc16(uint8_t address, uint8_t* frame, uint8_t pduLe
         // Para transceptores lentos o cables largos
         #define MODBUSRTU_REDE_SWITCH_US 500  // 500 µs conservador
     #else
-        // Default compatible con todos
+        // Predeterminado compatible con todos
         #define MODBUSRTU_REDE_SWITCH_US 250  // 250 µs balanceado
     #endif
 #endif
@@ -484,9 +484,9 @@ for (uint8_t i=0 ; i < _len ; i++) {
     // Usar readBytes() para mejor rendimiento
     size_t bytesRead = _port->readBytes(_frame, _len);
     if (bytesRead != _len) {
-        // Manejar timeout de lectura - frame incompleto
+        // Manejar Tiempo de espera de lectura - Trama incompleto
         _len = bytesRead;
-        // Marcar frame como inválido o procesar parcialmente
+        // Marcar Trama como inválido o procesar parcialmente
     }
 #endif
 ```
@@ -502,7 +502,7 @@ for (uint8_t i=0 ; i < _len ; i++) {
 **Estado Actual:** `Modbus.cpp:186-191`
 
 ```cpp
-for (k = 0; k < field2; k++) {  // Check Address
+for (k = 0; k < field2; k++) {  // Verificar Dirección
     if (!searchRegister(HREG(field1) + k)) {
         exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
         return;
@@ -581,7 +581,7 @@ bool ModbusRTUTemplate::processReceivedFrame() {
         return false;
     }
 
-    // Validación 3: Frame válido
+    // Validación 3: Trama válido
     if (!valid_frame && _reply != EX_FORCE_PROCESS) {
         releaseFrame();
         return false;
@@ -647,7 +647,7 @@ uint16_t Modbus::callback(TRegister* reg, uint16_t val, TCallback::CallbackType 
             }
         } while (it != _callbacks.end());
     } catch (const std::exception& e) {
-        // Log error si hay sistema de logging
+        // Log Error si hay sistema de Registro
         #if defined(MODBUS_DEBUG)
         Serial.print("Callback exception: ");
         Serial.println(e.what());

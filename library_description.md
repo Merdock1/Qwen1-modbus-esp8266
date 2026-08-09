@@ -153,7 +153,7 @@ La librería está diseñada para ser portable y funcionar en cualquier placa co
 // Usar asignación estática de buffers (roadmap v4.2.0)
 // #define MODBUS_STATIC_BUFFER
 
-// Timeout de conexión (ESP32)
+// Tiempo de espera de conexión (ESP32)
 #define MODBUSIP_CONNECTION_TIMEOUT 1000
 
 // Máximo de clientes TCP
@@ -258,7 +258,7 @@ examples/
 - [Especificación Modbus Application Protocol V1.1b3](https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf)
 - [Guía de Implementación Modbus Messaging on TCP/IP](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
 - [Especificación Modbus over Serial Line V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
-- [Especificación Modbus/TCP Security](https://modbus.org/docs/MB-TCP-Security-v21_2018-07-24.pdf)
+- [Especificación Modbus/TCP Security](https://modbus.org/docs/MB-TCP-Seguridad-v21_2018-07-24.pdf)
 
 ### Enlaces de Interés
 - [Wikipedia - Modbus](http://pt.wikipedia.org/wiki/Modbus)

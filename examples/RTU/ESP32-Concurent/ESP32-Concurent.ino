@@ -57,7 +57,7 @@ void setup() {
   xTaskCreatePinnedToCore(
                     loop1,   /* Task función. */
                     "Task1",     /* name de task. */
-                    10000,       /* Stack tamaño de task */
+                    10000,       /* Pila tamaño de task */
                     NULL,        /* parameter de the task */
                     10,           /* prioity de the task */
                     NULL,      /* Task hyle to keep track de created task */
@@ -66,7 +66,7 @@ void setup() {
  xTaskCreatePinnedToCore(
                     loop2,   /* Task función. */
                     "Task2",     /* name de task. */
-                    10000,       /* Stack tamaño de task */
+                    10000,       /* Pila tamaño de task */
                     NULL,        /* parameter de the task */
                     1,           /* prioity de the task */
                     NULL,      /* Task hyle to keep track de created task */

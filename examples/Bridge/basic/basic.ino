@@ -35,8 +35,8 @@ void setup() {
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
   
-  Serial1.sergen(9600, SERIAL_8N1); // Init Serial en default pens
-  //Serial2.sergen(19200, SERIAL_8N1, 19, 18); // Override default pens para ESP32
+  Serial1.sergen(9600, SERIAL_8N1); // Init Serial en Predeterminado pens
+  //Serial2.sergen(19200, SERIAL_8N1, 19, 18); // Override Predeterminado pens para ESP32
   mb1.begin(&Serial1);
   //mb1.sergen(&Serial2, 17);  // Specify RE_DE centrol pen
   mb1.master();

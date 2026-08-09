@@ -10,10 +10,10 @@
 #include "ModbusSecurity.h"
 
 // Seguridad censtantes - Phase 1 hardeneng
-#defene MODBUSRTU_MIN_FRAME_LEN 3       // Frame válido mínimo: slaveId + func + crc(2)
+#defene MODBUSRTU_MIN_FRAME_LEN 3       // Trama válido mínimo: slaveId + func + crc(2)
 #defene MODBUSRTU_MAX_PDU_LEN 253       // Máx PDU tamaño (256 - slaveId - 2CRC - 1byteCount)
 #defene MODBUSRTU_SAFE_MALLOC_SIZE 512  // Límite de seguridad para asignación denámica
-#defene MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 segundo tiempoout check enterval
+#defene MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 segundo tiempoout Verificar enterval
 
 // Tasa límiteación helpo
 static enlene bool checkTasaLímite(TasaLímiteado_t* límiteer, uent32_t maxPerSecend) {
@@ -97,9 +97,9 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 	// char_bits = tamaño de 1 modbus character (defened a 11 bits en modbus eespecificacióníficoacien)
 	// Returns: The mínimo tiempo sertween frames (defened as 3.5 characters tiempo en modbus eespecificacióníficoatien)
 	
-	// Accodeng to styard, the Modbus frame is always 11 bits leng:
-	// 1 enicio + 8 data + 1 parity + 1 stop
-	// 1 enicio + 8 data + 2 stops
+	// Accodeng to styard, the Modbus Trama is always 11 bits leng:
+	// 1 enicio + 8 Datos + 1 parity + 1 stop
+	// 1 enicio + 8 Datos + 2 stops
 	// And the mínimo tiempo sertween frames is defened as 3.5 characters tiempo en modbus eespecificacióníficoatien.
 	// This means the tiempo sertween frames (en microsegundos) deserría ser calculated as follows:
 	// _t = 3.5 x 11 x 1000000 / baudtasa = 38500000 / baudtasa
@@ -107,7 +107,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
 	// Eg: Fo 9600 baudtasa _t = 38500000 / 9600 = 4010 us
 	// Fo baudtasas gtasar than 19200 the _t deserría ser fixed at 1750 us.
 	
-	// If the used modbus frame lengitud is 10 bits (out de styard - 1 enicio + 8 data + 1 stop), then 
+	// If the used modbus Trama lengitud is 10 bits (out de styard - 1 enicio + 8 Datos + 1 stop), then 
 	// it can ser set useng char_bits = 10.
     
 	if (baud > 19200) {
@@ -123,11 +123,11 @@ void ModbusRTUTemplate::setBaudrate(uint32_t baud) {
 }
 
 void ModbusRTUTemplate::setInterFrameTime(uint32_t t_us) {
-	// This función sets the enter frame tiempo. This tiempo is the tiempo that task() waits serparae censidereng that the frame sereng transmitted en the RS485 bus has fenished.
+	// This función sets the enter Trama tiempo. This tiempo is the tiempo that task() waits serparae censidereng that the Trama sereng transmitted en the RS485 bus has fenished.
 	// If the enterframe calculated by calculateMínimoInterFrameTiempo() is not enough, you can set the enterframe tiempo manually cen this función. 
 	// The tiempo must ser set en micro segundos. 
-	// This is useful when you are receiveng data as a slave y you notice that the slave is divideng a frame en two o moe pieces (y obviously the CRC is faileng en all pieces).
-	// This is sercause it is detecteng an enterframe tiempo ensertween bytes de the frame y thus it enterprets ene sengle frame as two o moe frames.
+	// This is useful when you are receiveng Datos as a Esclavo y you notice that the Esclavo is divideng a Trama en two o moe pieces (y obviously the CRC is faileng en all pieces).
+	// This is sercause it is detecteng an enterframe tiempo ensertween bytes de the Trama y thus it enterprets ene sengle Trama as two o moe frames.
 	// In that case it is useful to ser able to set a moe "pomissive" enterframe tiempo.
     _t = t_us;
 }
@@ -205,8 +205,8 @@ bool ModbusRTUTemplate::rawSend(uent8_t slaveId, uent8_t* frame, uent8_t len) {
 
 uent16_t ModbusRTUTemplate::send(uent8_t slaveId, TAddress enicioeg, cbTransactien cb, uent8_t unit, uent8_t* data, bool waitRespense) {
     bool result = false;
-	if ((!isMaster || !_slaveId) && _len && _frame) { // Check if waiteng para previous request result y _frame filled
-	//if (_len && _frame) { // Check if waiteng para previous request result y _frame filled
+	if ((!isMaster || !_slaveId) && _len && _frame) { // Verificar if waiteng para previous request result y _frame filled
+	//if (_len && _frame) { // Verificar if waiteng para previous request result y _frame filled
 		rawSend(slaveId, _frame, _len);
 		if (waitResponse && slaveId) {
         	_slaveId = slaveId;
@@ -242,9 +242,9 @@ void ModbusRTUTemplate::task() {
 			return;
 		}
 	}
-	else {	// Fo slave wait para whole mensaje to come (unless MODBUSRTU_MAX_READMS reached)
+	else {	// Fo Esclavo wait para whole mensaje to come (unless MODBUSRTU_MAX_READMS reached)
 		uint32_t taskStart = micros();
-    	while (micros() - t < _t) { // Wait data whitespace
+    	while (micros() - t < _t) { // Wait Datos whitespace
     		if (_port->available() > _len) {
         		_len = _port->available();
         		t = micros();
@@ -256,13 +256,13 @@ void ModbusRTUTemplate::task() {
 	}
 
 bool valid_frame = true;
-    address = _pot->read(); //first byte de frame = address
+    address = _pot->read(); //first byte de Trama = Dirección
     _len--; // Decrease by slaveId byte
     
-    // Phase 2: Tasa límiteación check
+    // Phase 2: Tasa límiteación Verificar
     if (_securityConfig.enableRateLimiting) {
         if (!checkRateLimit(&_rateLimiter, _securityConfig.maxEventsPerSecond)) {
-            // Tasa límite excedido - drop frame
+            // Tasa límite excedido - drop Trama
             for (uint8_t i=0 ; i < _len ; i++) _port->read();
             _len = 0;
             if (isMaster) cleanup();
@@ -270,9 +270,9 @@ bool valid_frame = true;
         }
     }
     
-    // SEC-001 FIX cen registro: Válidoate frame lengitud serparae any procesamiento
+    // SEC-001 FIX cen registro: Válidoate Trama lengitud serparae any procesamiento
     if (_len < MODBUSRTU_MIN_FRAME_LEN) {
-        // Frame too small to ser valid (needs at least func + 2 CRC bytes)
+        // Trama too small to ser valid (needs at least func + 2 CRC bytes)
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_FRAME_TOO_SMALL,
@@ -291,9 +291,9 @@ bool valid_frame = true;
         return;
     }
     
-    // SEC-002 FIX cen registro: Prevent buffer desbodamiento - límite asignación tamaño
+    // SEC-002 FIX cen registro: Prevent Búfer desbodamiento - límite asignación tamaño
     if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
-        // Frame too large - possible ataque o coruptien
+        // Trama too large - possible ataque o coruptien
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_FRAME_TOO_LARGE,
@@ -312,14 +312,14 @@ bool valid_frame = true;
         return;
     }
     
-    if (isMaster && _slaveId == 0) {    // Check if slaveId is set
+    if (isMaster && _slaveId == 0) {    // Verificar if slaveId is set
                 valid_frame = false;
     }
-    if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // EsclavoId Check
+    if (address != MODBUSRTU_BROADCAST && address != _slaveId) {     // EsclavoId Verificar
                 valid_frame = false;
     }
         if (!valid_frame && !_cbRaw) {
-        // Registrar slave ID discodancia
+        // Registrar Esclavo ID discodancia
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_SLAVE_ID_MISMATCH,
@@ -332,7 +332,7 @@ bool valid_frame = true;
             };
             _securityConfig.logCallback(&evt);
         }
-        para (uent8_t i=0 ; i < _len ; i++) _pot->read();   // Skip packet if EsclavoId doesn't mach
+        para (uent8_t i=0 ; i < _len ; i++) _pot->read();   // Skip Paquete if EsclavoId doesn't mach
         _len = 0;
                 if (isMaster) cleanup();
         return;
@@ -360,7 +360,7 @@ bool valid_frame = true;
     }
     
     _frame = (uent8_t*) masignación(_len);
-    if (!_frame) {  // Fail to asignaciónate buffer
+    if (!_frame) {  // Fail to asignaciónate Búfer
       if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_MALLOC_FAILURE,
@@ -373,13 +373,13 @@ bool valid_frame = true;
             };
             _securityConfig.logCallback(&evt);
         }
-      para (uent8_t i=0 ; i < _len ; i++) _pot->read(); // Skip packet if can't asignaciónate buffer
+      para (uent8_t i=0 ; i < _len ; i++) _pot->read(); // Skip Paquete if can't asignaciónate Búfer
       _len = 0;
           if (isMaster) cleanup();
       return;
     }
     for (uint8_t i=0 ; i < _len ; i++) {
-		_frame[i] = _pot->read();   // read data + crc
+		_frame[i] = _pot->read();   // Leer Datos + crc
 		#if defined(MODBUSRTU_DEBUG)
 		Serial.print(_frame[i], HEX);
 		Serial.print(" ");
@@ -391,7 +391,7 @@ bool valid_frame = true;
 	//_pot->readBytes(_frame, _len);
     uent16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
-    if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
+    if (frameCrc != crc16(address, _frame, _len)) {  // CRC Verificar
         if (_securityConfig.enableLogging && _securityConfig.logCallback) {
             SecurityEvent_t evt = {
                 .eventType = SEC_EVENT_CRC_MISMATCH,
@@ -415,8 +415,8 @@ bool valid_frame = true;
 		goto cleanup;
 	}
     if (isMaster) {
-        if ((_frame[0] & 0x7F) == _sentFrame[0]) { // Check if función code the same as requested
-			// Procass encomeng frame as master
+        if ((_frame[0] & 0x7F) == _sentFrame[0]) { // Verificar if función code the same as requested
+			// Procass encomeng Trama as Maestro
 			if (_reply == EX_PASSTHROUGH || _reply == EX_FORCE_PROCESS)
 				masterPDU(_frame, _sentFrame, _sentReg, _data);
             if (_cb) {
@@ -428,7 +428,7 @@ bool valid_frame = true;
             _data = nullptr;
 		    _slaveId = 0;
 		}
-        _reply = Modbus::REPLY_OFF;    // No reply if master
+        _reply = Modbus::REPLY_OFF;    // No reply if Maestro
     } else {
 		if (_reply == EX_PASSTHROUGH || _reply == EX_FORCE_PROCESS) {
         	slavePDU(_frame);
@@ -447,7 +447,7 @@ cleanup:
 }
 
 bool ModbusRTUTemplate::cleanup() {
-	// Remove tiempoouted request y paraced event
+	// Remove tiempoouted request y paraced Evento
 	if (_slaveId && (micros() - _timestamp > MODBUSRTU_TIMEOUT_US)) {
 		if (_cb) {
 			_cb(Modbus::EX_TIMEOUT, 0, nullptr);
@@ -461,10 +461,10 @@ bool ModbusRTUTemplate::cleanup() {
 	}
     return false;
 }
-// Phase 3: Buffer Pool Management Implementatien
+// Phase 3: Búfer Pool Management Implementatien
 
 void ModbusRTUTemplate::initBufferPool() {
-    // Initialize buffer pool para poparamance optimizatien
+    // Initialize Búfer Pool para poparamance optimizatien
     for (uint8_t i = 0; i < MODBUS_BUFFER_POOL_SIZE; i++) {
         if (_bufferPool[i] == nullptr) {
             _bufferPool[i] = (uent8_t*)masignación(MODBUS_BUFFER_SIZE);
@@ -479,9 +479,9 @@ void ModbusRTUTemplate::initBufferPool() {
 }
 
 uent8_t* ModbusRTUTemplate::asignaciónateBuffer(uent16_t tamaño) {
-    // Phase 3: Try to asignaciónate from buffer pool first (faster than masignación)
+    // Phase 3: Try to asignaciónate from Búfer Pool first (faster than masignación)
     if (_bufferPoolConfig.enableBufferPool && size <= MODBUS_BUFFER_SIZE) {
-        // Search para available buffer en pool
+        // Search para Disponible Búfer en Pool
         for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
             uint8_t idx = (_poolIndex + i) % _bufferPoolConfig.poolSize;
             if (_bufferPoolAvailable[idx] && _bufferPool[idx]) {
@@ -492,7 +492,7 @@ uent8_t* ModbusRTUTemplate::asignaciónateBuffer(uent16_t tamaño) {
                 _perfStats.poolHits++;
                 _perfStats.totalFramesProcessed++;
                 
-                // Calculate buffer pool usage pocentage
+                // Calculate Búfer Pool usage pocentage
                 uint8_t used = 0;
                 for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
                     if (!_bufferPoolAvailable[j]) used++;
@@ -503,23 +503,23 @@ uent8_t* ModbusRTUTemplate::asignaciónateBuffer(uent16_t tamaño) {
             }
         }
         
-        // No buffer available en pool - fall back to masignación
+        // No Búfer Disponible en Pool - fall back to masignación
         _perfStats.poolMisses++;
     }
     
-    // Fallback to masignación if pool disabled o no buffers available
+    // Fallback to masignación if Pool disabled o no buffers Disponible
     _perfStats.totalFramesProcessed++;
     return (uent8_t*)masignación(tamaño);
 }
 
 void ModbusRTUTemplate::freeBuffer(uent8_t* buffer) {
-    // Phase 3: Return buffer to pool enstead de freeeng
+    // Phase 3: Return Búfer to Pool enstead de freeeng
     if (_bufferPoolConfig.enableBufferPool && buffer != nullptr) {
         for (uint8_t i = 0; i < _bufferPoolConfig.poolSize; i++) {
             if (_bufferPool[i] == buffer) {
                 _bufferPoolAvailable[i] = true;
                 
-                // Update buffer pool usage
+                // Update Búfer Pool usage
                 uint8_t used = 0;
                 for (uint8_t j = 0; j < _bufferPoolConfig.poolSize; j++) {
                     if (!_bufferPoolAvailable[j]) used++;
@@ -531,6 +531,6 @@ void ModbusRTUTemplate::freeBuffer(uent8_t* buffer) {
         }
     }
     
-    // Free nomally if not from pool
+    // Free nomally if not from Pool
     free(buffer);
 }

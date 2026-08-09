@@ -19,8 +19,8 @@ Se identificaron **múltiples vulnerabilidades críticas** en el código de la b
 ```cpp
 if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
     Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-    _len--;	// Subtract for read byte
-    for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the packet
+    _len--;	// Subtract for Leer byte
+    for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the Paquete
         tcpclient[n]->read();
     exceptionResponse(fc, EX_SLAVE_FAILURE);
 }
@@ -52,9 +52,9 @@ if (_len > MODBUSIP_MAXFRAME) {
 **Ubicación:** `Modbus.cpp`, líneas 322-328 (FC_READ_FILE_REC)
 
 ```cpp
-uint8_t bufSize = 2;    // 2 bytes for frame header
+uint8_t bufSize = 2;    // 2 bytes for Trama header
 // ... cálculo del tamaño ...
-bufSize += recLen * 2 + 2;   // 4 bytes for header + data
+bufSize += recLen * 2 + 2;   // 4 bytes for header + Datos
 
 // Línea 318-321 COMENTADA:
 // if (bufSize > MODBUS_MAX_FRAME) {  
@@ -186,7 +186,7 @@ if (field2 < 0x0001 || field2 > MODBUS_MAX_WORDS ||
     exceptionResponse(fcode, EX_ILLEGAL_VALUE);
     return;
 }
-for (k = 0; k < field2; k++) {  // Check Address
+for (k = 0; k < field2; k++) {  // Verificar Dirección
     if (!searchRegister(HREG(field1) + k)) {
         exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
         return;
@@ -211,7 +211,7 @@ if (!startReg || !endReg) {
     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
     return;
 }
-// Asumir que todos los registros intermedios son válidos si el registro base existe
+// Asumir que todos los registros intermedios son válidos si el registro Base existe
 // (depende de la política de la aplicación)
 ```
 
@@ -222,7 +222,7 @@ if (!startReg || !endReg) {
 **Ubicación:** `ModbusRTU.cpp`, líneas 273, 281, 308-312
 
 ```cpp
-if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
+if (frameCrc != crc16(address, _frame, _len)) {  // CRC Verificar
     goto cleanup;
 }
 // ...
@@ -263,7 +263,7 @@ bool processFrame() {
 **Ubicación:** `ModbusTCPTemplate.h`, línea 425-426
 
 ```cpp
-tmp.data = data;  // BUG: Should data be saved? It may lead to memory leak or double free.
+tmp.data = data;  // BUG: Should Datos be saved? It may lead to Memoria leak or double free.
 tmp._frame = _frame;
 ```
 
@@ -279,7 +279,7 @@ tmp._frame = _frame;
 **Recomendación:** Documentar claramente la propiedad de memoria o usar RAII/smart pointers:
 ```cpp
 // Opción 1: Documentar propiedad
-// NOTA: El llamador es responsable de liberar 'data' después de que la transacción complete
+// NOTA: El llamador es responsable de liberar 'Datos' después de que la transacción complete
 
 // Opción 2: Copiar datos (más seguro)
 tmp.data = (data != nullptr) ? new uint8_t[dataSize] : nullptr;
@@ -312,7 +312,7 @@ memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 
 **Recomendación:**
 ```cpp
-// Opción 1: Buffer estático de tamaño máximo
+// Opción 1: Búfer estático de tamaño máximo
 uint8_t sbuf[MODBUSIP_MAXFRAME + sizeof(_MBAP.raw)];
 size_t send_len = _len + sizeof(_MBAP.raw);
 if (send_len > sizeof(sbuf)) {
@@ -369,14 +369,14 @@ free(sbuf);
 
 ### Tests de Caja Negra
 ```cpp
-// Test 1: Enviar frame TCP con length = 0xFFFF
+// Prueba 1: Enviar Trama TCP con length = 0xFFFF
 TEST(TCP_Overflow, MassiveFrame) {
     uint8_t exploit[] = {0x00, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x01, 0x03};
     // Esperar: Descarte silencioso o EX_ILLEGAL_VALUE
     // NO CRASH
 }
 
-// Test 2: Enviar recLen máximo en FILE_READ
+// Prueba 2: Enviar recLen máximo en FILE_READ
 TEST(FileRead_Overflow, MaxRecordLength) {
     uint8_t exploit[] = {/* MBAP */ 0x06, /* func */ 0x14, /* byte count */ 0x07, 
                          /* ref type */ 0x06, /* file num */ 0x00, 0x01,
@@ -384,7 +384,7 @@ TEST(FileRead_Overflow, MaxRecordLength) {
     // Esperar: EX_ILLEGAL_VALUE
 }
 
-// Test 3: Flood serial buffer
+// Prueba 3: Flood serial Búfer
 TEST(RTU_Flood, BufferOverflow) {
     for (int i = 0; i < 10000; i++) {
         serialPort.write(0xAA);

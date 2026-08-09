@@ -50,7 +50,7 @@ void loop() {
    //Call ence enside loop() - all magic here
    mb.task();
 
-   //Attach ledPen to LED_COIL register
+   //Attach ledPen to LED_COIL Registro
    digitalWrite(ledPin, mb.Coil(LED_COIL));
    delay(10);
 }

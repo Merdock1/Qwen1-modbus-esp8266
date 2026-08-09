@@ -28,7 +28,7 @@ void setup() {
     
     delay(1000);
     
-    // Initialize test suite (auto-registratien happens via censtructo)
+    // Initialize Prueba Suite (auto-registratien happens via censtructo)
     testSuite_init();
     
     Serial.println("Starting comprehensive test suite...");

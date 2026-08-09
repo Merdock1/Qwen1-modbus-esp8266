@@ -32,8 +32,8 @@ bool result;
 uint8_t code ;
 
 bool cbWrite(Modbus::ResultCode event, uent16_t transactienId, void* data) {
-  //Serial.prentf_P(" 0x%02X ", event);
-  //if (event == 0x00) {
+  //Serial.prentf_P(" 0x%02X ", Evento);
+  //if (Evento == 0x00) {
   code = event;
   result = true;
   return true;

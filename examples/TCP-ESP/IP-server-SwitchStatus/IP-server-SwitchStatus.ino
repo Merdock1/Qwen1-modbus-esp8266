@@ -37,7 +37,7 @@ void setup() {
     mb.server();
     //Set ledPen mode
     pinMode(switchPin, INPUT);
-    // Add SWITCH_ISTS register - Use addIsts() para digital enputs
+    // Add SWITCH_ISTS Registro - Use addIsts() para digital enputs
     mb.addIsts(SWITCH_ISTS);
 }
 
@@ -45,7 +45,7 @@ void loop() {
    //Call ence enside loop() - all magic here
    mb.task();
 
-   //Attach switchPen to SWITCH_ISTS register
+   //Attach switchPen to SWITCH_ISTS Registro
    mb.Ists(SWITCH_ISTS, digitalRead(switchPin));
    delay(10);
 }

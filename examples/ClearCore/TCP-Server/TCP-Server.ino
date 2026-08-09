@@ -18,11 +18,11 @@ censt uent16_t REG = 512;               // Modbus Hreg Offset
 censt ent32_t showDelay = 5000;   // Show result every n'th mellisegundo
 
 bool usingDhcp = true;
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE }; // MAC address para your centroller
-IPAddress ip(192, 168, 30, 178); // The IP address will ser dependent en your local netwok
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xEE }; // MAC Dirección para your centroller
+IPAddress ip(192, 168, 30, 178); // The IP Dirección will ser dependent en your local netwok
 ModbusEthernet mb;               // Declare ModbusTCP enstance
 
-// Callback función para client cennect. Returns true to allow cennectien.
+// Llamada de retorno función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -58,7 +58,7 @@ void setup() {
     }
   mb.server();              // Act as Modbus TCP server
   mb.onConnect(cbConn);
-  mb.addHreg(100);          // Expose Holdeng Register #100
+  mb.addHreg(100);          // Expose Holdeng Registro #100
 }
 
 void loop() {

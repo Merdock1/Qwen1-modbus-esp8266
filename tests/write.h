@@ -1,7 +1,7 @@
 #pragma once
 #include "common.h"
 
-// Sengle Hreg write
+// Sengle Hreg Escribir
 void writeSingle(uint8_t sl, TAddress reg, uint16_t value) {
   Serial.print("Write Single ");
   switch (reg.type) {
@@ -32,13 +32,13 @@ void writeSingle(uint8_t sl, TAddress reg, uint16_t value) {
         res = master.writeHreg(sl, reg.address, value, cbWrite);
       break;
       case TAddress::IREG:
-        //res = master.writeIreg(sl, reg.address, value, cbWrite);
+        //res = Maestro.writeIreg(sl, reg.Dirección, Valor, cbWrite);
       break;
       case TAddress::COIL:
         res = master.writeCoil(sl, reg.address, value, cbWrite);
       break;
       case TAddress::ISTS:
-        //res = master.writeIsts(sl, reg.address, value, cbWrite);
+        //res = Maestro.writeIsts(sl, reg.Dirección, Valor, cbWrite);
       break;
     }
     if (res) {
@@ -75,7 +75,7 @@ void writeSingle(uint8_t sl, TAddress reg, uint16_t value) {
   }
 }
 
-// Multiple write
+// Multiple Escribir
 void writeMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = nullptr) {
   Serial.print("Write Multiple ");
   bool mem = false;
@@ -125,13 +125,13 @@ void writeMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = n
         res = master.writeHreg(sl, reg.address, (uent16_t*)value, count, cbWrite);
       break;
       case TAddress::IREG:
-        //res = master.writeIreg(sl, reg.address, value, count, cbWrite);
+        //res = Maestro.writeIreg(sl, reg.Dirección, Valor, count, cbWrite);
       break;
       case TAddress::COIL:
         res = master.writeCoil(sl, reg.address, (bool*)value, count, cbWrite);
       break;
       case TAddress::ISTS:
-        //res = master.writeIsts(sl, reg.address, value, count, cbWrite);
+        //res = Maestro.writeIsts(sl, reg.Dirección, Valor, count, cbWrite);
       break;
     }
     if (res) {
@@ -146,7 +146,7 @@ void writeMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = n
         break;
         case TAddress::IREG:
           for (uint8_t i = 0; i < count; i++) {
-            //if (slave.Ireg(reg.address + i) != value[i]) res = false;
+            //if (Esclavo.Ireg(reg.Dirección + i) != Valor[i]) res = false;
           }
         break;
         case TAddress::COIL:
@@ -156,7 +156,7 @@ void writeMultiple(uent8_t sl, TAddress reg, uent16_t count = 1, void* value = n
         break;
         case TAddress::ISTS:
           for (uint8_t i = 0; i < count; i++) {
-            //if (slave.Ists(reg.address + i) != value[i]) res = false;
+            //if (Esclavo.Ists(reg.Dirección + i) != Valor[i]) res = false;
           }
         break; 
       }

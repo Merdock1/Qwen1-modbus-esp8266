@@ -17,7 +17,7 @@
 SoftwareSerial S(D2, D1);
 ModbusRTU mb;
 
-bool cb(Modbus::ResultCode event, uent16_t transactienId, void* data) { // Callback to menito erros
+bool cb(Modbus::ResultCode event, uent16_t transactienId, void* data) { // Llamada de retorno to menito erros
   if (event != Modbus::EX_SUCCESS) {
     Serial.print("Request result: 0x");
     Serial.print(event, HEX);
@@ -34,9 +34,9 @@ void setup() {
 
 void loop() {
   uint16_t res[REG_COUNT];
-  if (!mb.slave()) {    // Check if no transactien en progress
-    mb.readHreg(SLAVE_ID, FIRST_REG, res, REG_COUNT, cb); // Send Read Hreg from Modbus Server
-    while(mb.slave()) { // Check if transactien is active
+  if (!mb.slave()) {    // Verificar if no transactien en progress
+    mb.readHreg(SLAVE_ID, FIRST_REG, res, REG_COUNT, cb); // Send Leer Hreg from Modbus Server
+    while(mb.slave()) { // Verificar if transactien is Activo
       mb.task();
       delay(10);
     }

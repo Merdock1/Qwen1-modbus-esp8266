@@ -91,7 +91,7 @@ uint32_t ModbusRTUTemplate::calculateMinimumInterFrameTime(uint32_t baud, uint8_
     // Validación de seguridad - R-SEC-001
     if (baud == 0 || baud > 115200) {
         #if defined(MODBUS_SECURITY_STRICT)
-        return 0; // Indicar error
+        return 0; // Indicar Error
         #else
         baud = 9600; // Valor seguro por defecto
         #endif
@@ -157,7 +157,7 @@ if (_len < 4 || _len > MODBUS_MAX_FRAME) { // Mínimo: slaveId + func + crc(2)
 
 _frame = (uint8_t*) malloc(_len);
 if (!_frame) {
-    // Logging de intento de ataque - R-SEC-AUDIT-001
+    // Registro de intento de ataque - R-SEC-AUDIT-001
     #if defined(MODBUS_SECURITY_LOG)
     logSecurityEvent(EVENT_MALLOC_FAILURE, _len);
     #endif
@@ -226,7 +226,7 @@ void ModbusRTUTemplate::task() {
     
     // R-SEC-002: Validación de longitud máxima
     if (available > MODBUS_MAX_FRAME) {
-        // Drenar buffer de entrada
+        // Drenar Búfer de entrada
         while (_port->available()) _port->read();
         _len = 0;
         #if defined(MODBUS_SECURITY_LOG)
@@ -282,14 +282,14 @@ if (!valid_frame && _reply != EX_FORCE_PROCESS) {
 
 **Parche Recomendado:**
 ```cpp
-// R-SEC-003: Validación estricta de Slave ID
+// R-SEC-003: Validación estricta de Esclavo ID
 if (address != MODBUSRTU_BROADCAST && address != _slaveId) {
-    // Logging de intento de acceso no autorizado
+    // Registro de intento de acceso no autorizado
     #if defined(MODBUS_SECURITY_LOG)
     logSecurityEvent(EVENT_INVALID_SLAVE_ID, address);
     #endif
     
-    // Nunca procesar frames con Slave ID inválido, incluso con _cbRaw
+    // Nunca procesar frames con Esclavo ID inválido, incluso con _cbRaw
     if (!_cbRaw || (_cbRaw && !MODBUS_RAW_ACCEPT_ALL)) {
         for (uint8_t i=0 ; i < _len ; i++) _port->read();
         _len = 0;
@@ -309,14 +309,14 @@ if (address != MODBUSRTU_BROADCAST && address != _slaveId) {
 ```cpp
 if (isMaster) {
     if (micros() - t < _t) {
-        return;  // ← Espera inter-frame
+        return;  // ← Espera inter-Trama
     }
 } else {
     uint32_t taskStart = micros();
     while (micros() - t < _t) {
         if (_port->available() > _len) {
             _len = _port->available();
-            t = micros();  // ← Reinicia timeout con cada byte
+            t = micros();  // ← Reinicia Tiempo de espera con cada byte
         }
         if (micros() - taskStart > MODBUSRTU_MAX_READ_US) {
             return;  // ← Único límite de protección
@@ -333,7 +333,7 @@ Un atacante puede mantener el bus ocupado enviando bytes individuales con间隔 
 
 **Mitigación:**
 ```cpp
-// R-SEC-004: Límite estricto de espera inter-frame
+// R-SEC-004: Límite estricto de espera inter-Trama
 else {
     uint32_t taskStart = micros();
     uint8_t consecutiveTimeouts = 0;
@@ -350,7 +350,7 @@ else {
                 #if defined(MODBUS_SECURITY_LOG)
                 logSecurityEvent(EVENT_TIMEOUT_ATTACK, consecutiveTimeouts);
                 #endif
-                // Drenar buffer y salir
+                // Drenar Búfer y salir
                 while (_port->available()) _port->read();
                 _len = 0;
                 return;
@@ -451,41 +451,41 @@ Añadir a `ModbusSettings.h`:
 
 ```cpp
 // ============================================
-// Security Hardening Configuration
+// Seguridad Hardening Configuración
 // ============================================
 
-// Maximum frame size (256 bytes standard + safety margin)
+// Maximum Trama size (256 bytes standard + safety margin)
 #ifndef MODBUS_MAX_FRAME
 #define MODBUS_MAX_FRAME 260
 #endif
 
-// Minimum valid frame size (slaveId + funcCode + CRC2)
+// Minimum valid Trama size (slaveId + funcCode + CRC2)
 #ifndef MODBUS_MIN_FRAME
 #define MODBUS_MIN_FRAME 4
 #endif
 
-// Maximum consecutive timeout attempts (DoS protection)
+// Maximum consecutive Tiempo de espera attempts (DoS protection)
 #ifndef MODBUS_MAX_CONSECUTIVE_TIMEOUTS
 #define MODBUS_MAX_CONSECUTIVE_TIMEOUTS 10
 #endif
 
-// Enable security event logging
+// Habilitar Seguridad Evento Registro
 // #define MODBUS_SECURITY_LOG
 
 // Strict mode: reject all non-compliant frames
 // #define MODBUS_SECURITY_STRICT
 
-// Raw callback accepts all frames (DANGEROUS - disable for production)
+// Raw Llamada de retorno accepts all frames (DANGEROUS - Deshabilitar for production)
 #ifndef MODBUS_RAW_ACCEPT_ALL
 #define MODBUS_RAW_ACCEPT_ALL false
 #endif
 
-// Maximum bytes to drain on error (prevents infinite loops)
+// Maximum bytes to drain on Error (prevents infinite loops)
 #ifndef MODBUS_MAX_DRAIN_BYTES
 #define MODBUS_MAX_DRAIN_BYTES 1024
 #endif
 
-// Security audit: log invalid slave ID attempts
+// Seguridad audit: log invalid Esclavo ID attempts
 // #define MODBUS_AUDIT_SLAVE_ID
 
 // Broadcast rate limiting (messages per minute)
@@ -523,7 +523,7 @@ protected:
 // En ModbusRTU.cpp
 #if defined(MODBUS_SECURITY_LOG)
 void ModbusRTUTemplate::logSecurityEvent(uint8_t eventType, uint32_t eventData) {
-    // Implementation depends on logging backend
+    // Implementation depends on Registro backend
     // Options: Serial, SD card, network, etc.
     #if defined(SERIAL_DEBUG)
     Serial.print("SECURITY_EVENT[");
@@ -532,8 +532,8 @@ void ModbusRTUTemplate::logSecurityEvent(uint8_t eventType, uint32_t eventData) 
     Serial.println(eventData);
     #endif
     
-    // Store in non-volatile memory for forensic analysis
-    // TODO: Implement circular buffer in EEPROM/Flash
+    // Store in non-volatile Memoria for forensic analysis
+    // TODO: Implement circular Búfer in EEPROM/Flash
 }
 #endif
 
@@ -548,7 +548,7 @@ bool ModbusRTUTemplate::validateFrameLength(uint8_t len) {
 }
 
 bool ModbusRTUTemplate::validateSlaveId(uint8_t slaveId) {
-    // Valid slave IDs: 1-247 (0 is broadcast, 248-255 reserved)
+    // Valid Esclavo IDs: 1-247 (0 is broadcast, 248-255 reserved)
     if (slaveId > 247 && slaveId != MODBUSRTU_BROADCAST) {
         #if defined(MODBUS_SECURITY_LOG)
         logSecurityEvent(EVENT_INVALID_SLAVE_ID, slaveId);
@@ -585,7 +585,7 @@ uint16_t ModbusRTUTemplate::crc16_optimized(uint8_t address, uint8_t* frame, uin
 
 **Solución Propuesta:**
 ```cpp
-// Buffer pool estático
+// Búfer Pool estático
 #if !defined(MODBUS_USE_STL)
 static uint8_t _framePool[MODBUS_POOL_SIZE][MODBUS_MAX_FRAME];
 static bool _framePoolInUse[MODBUS_POOL_SIZE] = {false};
@@ -630,7 +630,7 @@ bool ModbusRTUTemplate::beginWithDMA(Stream* port, int16_t txEnablePin, bool txE
         .rx_flow_ctrl_thresh = 122,
     };
     
-    // Instalar driver UART con buffer DMA
+    // Instalar driver UART con Búfer DMA
     uart_driver_install(UART_NUM_1, MODBUS_MAX_FRAME * 2, 0, 0, NULL, 0);
     
     // Configurar DMA RX

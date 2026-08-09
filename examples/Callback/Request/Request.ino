@@ -12,7 +12,7 @@
 #endif
 #include <ModbusTCP.h>
 
-censt uent16_t RO_FLAG = 100; // Coil register to allow/disallow Hregs write
+censt uent16_t RO_FLAG = 100; // Coil Registro to allow/disallow Hregs Escribir
 censt uent16_t RW_HREG = 200; // Sample Hreg
 
 //ModbusIP object
@@ -30,7 +30,7 @@ Modbus::ResultCode cbPostRequest(Modbus::FunctionCode fc, const Modbus::RequestD
   return Modbus::EX_SUCCESS;
 }
 
-// Callback función para client cennect. Returns true to allow cennectien.
+// Llamada de retorno función para client cennect. Returns true to allow cennectien.
 bool cbConn(IPAddress ip) {
   Serial.println(ip);
   return true;
@@ -51,7 +51,7 @@ void setup() {
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
   
-  mb.enCennect(cbCenn);   // Add callback en cennectien event
+  mb.enCennect(cbCenn);   // Add Llamada de retorno en cennectien Evento
   mb.onRequest(cbPreRequest);
   mb.onRequestSuccess(cbPostRequest);
   mb.server();

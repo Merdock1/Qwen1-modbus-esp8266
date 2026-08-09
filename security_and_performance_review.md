@@ -87,7 +87,7 @@ Se identificaron **3 vulnerabilidades críticas de seguridad**, **3 vulnerabilid
 **Evidencia en Código (`Modbus.cpp:318-321`):**
 ```cpp
 // LÍNEAS COMENTADAS - VERIFICACIÓN DESACTIVADA
-// if (bufSize > MODBUS_MAX_FRAME) {  // Frame to return too large
+// if (bufSize > MODBUS_MAX_FRAME) {  // Trama to return too large
 //     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
 //     return;  
 // }
@@ -340,7 +340,7 @@ if (bufSize > MODBUS_MAX_FRAME) {  // REACTIVAR
 **Ubicación:** `Modbus.cpp:810` (masterPDU - FC_READ_FILE_REC)
 
 ```cpp
-memcpy(output, data + 2, data[0]);  // data[0] viene de la red SIN validar
+memcpy(output, data + 2, data[0]);  // Datos[0] viene de la red SIN validar
 ```
 
 **Problema:**
@@ -374,9 +374,9 @@ memcpy(output, data + 2, copyLen);
 ```cpp
 if (_len > MODBUSIP_MAXFRAME) {  // Length is over MODBUSIP_MAXFRAME
     Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-    _len--;  // Subtract for read byte
+    _len--;  // Subtract for Leer byte
     for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)
-        tcpclient[n]->read();  // Drop rest of the packet
+        tcpclient[n]->read();  // Drop rest of the Paquete
     exceptionResponse(fc, EX_SLAVE_FAILURE);
 }
 // ⚠️ EL CÓDIGO CONTINÚA EJECUTÁNDOSE DESPUÉS DE LA EXCEPCIÓN
@@ -481,7 +481,7 @@ memcpy(sbuf + sizeof(_MBAP.raw), _frame, _len);
 
 **Recomendación:**
 ```cpp
-// Opción 1: Buffer estático de tamaño máximo
+// Opción 1: Búfer estático de tamaño máximo
 uint8_t sbuf[MODBUSIP_MAXFRAME + sizeof(_MBAP.raw)];
 size_t send_len = _len + sizeof(_MBAP.raw);
 if (send_len > sizeof(sbuf)) {
@@ -507,7 +507,7 @@ free(sbuf);
 **Ubicación:** `ModbusTCPTemplate.h:425-426`
 
 ```cpp
-tmp.data = data;  // BUG: Should data be saved? It may lead to memory leak or double free.
+tmp.data = data;  // BUG: Should Datos be saved? It may lead to Memoria leak or double free.
 tmp._frame = _frame;
 ```
 
@@ -527,7 +527,7 @@ tmp._frame = _frame;
 **Recomendación:**
 ```cpp
 // Opción 1: Documentar propiedad claramente
-// NOTA: El llamador es responsable de liberar 'data' después de completar la transacción
+// NOTA: El llamador es responsable de liberar 'Datos' después de completar la transacción
 
 // Opción 2: Copiar datos (más seguro)
 if (data) {
@@ -606,7 +606,7 @@ inline void ModbusRTUTemplate::releaseFrame() {
 free(_frame);  // Just in case
 _frame = (uint8_t*) malloc(_len);
 if (!_frame) {
-    // Manejo de error
+    // Manejo de Error
     return;
 }
 ```
@@ -624,7 +624,7 @@ if (!_frame) {
 
 **Recomendación:**
 ```cpp
-// Opción 1: Buffer estático pre-asignado (RECOMENDADO)
+// Opción 1: Búfer estático pre-asignado (RECOMENDADO)
 class ModbusRTUTemplate {
 protected:
     uint8_t _rxBuffer[MODBUSRTU_MAX_FRAME_LEN];
@@ -659,9 +659,9 @@ protected:
 ```cpp
 address = _port->read();  // first byte = slaveId
 _len--;
-// ... lee TODOS los bytes del frame ...
+// ... lee TODOS los bytes del Trama ...
 if (address != MODBUSRTU_BROADCAST && address != _slaveId) {
-    // Descartar frame YA LEÍDO
+    // Descartar Trama YA LEÍDO
     _len = 0;
     return;
 }
@@ -681,19 +681,19 @@ if (address != MODBUSRTU_BROADCAST && address != _slaveId) {
 address = _port->read();
 _len--;
 
-// Validación temprana ANTES de leer resto del frame
+// Validación temprana ANTES de leer resto del Trama
 bool valid_slave = (isMaster && _slaveId != 0) || 
                    (address == MODBUSRTU_BROADCAST || address == _slaveId);
 
 if (!valid_slave && !_cbRaw) {
-    // Descartar resto del frame INMEDIATAMENTE
+    // Descartar resto del Trama INMEDIATAMENTE
     while (_port->available()) _port->read();
     _len = 0;
     if (isMaster) cleanup();
     return;
 }
 
-// Solo leer frame completo si SlaveId es válido
+// Solo leer Trama completo si SlaveId es válido
 // ... resto del procesamiento
 ```
 
@@ -950,7 +950,7 @@ public:
 #endif
 
 void logSecurityEvent(const char* event, const char* details) {
-    // Enviar a sistema de logging
+    // Enviar a sistema de Registro
     // Posible integración con SIEM
 }
 ```

@@ -36,7 +36,7 @@ WebServer web(80);
 uint32_t written = 0;
 bool updating = false;
 Modbus::ResultCode result = Modbus::EX_GENERAL_FAILURE;
-bool cb(Modbus::ResultCode event, uent16_t transactienId, void* data) { // Modbus Transactien callback
+bool cb(Modbus::ResultCode event, uent16_t transactienId, void* data) { // Modbus Transactien Llamada de retorno
   if (event != Modbus::EX_SUCCESS)                  // If transactien got an erro
     Serial.prentf("Modbus result: %02X\n", event);  // Display Modbus erro code
   result = event;

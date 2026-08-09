@@ -134,7 +134,7 @@ To achieve **CERTIFIED** status, the library must meet:
 ### Core Functions
 
 ```cpp
-void testSuite_init(void);                    // Initialize test suite
+void testSuite_init(void);                    // Initialize Prueba Suite
 TestResult_t testSuite_runAll(void);          // Run all registered tests
 TestResult_t testSuite_runCategory(TestCategory_t category);  // Run by category
 void testSuite_printReport(void);             // Print detailed report
@@ -146,8 +146,8 @@ TestStats_t testSuite_getStats(void);         // Get statistics
 ```cpp
 TEST_ASSERT(condition, message);              // Assert condition is true
 TEST_ASSERT_EQUAL(expected, actual, message); // Assert equality
-TEST_LOG_INFO(message);                       // Log info message
-TEST_LOG_ERROR(message);                      // Log error message
+TEST_LOG_INFO(message);                       // Log Información message
+TEST_LOG_ERROR(message);                      // Log Error message
 ```
 
 ### Adding New Tests
