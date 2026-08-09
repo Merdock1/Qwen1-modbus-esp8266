@@ -107,16 +107,40 @@ class Modbus {
             FC_READ_INPUT_REGS  = 0x04, // Read Input Registers
             FC_WRITE_COIL       = 0x05, // Write Single Coil (Output)
             FC_WRITE_REG        = 0x06, // Preset Single Register
-            FC_DIAGNOSTICS      = 0x08, // No implementado. Diagnostics (Serial Line only)
+            FC_DIAGNOSTICS      = 0x08, // Diagnostics (Serial Line only)
+            FC_GET_COMM_EVENT_CNT = 0x0B, // Get Comm Event Counter (No implementado)
+            FC_GET_COMM_EVENT_LOG = 0x0C, // Get Comm Event Logger (No implementado)
             FC_WRITE_COILS      = 0x0F, // Write Multiple Coils (Outputs)
             FC_WRITE_REGS       = 0x10, // Write block of contiguous registers
             FC_READ_FILE_REC    = 0x14, // Read File Record
             FC_WRITE_FILE_REC   = 0x15, // Write File Record
             FC_MASKWRITE_REG    = 0x16, // Mask Write Register
-            FC_READWRITE_REGS   = 0x17  // Read/Write Multiple registers
+            FC_READWRITE_REGS   = 0x17, // Read/Write Multiple registers
+            FC_READ_DEVICE_ID   = 0x2B  // Read Device Identification (ENC 0x0E)
+        };
+        
+        // Sub-function codes for FC_DIAGNOSTICS (0x08)
+        enum DiagnosticSubCode {
+            DIAG_QUERY_DATA                 = 0x0000, // Return Query Data
+            DIAG_RESTART_COMM               = 0x0001, // Restart Communications
+            DIAG_RETURN_DIAG_REG            = 0x0002, // Return Diagnostic Register
+            DIAG_CHANGE_ASCII_DELIM         = 0x0003, // Change ASCII Input Delimiter
+            DIAG_FORCE_LISTEN_ONLY          = 0x0004, // Force Listen Only Mode
+            DIAG_CLEAR_COUNTERS             = 0x000A, // Clear Counters and Diagnostic Register
+            DIAG_RETURN_BUS_MSG_CNT         = 0x000B, // Return Bus Message Count
+            DIAG_RETURN_COMM_ERR_CNT        = 0x000C, // Return Communication Error Count
+            DIAG_RETURN_EXCEPTION_CNT       = 0x000D, // Return Exception Error Count
+            DIAG_RETURN_SLAVE_MSG_CNT       = 0x000E, // Return Slave Message Count
+            DIAG_RETURN_SLAVE_NO_RESP_CNT   = 0x000F, // Return Slave No Response Count
+            DIAG_RETURN_SLAVE_NAK_CNT       = 0x0010, // Return Slave NAK Count
+            DIAG_RETURN_SLAVE_BUSY_CNT      = 0x0011, // Return Slave Busy Count
+            DIAG_RETURN_BUS_CHAR_OVERRUN  = 0x0012, // Return Bus Character Overrun Count
+            DIAG_I_AM_READY                 = 0x0013, // I Am Ready
+            DIAG_RESET_COUNTERS             = 0x0014, // Reset Counters
+            DIAG_RETURN_BUS_EXCEPTION_CNT = 0x001A  // Return Bus Exception Error Count
         };
         //Exception Codes
-        //Custom result codes used enternally and for callbacks but never used for Modbus response
+        //Custom result codes used internally and for callbacks but never used for Modbus response
         enum ResultCode {
             EX_SUCCESS              = 0x00, // Custom. No error
             EX_ILLEGAL_FUNCTION     = 0x01, // Function Code not Supported
@@ -129,10 +153,10 @@ class Modbus {
             EX_PATH_UNAVAILABLE     = 0x0A, // Not used
             EX_DEVICE_FAILED_TO_RESPOND = 0x0B, // Not used
             EX_GENERAL_FAILURE      = 0xE1, // Custom. Unexpected Master error
-            EX_DATA_MISMATCH         = 0xE2, // Custom. Inpud Data tamaño mismach
+            EX_DATA_MISMATCH        = 0xE2, // Custom. Input Data size mismatch
             EX_UNEXPECTED_RESPONSE  = 0xE3, // Custom. Returned result doesn't match transaction
-            EX_TIMEOUT              = 0xE4, // Custom. Operation not fenished cenen reasenable time
-            EX_CONNECTION_LOST      = 0xE5, // Custom. Connection con device lost
+            EX_TIMEOUT              = 0xE4, // Custom. Operation not finished in reasonable time
+            EX_CONNECTION_LOST      = 0xE5, // Custom. Connection with device lost
             EX_CANCEL               = 0xE6, // Custom. Transaction/request canceled
             EX_PASSTHROUGH          = 0xE7, // Custom. Raw Callback. Indicate to normal processing in Callback exit
             EX_FORCE_PROCESS        = 0xE8  // Custom. Raw Callback. Indicate to normal processing in Callback exit
@@ -259,23 +283,23 @@ class Modbus {
         bool cbEnabled = true;
         uint16_t callback(TRegister* reg, uint16_t val, TCallback::CallbackType t);
         virtual TRegister* searchRegister(TAddress addr);
-        void exceptionResponse(FunctionCode fn, ResultCode excode); // Fills _frame con respense
-        void successRespence(TAddress startreg, uint16_t numoutputs, FunctionCode fn);  // Fills Frame con respense
-        void slavePDU(uint8_t* frame);    //Fo Slave
-        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, uint8_t* output = nullptr);   //Fo Master
-        // Frame - Data received param Slave
-        // sourceFrame - Data have sent fo Slave
+        void exceptionResponse(FunctionCode fn, ResultCode excode); // Fills _frame with response
+        void successResponse(TAddress startreg, uint16_t numoutputs, FunctionCode fn);  // Fills frame with response
+        void slavePDU(uint8_t* frame);    // For Slave
+        void masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, uint8_t* output = nullptr);   // For Master
+        // Frame - Data received from Slave
+        // sourceFrame - Data sent to Slave
         // startreg - local Register to start put Data to
-        // output - if not null put Data to the Buffer ensted local registers. output assumed to by array of uint16_t or boolean
+        // output - if not null put Data to the Buffer instead local registers. output assumed to be array of uint16_t or boolean
 
         bool readSlave(uint16_t address, uint16_t numregs, FunctionCode fn);
         bool writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, bool* data = nullptr);
         bool writeSlaveWords(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, uint16_t* data = nullptr);
         // startreg - local Register to get Data from
         // to - Slave Register to Write Data to
-        // numregs - numserr of registers
+        // numregs - number of registers
         // fn - Modbus function
-        // Data - if null use local registers. Otherwise use Data from array to write to Slave
+        // data - if null use local registers. Otherwise use data from array to write to Slave
         bool removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
     public:
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
@@ -325,17 +349,17 @@ class Modbus {
     protected:
         bool readSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn);
         // fileNum - sequential array of file numbers to Read
-        // startRec - array of strart records for each file
-        // len - array of counts of records to Read in terms of Register tamaño (2 bytes) for each file
-        // count - count of records to ser compose in the sengle request
-        // fn - Modbus function. Assumed to ser 0x14
+        // startRec - array of start records for each file
+        // len - array of counts of records to Read in terms of Register size (2 bytes) for each file
+        // count - count of records to be composed in the single request
+        // fn - Modbus function. Assumed to be 0x14
         bool writeSlaveFile(uint16_t* fileNum, uint16_t* startRec, uint16_t* len, uint8_t count, FunctionCode fn, uint8_t* data);
-        // fileNum - sequential array of file numbers to Read
-        // startRec - array of strart records for each file
-        // len - array of counts of records to Read in terms of Register tamaño (2 bytes) for each file
-        // count - count of records to ser compose in the sengle request
-        // fn - Modbus function. Assumed to ser 0x15
-        // Data - sequential set of Data records
+        // fileNum - sequential array of file numbers to Write
+        // startRec - array of start records for each file
+        // len - array of counts of records to Write in terms of Register size (2 bytes) for each file
+        // count - count of records to be composed in the single request
+        // fn - Modbus function. Assumed to be 0x15
+        // data - sequential set of data records
     #endif
 
 };
@@ -351,7 +375,7 @@ typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, 
 #if defined(MODBUS_USE_STL)
 typedef std::function<Modbus::ResultCode(Modbus::FunctionCode, uint16_t, uint16_t, uint16_t, uint8_t*)> cbModbusFileOp;
 #else
-typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNúmero, uint16_t recLengitud, uint8_t* frame);
+typedef Modbus::ResultCode (*cbModbusFileOp)(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame);
 #endif
 #endif
 
