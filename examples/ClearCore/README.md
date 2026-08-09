@@ -1,3 +1,3 @@
-# Examples for [Teknic ClearCore ArduinoWrapper](https://github.com/Teknic-Inc/ClearCore-Arduino-wrapper)
+# Ejemplos for [Teknic ClearCore ArduinoWrapper](https://github.com/Teknic-Inc/ClearCore-Arduino-wrapper)
 
-Not tested on real hardware just based on documentation.
+Not tested on real hardware just based on documentación.

@@ -1,36 +1,36 @@
-# Examples and API explanation
+# Ejemplos y API explanation
 
 ## [RTU](RTU)
 
-ModbusRTU master and slave examples
+ModbusRTU master y slave examples
 
 ## [TCP ESP8266/ESP32](TCP-ESP)
 
-ModbusTCP for ESP8266/ESP32 client and server examples
+ModbusTCP for ESP8266/ESP32 client y server examples
 
 ## [TCP Ethernet W5x00](TCP-Ethernet)
 
-ModbusTCP for W5x00 Ethernet library client and server examples (for all Arduino).
+ModbusTCP for W5x00 Biblioteca Ethernet client y server examples (for all Arduino).
 
 ## [TLS ESP8266/ESP32](TLS)
 
-ModbusTCP Security for ESP8266 and ESP32 (client only) examples.
+ModbusTCP Security para ESP8266 y ESP32 (client solo) examples.
 
-## [Callbacks usage](Callback)
+## [Llamadas de retorno (Callbacks) usage](Callback)
 
-Examples of using callback functions.
+Ejemplos of using callback funcións.
 
 ## [Files operations](Files)
 
 Modbus file operations examples.
 
-## [ModbusRTU to ModbusTCP bridge and related functions](Bridge)
+## [ModbusRTU to ModbusTCP puente y related funcións](Bridge)
 
 Very basic example of accessing ModbusRTU slave device connected to ESP8266/ESP32 via ModbusTCP server.
 
-# Modbus Library for Arduino
-### ModbusRTU, ModbusTCP and ModbusTCP Security
+# Biblioteca Modbus para Arduino
+### ModbusRTU, ModbusTCP y ModbusTCP Security
 
-(c)2020 [Alexander Emelianov](mailto:a.m.emelianov@gmail.com)
+(c)2020 [Alexyer Emelianov](mailto:a.m.emelianov@gmail.com)
 
-The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.
+El código en este repositorio está licenciado bajo la Licencia BSD Nueva. Ver LICENSE.txt para más información.

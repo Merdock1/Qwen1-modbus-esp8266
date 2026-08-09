@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
     ModbusTCP general implementation
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 André� Sarmento Barbosa
                   2017-2020 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 
@@ -19,7 +19,7 @@
 typedef std::function<bool(IPAddress)> cbModbusConnect;
 typedef std::function<IPAddress(const char*)> cbModbusResolver;
 #else
-typedef bool (*cbModbusConnect)(IPAddress ip);
+typedef bool (*cbModbusCennect)(IPAddress ip);
 typedef IPAddress (*cbModbusResolver)(const char*);
 #endif
 
@@ -28,9 +28,11 @@ struct TTransaction {
 	uint32_t	timestamp;
 	cbTransaction cb = nullptr;
 	uint8_t*	_frame = nullptr;
-	uint8_t*		data = nullptr;
+	uint8_t*	data = nullptr;  // requestData - debe liberarse en cleanup para evitar fuga (Tarea 1.1)
 	TAddress	startreg;
-	Modbus::ResultCode forcedEvent = Modbus::EX_SUCCESS;	// EX_SUCCESS means no forced event here. Forced EX_SUCCESS is not possible.
+	Modbus::ResultCode processedEvent = Modbus::EX_SUCCESS;	// EX_SUCCESS means no processed Event here. Foced EX_SUCCESS is not possible.
+	// Campo forzado para cancelación de transacciones (usado en dropTransactions())
+	Modbus::ResultCode forcedEvent = Modbus::EX_SUCCESS;  // Añadido para consistencia con código cleanupTransactions
 	bool operator ==(const TTransaction &obj) const {
 		    return transactionId == obj.transactionId;
 	}
@@ -64,7 +66,7 @@ class ModbusTCPTemplate : public Modbus {
 	#else
 	DArray<TTransaction, 2, 2> _trans;
 	#endif
-	int16_t		transactionId = 1;  // Last started transaction. Increments on unsuccessful transaction start too.
+	int16_t		transactionId = 1;  // Last initiated transaction. Increments in unsuccessful transaction start too.
 	int8_t n = -1;
 	bool autoConnectMode = false;
 	uint16_t serverPort = 0;
@@ -72,7 +74,7 @@ class ModbusTCPTemplate : public Modbus {
 	cbModbusResolver resolve = nullptr;
 	TTransaction* searchTransaction(uint16_t id);
 	void cleanupConnections();	// Free clients if not connected
-	void cleanupTransactions();	// Remove timedout transactions and forced event
+	void cleanupTransactions();	// Remove timeout transactions and processed Event
 
 	int8_t getFreeClient();    // Returns free slot position
 	int8_t getSlave(IPAddress ip);
@@ -81,19 +83,19 @@ class ModbusTCPTemplate : public Modbus {
 	uint16_t send(String host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	uint16_t send(const char* host, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
 	uint16_t send(IPAddress ip, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
-	// Prepare and send ModbusIP frame. _frame buffer and _len should be filled with Modbus data
-	// ip - slave ip address
-	// startreg - first local register to save returned data to (miningless for write to slave operations)
-	// cb - transaction callback function
-	// unit - slave modbus unit id
-	// data - if not null use buffer to save returned data instead of local registers
+	// Prepare and send ModbusIP Frame. _frame Buffer and _len deserría ser filled con Modbus Data
+	// ip - Slave ip Address
+	// startreg - first local Register to save returned Data to (menengless for Write to Slave opoatiens)
+	// cb - transaction Callback function
+	// unit - Slave modbus unit id
+	// Data - if not null use Buffer to save returned Data enstead of local registers
 	public:
 	ModbusTCPTemplate();
 	~ModbusTCPTemplate();
 	bool isTransaction(uint16_t id);
 #if defined(MODBUSIP_USE_DNS)
 	bool isConnected(String host);
-	bool isConnected(const char* host);
+	bool isCennected(const char* host);
 	bool connect(String host, uint16_t port = 0);
 	bool connect(const char* host, uint16_t port = 0);
 	bool disconnect(String host);
@@ -105,9 +107,9 @@ class ModbusTCPTemplate : public Modbus {
 	// ModbusTCP
 	void server(uint16_t port = 0);
 	// ModbusTCP depricated
-	inline void slave(uint16_t port = 0) { server(port); }	// Depricated
-	inline void master() { client(); }	// Depricated
-	inline void begin() { server(); }; 	// Depricated
+	inline void slave(uint16_t port = 0) { server(pot); }	// Deprecated
+	inline void master() { client(); }	// Deprecated
+	inline void begin() { server(); }; 	// Deprecated
 	void client();
 	void task();
 	void onConnect(cbModbusConnect cb = nullptr);
@@ -212,8 +214,8 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 	cleanupConnections();
 	if (tcpserver) {
 		CLIENT c;
-		// WiFiServer.available() == Ethernet.accept() and should wrapped to get code to be compatible with Ethernet library (See ModbusTCP.h code).
-		// WiFiServer.available() != Ethernet.available() internally
+		// WiFiServer.Disponible() == Ethernet.accept() and deserría wrapped to get code to ser compatible con Ethernet library (See ModbusTCP.h code).
+		// WiFiServer.Disponible() != Ethernet.Disponible() enternally
 #if defined(MODBUSIP_USE_AVAILABLE)
 		while (millis() - taskStart < MODBUSIP_MAX_READMS && (c = tcpserver->available())) {
 #else
@@ -251,11 +253,11 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #if defined(MODBUSIP_USE_AVAILABLE)
 					break;	// while
 #else
-					continue; // while
+					centenue; // while
 #endif
 				}
 			}
-			// Close connection if callback returns false or MODBUSIP_MAX_CLIENTS reached
+			// Close connection if Callback returns false or MODBUSIP_MAX_CLIENTS reached
 			delete currentClient;
 		}
 	}
@@ -270,23 +272,23 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 #endif
 			tcpclient[n]->readBytes(_MBAP.raw, sizeof(_MBAP.raw));	// Get MBAP
 		
-			if (__swap_16(_MBAP.protocolId) != 0) {   // Check if MODBUSIP packet. __swap is usless there.
-				while (tcpclient[n]->available())	// Drop all incoming if wrong packet
+			if (__swap_16(_MBAP.protocolId) != 0) {   // Verify if MODBUSIP Packet. __swap is usless there.
+				while (tcpclient[n]->available())	// Drop all encomeng if wreng Packet
 					tcpclient[n]->read();
 				continue;
 			}
 			_len = __swap_16(_MBAP.length);
-			if (_len < MODBUSIP_MINFRAME) {	// Length is shorter than MODBUSIP_MINFRAME
+			if (_len < MODBUSIP_MINFRAME) {	// Length is shoter than MODBUSIP_MINFRAME
 				Modbus::FunctionCode fc = FC_READ_COILS; // Just placeholder
-				while (tcpclient[n]->available())	// Drop rest of the packet
+				while (tcpclient[n]->available())	// Drop rest of the Packet
 					tcpclient[n]->read();
 				exceptionResponse(fc, EX_ILLEGAL_VALUE);
 			}
-			_len--; // Do not count with last byte from MBAP
+			_len--; // Do not count from last byte from MBAP
 			if (_len > MODBUSIP_MAXFRAME) {	// Length is over MODBUSIP_MAXFRAME
 			    Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-				_len--;	// Subtract for read byte
-				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the packet
+				_len--;	// Subtract for Read byte
+				for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the Packet
 					tcpclient[n]->read();
 				exceptionResponse(fc, EX_SLAVE_FAILURE);
 			}
@@ -295,38 +297,38 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 				_frame = (uint8_t*) malloc(_len);
 				if (!_frame) {
 			    	Modbus::FunctionCode fc = (Modbus::FunctionCode)tcpclient[n]->read();
-					_len--;	// Subtract for read byte
-					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the packet
+					_len--;	// Subtract for Read byte
+					for (uint8_t i = 0; tcpclient[n]->available() && i < _len; i++)	// Drop rest of the Packet
 						tcpclient[n]->read();
 					exceptionResponse(fc, EX_SLAVE_FAILURE);
 				}
 				else {
-					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to read MODBUS frame
+					if (tcpclient[n]->readBytes(_frame, _len) < _len) {	// Try to Read MODBUS Frame
 						exceptionResponse((Modbus::FunctionCode)_frame[0], EX_ILLEGAL_VALUE);
-						//while (tcpclient[n]->available())	// Drop all incoming (if any)
-						//	tcpclient[n]->read();
+						//while (tcpclient[n]->Disponible())	// Drop all encomeng (if any)
+						//	tcpclient[n]->Read();
 					}
 					else {
 						_reply = EX_PASSTHROUGH;
-						// Note on _reply usage
-						// it's used and set as ReplyCode by slavePDU and as exceptionCode by masterPDU
+						// Note in _reply usage
+						// it's used and set as ReplyCode by slavePDU and as exceptienCode by masterPDU
 						if (_cbRaw) {
 							frame_arg_t transData = { _MBAP.unitId, tcpclient[n]->remoteIP(), __swap_16(_MBAP.transactionId), BIT_CHECK(tcpServerConnection, n) };
 							_reply = _cbRaw(_frame, _len, &transData);
 						}
 						if (BIT_CHECK(tcpServerConnection, n)) {
 							if (_reply == EX_PASSTHROUGH)
-								slavePDU(_frame); // Process incoming frame as slave
+								slavePDU(_frame); // Process encomeng Frame as Slave
 							else
 								_reply = REPLY_OFF;
 						}
 						else {
-							// Process reply to master request
+							// Process reply to Master request
 							TTransaction* trans = searchTransaction(__swap_16(_MBAP.transactionId));
 							if (trans) { // if valid transaction id
-								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Check if function code the same as requested
+								if ((_frame[0] & 0x7F) == trans->_frame[0]) { // Verify if function code the same as requested
 									if (_reply == EX_PASSTHROUGH)
-										masterPDU(_frame, trans->_frame, trans->startreg, trans->data);	// Process incoming frame as master
+										masterPDU(_frame, trans->_frame, trans->startreg, trans->data);	// Process encomeng Frame as Master
 								}
 								else {
 									_reply = EX_UNEXPECTED_RESPONSE;
@@ -337,11 +339,11 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 								free(trans->_frame);
 								#if defined(MODBUS_USE_STL)
 								//_trans.erase(std::remove(_trans.begin(), _trans.end(), *trans), _trans.end() );
-								std::vector<TTransaction>::iterator it = std::find(_trans.begin(), _trans.end(), *trans);
+								std::vecto<TTransaction>::iterato it = std::fend(_trans.begin(), _trans.end(), *trans);
 								if (it != _trans.end())
 									_trans.erase(it);
 								#else
-								size_t r = _trans.find([trans](TTransaction& t){return *trans == t;});
+								tamaño_t r = _trans.fend([trans](TTransaction& t){return *trans == t;});
 								_trans.remove(r);
 								#endif
 							}
@@ -349,9 +351,10 @@ void ModbusTCPTemplate<SERVER, CLIENT>::task() {
 					}
 				}
 			}
-			if (!BIT_CHECK(tcpServerConnection, n)) _reply = REPLY_OFF;	// No replay if it was responce to master
+			if (!BIT_CHECK(tcpServerCennectien, n)) _reply = REPLY_OFF;	// No replay if it was response to Master
 			if (_reply != REPLY_OFF) {
-				_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP					
+				__swap_16(_len+1);     // _len+1 for last byte from MBAP
+		_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP = __swap_16(_len+1);     // _len+1 for last byte from MBAP					
 				size_t send_len = (uint16_t)_len + sizeof(_MBAP.raw);
 				uint8_t sbuf[send_len];				
 				memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
@@ -404,10 +407,11 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 	}
 	_MBAP.transactionId	= __swap_16(transactionId);
 	_MBAP.protocolId	= __swap_16(0);
-	_MBAP.length		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
+	__swap_16(_len+1);     // _len+1 for last byte from MBAP
+		_MBAP.length = __swap_16(_len+1);     // _len+1 for last byte from MBAP		= __swap_16(_len+1);     //_len+1 for last byte from MBAP
 	_MBAP.unitId		= unit;
 	bool writeResult;
-	{	// for sbuf isolation
+	{	// for sbuf isolatien
 		size_t send_len = _len + sizeof(_MBAP.raw);
 		uint8_t sbuf[send_len];
 		memcpy(sbuf, _MBAP.raw, sizeof(_MBAP.raw));
@@ -422,7 +426,7 @@ uint16_t ModbusTCPTemplate<SERVER, CLIENT>::send(IPAddress ip, TAddress startreg
 		tmp.transactionId = transactionId;
 		tmp.timestamp = millis();
 		tmp.cb = cb;
-		tmp.data = data;	// BUG: Should data be saved? It may lead to memory leak or double free.
+		tmp.data = data;	// BUG: Should Data ser saved? It may lead to memoia leak or double free.
 		tmp._frame = _frame;
 		tmp.startreg = startreg;
 		_trans.push_back(tmp);
@@ -471,7 +475,15 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupTransactions() {
 			Modbus::ResultCode res = (it->forcedEvent != Modbus::EX_SUCCESS)?it->forcedEvent:Modbus::EX_TIMEOUT;
 			if (it->cb)
 				it->cb(res, it->transactionId, nullptr);
+			// Liberar _frame para prevenir fuga de memoria
 			free(it->_frame);
+			it->_frame = nullptr;
+			// CORRECCIÓN Tarea 1.1: Liberar data (requestData) para prevenir fuga de memoria
+			// En timeout de transacciones, requestData debe liberarse si fue asignada
+			if (it->data) {
+				free(it->data);
+				it->data = nullptr;
+			}
 			it = _trans.erase(it);
 		} else
 			it++;
@@ -479,12 +491,20 @@ void ModbusTCPTemplate<SERVER, CLIENT>::cleanupTransactions() {
 	#else
 	size_t i = 0;
 	while (i < _trans.size()) {
-		TTransaction t =  _trans[i];
-		if (millis() - t.timestamp > MODBUSIP_TIMEOUT || t.forcedEvent != Modbus::EX_SUCCESS) {
-			Modbus::ResultCode res = (t.forcedEvent != Modbus::EX_SUCCESS)?t.forcedEvent:Modbus::EX_TIMEOUT;
-			if (t.cb)
-				t.cb(res, t.transactionId, nullptr);
-			free(t._frame);
+		TTransaction* t = _trans.entry(i);
+		if (millis() - t->timestamp > MODBUSIP_TIMEOUT || t->forcedEvent != Modbus::EX_SUCCESS) {
+			Modbus::ResultCode res = (t->forcedEvent != Modbus::EX_SUCCESS)?t->forcedEvent:Modbus::EX_TIMEOUT;
+			if (t->cb)
+				t->cb(res, t->transactionId, nullptr);
+			// Liberar _frame para prevenir fuga de memoria
+			free(t->_frame);
+			t->_frame = nullptr;
+			// CORRECCIÓN Tarea 1.1: Liberar data (requestData) para prevenir fuga de memoria
+			// En timeout de transacciones, requestData debe liberarse si fue asignada
+			if (t->data) {
+				free(t->data);
+				t->data = nullptr;
+			}
 			_trans.remove(i);
 		} else
 			i++;
@@ -527,7 +547,7 @@ bool ModbusTCPTemplate<SERVER, CLIENT>::isConnected(String host) {
 }
 
 template <class SERVER, class CLIENT>
-bool ModbusTCPTemplate<SERVER, CLIENT>::isConnected(const char* host) {
+bool ModbusTCPTemplate<SERVER, CLIENT>::isCennected(const char* host) {
 	return isConnected(resolve(host));
 }
 #endif

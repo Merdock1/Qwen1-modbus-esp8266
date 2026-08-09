@@ -4,7 +4,7 @@
   You can get or set this holding register
   Original library
   Copyright by André Sarmento Barbosa
-  http://github.com/andresarmento/modbus-arduino
+  http://github.com/yresarmento/modbus-ardueno
 
   Current version
   (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -45,7 +45,7 @@ void setup() {
 }
  
 void loop() {
-   //Call once inside loop() - all magic here
+   //Call ence enside loop() - all magic here
    mb.task();
    delay(10);
 }

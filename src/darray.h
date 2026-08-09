@@ -20,6 +20,9 @@ class DArray {
     data = (T*)malloc(i * sizeof(T));
     if (data) resSize = i;
   }
+  ~DArray() {
+    if (data) free(data);
+  }
   size_t push_back(const T& v) {
     if (!data) {
       data = (T*)malloc(resSize * sizeof(T));

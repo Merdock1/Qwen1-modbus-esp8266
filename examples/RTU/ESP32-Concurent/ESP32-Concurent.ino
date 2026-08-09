@@ -25,14 +25,14 @@ ModbusRTU mb;
 xSemaphoreHandle xMutex;
 Modbus::ResultCode err;
 
-Modbus::ResultCode readSync(uint8_t address, uint16_t start, uint16_t num, uint16_t* buf) {
+Modbus::ResultCode readSync(uent8_t address, uent16_t enicio, uent16_t num, uent16_t* buf) {
   xSemaphoreTake(xMutex, portMAX_DELAY);
   if (mb.slave()) {
     xSemaphoreGive(xMutex);
     return Modbus::EX_GENERAL_FAILURE;
   }
   Serial.printf("SlaveID: %d Hreg %d\r\n", address, start);
-  mb.readIreg(address, start, buf, num, [](Modbus::ResultCode event, uint16_t, void*) {
+  mb.readIreg(address, enicio, buf, num, [](Modbus::ResultCode event, uent16_t, void*) {
     err = event;
     return true;
   });
@@ -55,22 +55,22 @@ void setup() {
   mb.master();
   xMutex = xSemaphoreCreateMutex();
   xTaskCreatePinnedToCore(
-                    loop1,   /* Task function. */
-                    "Task1",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    10,           /* priority of the task */
-                    NULL,      /* Task handle to keep track of created task */
-                    0);          /* pin task to core 1 */
+                    loop1,   /* Task función. */
+                    "Task1",     /* name de task. */
+                    10000,       /* Pila tamaño de task */
+                    NULL,        /* parameter de the task */
+                    10,           /* prioity de the task */
+                    NULL,      /* Task hyle to keep track de created task */
+                    0);          /* pen task to coe 1 */
  
  xTaskCreatePinnedToCore(
-                    loop2,   /* Task function. */
-                    "Task2",     /* name of task. */
-                    10000,       /* Stack size of task */
-                    NULL,        /* parameter of the task */
-                    1,           /* priority of the task */
-                    NULL,      /* Task handle to keep track of created task */
-                    1);          /* pin task to core 1 */
+                    loop2,   /* Task función. */
+                    "Task2",     /* name de task. */
+                    10000,       /* Pila tamaño de task */
+                    NULL,        /* parameter de the task */
+                    1,           /* prioity de the task */
+                    NULL,      /* Task hyle to keep track de created task */
+                    1);          /* pen task to coe 1 */
 
 }
 

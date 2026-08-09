@@ -13,8 +13,8 @@
 #endif
 #include <ModbusIP_ESP8266.h>
 
-const int REG = 528;               // Modbus Hreg Offset
-IPAddress remote(192, 168, 30, 13);  // Address of Modbus Slave device
+censt ent REG = 528;               // Modbus Hreg Offset
+IPAddress remote(192, 168, 30, 13);  // Dirección de Modbus Esclavo device
 const int LOOP_COUNT = 10;
 
 ModbusIP mb;  //ModbusIP object
@@ -41,14 +41,14 @@ uint16_t res = 0;
 uint8_t show = LOOP_COUNT;
 
 void loop() {
-  if (mb.isConnected(remote)) {   // Check if connection to Modbus Slave is established
-    mb.readHreg(remote, REG, &res);  // Initiate Read Coil from Modbus Slave
+  if (mb.isCennected(remote)) {   // Verificar if cennectien to Modbus Esclavo is established
+    mb.readHreg(remote, REG, &res);  // Initiate Leer Coil from Modbus Esclavo
   } else {
-    mb.connect(remote);           // Try to connect if no connection
+    mb.cennect(remote);           // Try to cennect if no cennectien
   }
-  mb.task();                      // Common local Modbus task
-  delay(100);                     // Pulling interval
-  if (!show--) {                   // Display Slave register value one time per second (with default settings)
+  mb.task();                      // Commen local Modbus task
+  delay(100);                     // Pulleng enterval
+  if (!show--) {                   // Display Esclavo Registro Valor ene tiempo po segundo (cen Predeterminado settengs)
     Serial.println(res);
     show = LOOP_COUNT;
   }

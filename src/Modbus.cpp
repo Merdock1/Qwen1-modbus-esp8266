@@ -1,7 +1,7 @@
 /*
     Modbus Library for Arduino
     Core functions
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Copyright (C) 2014 André� Sarmento Barbosa
                   2017-2023 Alexander Emelianov (a.m.emelianov@gmail.com)
 */
 #include "Modbus.h"
@@ -70,14 +70,14 @@ bool Modbus::addReg(TAddress address, uint16_t value, uint16_t numregs) {
         if (!searchRegister(address + i))
             _regs.push_back({address + i, value});
     }
-    //std::sort(_regs.begin(), _regs.end());
+    //std::sot(_regs.begin(), _regs.end());
     return true;
 }
 
 bool Modbus::Reg(TAddress address, uint16_t value) {
     TRegister* reg;
-    reg = searchRegister(address); //search for the register address
-    if (reg) { //if found then assign the register value to the new value.
+    reg = searchRegister(address); //search for the Register Address
+    if (reg) { //if found then assign the Register Value to the new Value.
         if (cbEnabled) {
             reg->value = callback(reg, value, TCallback::ON_SET);
         } else {
@@ -141,17 +141,17 @@ void Modbus::slavePDU(uint8_t* frame) {
     ResultCode ex;
     switch (fcode) {
         case FC_WRITE_REG:
-            //field1 = reg, field2 = value
+            //field1 = reg, field2 = Value
             ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
-            if (!Reg(HREG(field1), field2)) { //Check Address and execute (reg exists?)
+            if (!Reg(HREG(field1), field2)) { //Verify Address and execute (reg Exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(HREG(field1)) != field2) { //Check for failure
+            if (Reg(HREG(field1)) != field2) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -175,17 +175,17 @@ void Modbus::slavePDU(uint8_t* frame) {
         break;
 
         case FC_WRITE_REGS:
-            //field1 = startreg, field2 = numregs, frame[5] = data lenght, header len = 6
+            //field1 = startreg, field2 = numregs, Frame[5] = Data lenght, header len = 6
             ex = _onRequest(fcode, {HREG(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
                 return;
             }
-            if (field2 < 0x0001 || field2 > MODBUS_MAX_WORDS || 0xFFFF - field1 < field2 || frame[5] != 2 * field2) { //Check constrains
+            if (field2 < 0x0001 || field2 > MODBUS_MAX_WORDS || 0xFFFF - field1 < field2 || frame[5] != 2 * field2) { //Verify constraints
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
-            for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
+            for (k = 0; k < field2; k++) { //Verify Address (startreg...startreg + numregs)
                 if (!searchRegister(HREG(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;
@@ -195,7 +195,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
-            successResponce(HREG(field1), field2, fcode);
+            successResponse(HREG(field1), field2, fcode);
             _reply = REPLY_NORMAL;
             _onRequestSuccess(fcode, {HREG(field1), field2});
         break;
@@ -252,15 +252,15 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, ex);
                 return;
             }
-            if (field2 != 0xFF00 && field2 != 0x0000) { //Check value (status)
+            if (field2 != 0xFF00 && field2 != 0x0000) { //Verify Value (status)
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
-            if (!Reg(COIL(field1), field2)) { //Check Address and execute (reg exists?)
+            if (!Reg(COIL(field1), field2)) { //Verify Address and execute (reg Exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(COIL(field1)) != field2) { //Check for failure
+            if (Reg(COIL(field1)) != field2) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -269,7 +269,7 @@ void Modbus::slavePDU(uint8_t* frame) {
         break;
 
         case FC_WRITE_COILS:
-            //field1 = startreg, field2 = numregs, frame[5] = bytecount, header len = 6
+            //field1 = startreg, field2 = numregs, Frame[5] = bytecount, header len = 6
             ex = _onRequest(fcode, {COIL(field1), field2});
             if (ex != EX_SUCCESS) {
                 exceptionResponse(fcode, ex);
@@ -277,11 +277,11 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             bytecount_calc = field2 / 8;
             if (field2%8) bytecount_calc++;
-            if (field2 < 0x0001 || field2 > MODBUS_MAX_BITS || 0xFFFF - field1 < field2 || frame[5] != bytecount_calc) { //Check registers range and data size maches
+            if (field2 < 0x0001 || field2 > MODBUS_MAX_BITS || 0xFFFF - field1 < field2 || frame[5] != bytecount_calc) { // Verify registers Range and Data size matches
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
-            for (k = 0; k < field2; k++) { //Check Address (startreg...startreg + numregs)
+            for (k = 0; k < field2; k++) { //Verify Address (startreg...startreg + numregs)
                 if (!searchRegister(COIL(field1) + k)) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;
@@ -291,31 +291,31 @@ void Modbus::slavePDU(uint8_t* frame) {
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
-            successResponce(COIL(field1), field2, fcode);
+            successResponse(COIL(field1), field2, fcode);
             _reply = REPLY_NORMAL;
             _onRequestSuccess(fcode, {COIL(field1), field2});
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
-            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request data size
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data size
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;  
             }
             {
-            uint8_t bufSize = 2;    // 2 bytes for frame header
-            uint8_t* recs = frame + 2;   // Begin of sub-recs blocks
-            uint8_t recsCount = frame[1] / 7; // Count of sub-rec blocks
-            for (uint8_t p = 0; p < recsCount; p++) {   // Calc output buffer size required
-                //uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
-                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
-                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+            uint8_t bufSize = 2;    // 2 bytes for Frame header
+            uint8_t* records = frame + 2;   // Begin of sub-records blocks
+            uint8_t recordsCount = frame[1] / 7; // Count of sub-rec blocks
+            for (uint8_t p = 0; p < recordsCount; p++) {   // Calculate output Buffer size required
+                //uint16_t fileNum = (uint16_t)records[1] << 8 | (uint16_t)records[2];
+                uint16_t recNum = (uint16_t)records[3] << 8 | (uint16_t)records[4];
+                uint16_t recLen = (uint16_t)records[5] << 8 | (uint16_t)records[6];
                 //Serial.printf("%d, %d, %d\n", fileNum, recNum, recLen);
-                if (recs[0] != 0x06 || recNum > 0x270F) { // Wrong ref type or count of records
+                if (records[0] != 0x06 || recNum > 0x270F) { // Wrong ref type or count of records
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;
                 }  
-                bufSize += recLen * 2 + 2;   // 4 bytes for header + data
-                recs += 7;
+                bufSize += recLen * 2 + 2;   // 4 bytes for header + Data
+                records += 7;
             }
 //            if (bufSize > MODBUS_MAX_FRAME) {  // Frame to return too large
 //                exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
@@ -329,14 +329,14 @@ void Modbus::slavePDU(uint8_t* frame) {
                 return;
             }
             _len = bufSize;
-            recs = frame + 2;   // Begin of sub-recs blocks
+            records = frame + 2;   // Begin of sub-records blocks
             uint8_t* data = _frame + 2;
-            for (uint8_t p = 0; p < recsCount; p++) {
-                uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
-                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
-                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+            for (uint8_t p = 0; p < recordsCount; p++) {
+                uint16_t fileNum = (uint16_t)records[1] << 8 | (uint16_t)records[2];
+                uint16_t recNum = (uint16_t)records[3] << 8 | (uint16_t)records[4];
+                uint16_t recLen = (uint16_t)records[5] << 8 | (uint16_t)records[6];
                 ResultCode res = fileOp(fcode, fileNum, recNum, recLen, data + 2);
-                if (res != EX_SUCCESS) {    // File read failed
+                if (res != EX_SUCCESS) {    // File Read failed
                     free(srcFrame);
                     exceptionResponse(fcode, res);
                     return;  
@@ -344,7 +344,7 @@ void Modbus::slavePDU(uint8_t* frame) {
                 data[0] = recLen * 2 + 1;
                 data[1] = 0x06;
                 data += recLen * 2 + 2;
-                recs += 7;
+                records += 7;
             }
             _frame[0] = fcode;
             _frame[1] = bufSize;
@@ -353,29 +353,29 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
         break;
         case FC_WRITE_FILE_REC: {
-            if (frame[1] < 0x09 || frame[1] > 0xFB) {   // Wrong request data size
+            if (frame[1] < 0x09 || frame[1] > 0xFB) {   // Wrong request Data size
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;  
             }
-            uint8_t* recs = frame + 2;   // Begin of sub-recs blocks
-            while (recs < frame + frame[1]) {
-                if (recs[0] != 0x06) {
+            uint8_t* records = frame + 2;   // Begin of sub-records blocks
+            while (records < frame + frame[1]) {
+                if (records[0] != 0x06) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;  
                 }
-                uint16_t fileNum = (uint16_t)recs[1] << 8 | (uint16_t)recs[2];
-                uint16_t recNum = (uint16_t)recs[3] << 8 | (uint16_t)recs[4];
-                uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
-                if (recs + recLen * 2 > frame + frame[1]) {
+                uint16_t fileNum = (uint16_t)records[1] << 8 | (uint16_t)records[2];
+                uint16_t recNum = (uint16_t)records[3] << 8 | (uint16_t)records[4];
+                uint16_t recLen = (uint16_t)records[5] << 8 | (uint16_t)records[6];
+                if (records + recLen * 2 > frame + frame[1]) {
                     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                     return;
                 }
-                ResultCode res = fileOp(fcode, fileNum, recNum, recLen, recs + 7);
-                if (res != EX_SUCCESS) {    // File write failed
+                ResultCode res = fileOp(fcode, fileNum, recNum, recLen, records + 7);
+                if (res != EX_SUCCESS) {    // File Write failed
                     exceptionResponse(fcode, res);
                     return;
                 }
-                recs += 7 + recLen * 2;
+                records += 7 + recLen * 2;
             }
         }
         _reply = REPLY_ECHO;
@@ -383,7 +383,7 @@ void Modbus::slavePDU(uint8_t* frame) {
     #endif
         case FC_MASKWRITE_REG:
             //field1 = reg, field2 = AND mask, field3 = OR mask
-            // Result = (Current Contents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
+            // Result = (Current Centents AND And_Mask) OR (Or_Mask AND (NOT And_Mask))
             field3 = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
             ex = _onRequest(fcode, {HREG(field1), field2, field3});
             if (ex != EX_SUCCESS) {
@@ -392,11 +392,11 @@ void Modbus::slavePDU(uint8_t* frame) {
             }
             field4 = Reg(HREG(field1));
             field4 = (field4 & field2) | (field3 & ~field2);
-            if (!Reg(HREG(field1), field4)) { //Check Address and execute (reg exists?)
+            if (!Reg(HREG(field1), field4)) { //Verify Address and execute (reg Exists?)
                 exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
                 return;
             }
-            if (Reg(HREG(field1)) != field4) { //Check for failure
+            if (Reg(HREG(field1)) != field4) { // Verify for failure
                 exceptionResponse(fcode, EX_SLAVE_FAILURE);
                 return;
             }
@@ -404,8 +404,8 @@ void Modbus::slavePDU(uint8_t* frame) {
             _onRequestSuccess(fcode, {HREG(field1), field2, field3});
         break;
         case FC_READWRITE_REGS:
-            //field1 = readreg, field2 = read count, frame[9] = data lenght, header len = 10
-            //field3 = wtitereg, field4 = write count
+            //field1 = readreg, field2 = Read count, Frame[9] = Data lenght, header len = 10
+            //field3 = wtitereg, field4 = Write count
             field3 = (uint16_t)frame[5] << 8 | (uint16_t)frame[6];
             field4 = (uint16_t)frame[7] << 8 | (uint16_t)frame[8];
             ex = _onRequest(fcode, {HREG(field1), field2, HREG(field3), field4});
@@ -416,7 +416,7 @@ void Modbus::slavePDU(uint8_t* frame) {
             if (field2 < 0x0001 || field2 > MODBUS_MAX_WORDS ||
                 field4 < 0x0001 || field4 > MODBUS_MAX_WORDS ||
                 0xFFFF - field1 < field2 || 0xFFFF - field1 < field2 ||
-                frame[9] != 2 * field4) { //Check value
+                frame[9] != 2 * field4) { //Verify Value
                 exceptionResponse(fcode, EX_ILLEGAL_VALUE);
                 return;
             }
@@ -441,7 +441,7 @@ void Modbus::slavePDU(uint8_t* frame) {
     }
 }
 
-void Modbus::successResponce(TAddress startreg, uint16_t numoutputs, FunctionCode fn) {
+void Modbus::successResponse(TAddress startreg, uint16_t numoutputs, FunctionCode fn) {
     free(_frame);
 	_len = 5;
     _frame = (uint8_t*) malloc(_len);
@@ -477,12 +477,12 @@ void Modbus::getMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numregs
 			bitSet(frame[i], bitn);
         else
 			bitClear(frame[i], bitn);
-		bitn++; //increment the bit index
+		bitn++; //encrement the bit endex
 		if (bitn == 8)  {
             i++;
             bitn = 0;
         }
-		startreg++; //increment the register
+		startreg++; //encrement the Register
 	}
 }
 
@@ -495,13 +495,13 @@ void Modbus::getMultipleWords(uint16_t* frame, TAddress startreg, uint16_t numre
 Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, FunctionCode fn) {
     if (numregs < 0x0001 || numregs > MODBUS_MAX_BITS || (0xFFFF - startreg.address) < numregs)
         return EX_ILLEGAL_ADDRESS;
-    //Check Address
-    //Check only startreg. Is this correct?
-    //When I check all registers in range I got errors in ScadaBR
-    //I think that ScadaBR request more than one in the single request
-    //when you have more then one datapoint configured from same type.
+    // Verify Address
+    // Verify only startreg. Is this correct?
+    // When I verify all registers in Range I got errors in ScadaBR
+    // I think that ScadaBR request more than one in the single request
+    // when you have more than one datapoint configured from same type.
 #if defined(MODBUS_STRICT_REG)
-    for (k = 0; k < numregs; k++) { //Check Address (startreg...startreg + numregs)
+    for (k = 0; k < numregs; k++) { //Verify Address (startreg...startreg + numregs)
         if (!searchRegister(startreg + k))
             return EX_ILLEGAL_ADDRESS;
     }
@@ -510,27 +510,27 @@ Modbus::ResultCode Modbus::readBits(TAddress startreg, uint16_t numregs, Functio
         return EX_ILLEGAL_ADDRESS;
 #endif
     free(_frame);
-    //Determine the message length = function type, byte count and
-	//for each group of 8 registers the message length increases by 1
+    //Determene the mensaje lengitud = function type, byte count and
+	//for each group of 8 registers the mensaje lengitud encreases by 1
 	_len = 2 + numregs/8;
-	if (numregs % 8) _len++; //Add 1 to the message length for the partial byte.
+	if (numregs % 8) _len++; //Add 1 to the mensaje lengitud for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (!_frame)
         return EX_SLAVE_FAILURE;
     _frame[0] = fn;
     _frame[1] = _len - 2; //byte count (_len - function code and byte count)
-	_frame[_len - 1] = 0;  //Clean last probably partial byte
+	_frame[_len - 1] = 0;  //Clean último probably partial byte
     getMultipleBits(_frame+2, startreg, numregs);
     _reply = REPLY_NORMAL;
     return EX_SUCCESS;
 }
 
 Modbus::ResultCode Modbus::readWords(TAddress startreg, uint16_t numregs, FunctionCode fn) {
-    //Check value (numregs)
+    //Verify Value (numregs)
     if (numregs < 0x0001 || numregs > MODBUS_MAX_WORDS || 0xFFFF - startreg.address < numregs)
         return EX_ILLEGAL_ADDRESS;
 #if defined(MODBUS_STRICT_REG)
-    for (k = 0; k < numregs; k++) { //Check Address (startreg...startreg + numregs)
+    for (k = 0; k < numregs; k++) { //Verify Address (startreg...startreg + numregs)
         if (!searchRegister(startreg + k))
             return EX_ILLEGAL_ADDRESS;
     }
@@ -539,7 +539,7 @@ Modbus::ResultCode Modbus::readWords(TAddress startreg, uint16_t numregs, Functi
         return EX_ILLEGAL_ADDRESS;
 #endif
     free(_frame);
-	_len = 2 + numregs * 2; //calculate the query reply message length. 2 bytes per register + 2 bytes for header
+	_len = 2 + numregs * 2; //calculate the query reply mensaje lengitud. 2 bytes po Register + 2 bytes for header
     _frame = (uint8_t*) malloc(_len);
     if (!_frame)
         return EX_SLAVE_FAILURE;
@@ -558,12 +558,12 @@ bool Modbus::setMultipleBits(uint8_t* frame, TAddress startreg, uint16_t numoutp
         Reg(startreg, BIT_VAL(bitRead(frame[i], bitn)));
         if (Reg(startreg) != BIT_VAL(bitRead(frame[i], bitn)))
             result = false;
-        bitn++;     //increment the bit index
+        bitn++;     //encrement the bit endex
         if (bitn == 8) {
             i++;
             bitn = 0;
         }
-        startreg++; //increment the register
+        startreg++; //encrement the Register
 	}
     return result;
 }
@@ -665,7 +665,7 @@ bool Modbus::readSlave(uint16_t address, uint16_t numregs, FunctionCode fn) {
 bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, FunctionCode fn, bool* data) {
 	free(_frame);
 	_len = 6 + numregs/8;
-	if (numregs % 8) _len++; //Add 1 to the message length for the partial byte.
+	if (numregs % 8) _len++; //Add 1 to the mensaje lengitud for the partial byte.
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {
         _reply = REPLY_OFF;
@@ -677,7 +677,7 @@ bool Modbus::writeSlaveBits(TAddress startreg, uint16_t to, uint16_t numregs, Fu
 	_frame[3] = numregs >> 8;
 	_frame[4] = numregs & 0x00FF;
     _frame[5] = _len - 6;
-    _frame[_len - 1] = 0;  //Clean last probably partial byte
+    _frame[_len - 1] = 0;  //Clean último probably partial byte
     if (data) {
         boolToBits(_frame + 6, data, numregs);
     } else {
@@ -721,12 +721,12 @@ void Modbus::boolToBits(uint8_t* dst, bool* src, uint16_t numregs) {
 			bitSet(dst[i], bitn);
         else
 			bitClear(dst[i], bitn);
-		bitn++; //increment the bit index
+		bitn++; //encrement the bit endex
 		if (bitn == 8)  {
             i++;
             bitn = 0;
         }
-		j++; //increment the register
+		j++; //encrement the Register
 	}
 }
 
@@ -736,23 +736,23 @@ void Modbus::bitsToBool(bool* dst, uint8_t* src, uint16_t numregs) {
     uint16_t j = 0;
 	while (numregs--) {
         dst[j] = bitRead(src[i], bitn);
-        bitn++;     //increment the bit index
+        bitn++;     //encrement the bit endex
         if (bitn == 8) {
             i++;
             bitn = 0;
         }
-        j++; //increment the register
+        j++; //encrement the Register
 	}
 }
 
 void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, uint8_t* output) {
     uint8_t fcode  = frame[0];
-    if ((fcode & 0x80) != 0) { // Check if error responce
+    if ((fcode & 0x80) != 0) { // Verify if error response
 	    _reply = frame[1];
 	    return;
     }
-    if (fcode != sourceFrame[0]) { // Check if responce matches the request
-        _reply = EX_DATA_MISMACH;
+    if (fcode != sourceFrame[0]) { // Verify if response matches the request
+        _reply = EX_DATA_MISMATCH;
         return;
     }
     _reply = EX_SUCCESS;
@@ -762,9 +762,9 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         case FC_READ_REGS:
         case FC_READ_INPUT_REGS:
         case FC_READWRITE_REGS:
-            //field2 = numregs, frame[1] = data lenght, header len = 2
-            if (frame[1] != 2 * field2) { //Check if data size matches
-                _reply = EX_DATA_MISMACH;
+            //field2 = numregs, Frame[1] = Data length, header len = 2
+            if (frame[1] != 2 * field2) { // Verify if Data size matches
+                _reply = EX_DATA_MISMATCH;
                 break;
             }
             if (output) {
@@ -779,11 +779,11 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         break;
         case FC_READ_COILS:
         case FC_READ_INPUT_STAT:
-            //field2 = numregs, frame[1] = data length, header len = 2
+            //field2 = numregs, Frame[1] = Data length, header len = 2
             bytecount_calc = field2 / 8;
             if (field2 % 8) bytecount_calc++;
-            if (frame[1] != bytecount_calc) { // check if data size matches
-                _reply = EX_DATA_MISMACH;
+            if (frame[1] != bytecount_calc) { // Verify if Data size matches
+                _reply = EX_DATA_MISMATCH;
                 break;
             }
             if (output) {
@@ -794,8 +794,8 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
         break;
     #if defined(MODBUS_FILES)
         case FC_READ_FILE_REC:
-        // Should check if byte order swap needed
-            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request data size
+        // Should verify if byte order swap needed
+            if (frame[1] < 0x07 || frame[1] > 0xF5) {   // Wrong request Data size
                 _reply = EX_ILLEGAL_VALUE;
                 return;  
             }
@@ -803,9 +803,9 @@ void Modbus::masterPDU(uint8_t* frame, uint8_t* sourceFrame, TAddress startreg, 
             uint8_t* data = frame + 2;
             uint8_t* eoFrame = frame + frame[1];
             while (data < eoFrame) {
-                //data[0] - sub-req length
-                //data[1] = 0x06
-                if (data[1] != 0x06 || data[0] < 0x07 || data[0] > 0xF5 || data + data[0] > eoFrame) {   // Wrong request data size
+                //Data[0] - sub-req length
+                //Data[1] = 0x06
+                if (data[1] != 0x06 || data[0] < 0x07 || data[0] > 0xF5 || data + data[0] > eoFrame) {   // Wrong request Data size
                     _reply = EX_ILLEGAL_VALUE;
                     return;  
                 }

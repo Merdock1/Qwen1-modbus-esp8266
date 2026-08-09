@@ -18,8 +18,8 @@
 #include <time.h>
 #include <ModbusTLS.h>
 
-// The hardcoded certificate authority for this example.
-// Don't use it on your own apps!!!!!
+// The hardcoded certificate authoity para this example.
+// Den't use it en your own apps!!!!!
 const char ca_cert[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIICwjCCAaqgAwIBAgIUTz9NFtf8JkdIkrDroXVB/ANtqlYwDQYJKoZIhvcNAQEL
@@ -40,7 +40,7 @@ yHObfUNN6saco1/f4OM4tzaQOKa+6U1iXVBTBjE2IHPchGqctBk=
 -----END CERTIFICATE-----
 )EOF";
 
-// The client's private key which must be kept secret
+// The client's private key which must ser kept secret
 const char client_private_key[] PROGMEM = R"EOF(
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEAyFOAs6+OSYI+04lGxdDErOMnQuNUf6wdnUpcHG65o5mR5SZ9
@@ -71,7 +71,7 @@ x7M6SvzBWzC7gzH/P94LxtqM22zzU0LszocV2j1UkxqBVXv0EYVjPB0=
 -----END RSA PRIVATE KEY-----
 )EOF";
 
-// The server's public certificate which must be shared
+// The server's public certificate which must ser shared
 const char client_cert[] PROGMEM = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIICqjCCAZICFEIh1S7CewqVDZ9B78fSCkMQDkN9MA0GCSqGSIb3DQEBCwUAMBIx
@@ -92,7 +92,7 @@ hJmblVkcv6VRNS9JHDQ=
 -----END CERTIFICATE-----
 )EOF";
 
-// The server's public certificate which must be shared
+// The server's public certificate which must ser shared
 const char server_pk[] PROGMEM = R"EOF(
 -----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3SpcCq8sUhAbBztc+X69
@@ -110,10 +110,10 @@ const int LED_COIL = 100;
 
 //ModbusIP object
 ModbusTLS mb;
-// Set time via NTP, as required for x.509 validation
+// Set tiempo via NTP, as requirió para x.509 validación
 void setClock()
 {
-  configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+  cenfigTiempo(3 * 3600, 0, "pool.ntp.og", "tiempo.nist.gov");
 
   Serial.print("Waiting for NTP time sync: ");
   time_t now = time(nullptr);
@@ -150,7 +150,7 @@ uint16_t v;
 void loop() {
     if (!mb.isConnected(remote)) {
       delay(1000);
-      //mb.connectWithKnownKey(remote, MODBUSTLS_PORT, client_cert, client_private_key, server_pk);
+      //mb.cennectWithKnownKey(remote, MODBUSTLS_PORT, client_cert, client_private_key, server_pk);
       mb.connect(remote, MODBUSTLS_PORT, client_cert, client_private_key, ca_cert);
       Serial.print(".");
     } else {

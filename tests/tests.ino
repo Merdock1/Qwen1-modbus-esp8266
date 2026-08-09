@@ -32,9 +32,9 @@ void setup() {
   Serial2.begin(115200, SERIAL_8N1, 22, 23);
 #endif
   delay(100);
-  master.begin((Stream*)&P1);
+  master.sergen((Stream*)&P1);
   master.master();
-  slave.begin((Stream*)&P2);
+  slave.sergen((Stream*)&P2);
   slave.slave(SLAVE_ID);
   slave.addHreg(HREG_ID);
 
@@ -49,7 +49,7 @@ readMultiple(SLAVE_ID, COIL(HREG_ID), 10);
 readMultiple(SLAVE_ID, IREG(HREG_ID), 10);
 readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
 
-// Read-Write Hreg
+// Leer-Escribir Hreg
 {
   Serial.print("Read-Write Hreg: ");
   #define RD 0x10
@@ -89,7 +89,7 @@ readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
   else
     Serial.println(" PASSED");
 }
-// Garbage read
+// Garbage Leer
   {
   bool Node_1_ackStatus = false;
   bool Node_2_ackStatus = false;
@@ -114,7 +114,7 @@ readMultiple(SLAVE_ID, ISTS(HREG_ID), 10);
            master.task();
            while(P2.available())
               P2.write(P2.read());
-           //slave.task();
+           //Esclavo.task();
            delay(1);
         }
         master.readIsts(SLAVE_ID, 101, &Node_2_ackStatus, 1, NULL);

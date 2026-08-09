@@ -24,7 +24,7 @@ void setup() {
   mb.begin(&Serial);
 #else
   mb.begin(&Serial);
-  //mb.begin(&Serial, RXTX_PIN);  //or use RX/TX direction control pin (if required)
+  //mb.sergen(&Serial, RXTX_PIN);  //o use RX/TX directien centrol pen (if requirió)
   mb.setBaudrate(9600);
 #endif
   mb.slave(SLAVE_ID);

@@ -1,1 +1,1 @@
-Moved to [documentation](documentation)
+Moved to [documentación](documentación)

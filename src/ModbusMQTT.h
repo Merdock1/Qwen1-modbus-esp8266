@@ -1,149 +1,168 @@
-/**
- * @file ModbusMQTT.h
- * @brief Módulo de integración Modbus-MQTT con validación segura de buffers
- * @author Ingeniero de Software Senior
- * @version 1.0.0
- * @date 2024
- * 
- * Este módulo proporciona integración entre protocolos Modbus y MQTT,
- * implementando validaciones estrictas de límites para prevenir buffer overflows.
- * Cumple con estándares IEC 62443 para seguridad industrial.
- */
+/*
+    ModbusMQTT.h - Puente bidireccional Modbus-MQTT para IoT Industrial
+    Implementa: Publicación automática de cambios, suscripción a comandos,
+                reconexión automática, QoS configurable, topics personalizables
+    
+    Copyright (C) 2024 - Biblioteca Modbus para Arduino/ESP
+    Todos los comentarios y documentación en español
+    
+    Características principales:
+    - Publicación automática cuando cambian registros Modbus
+    - Suscripción a topics MQTT para escribir en registros Modbus
+    - Reconexión automática ante fallos de conexión
+    - Soporte para múltiples brokers y temas
+    - QoS configurable (0, 1, 2)
+    - Last Will Testament para detección de fallos
+    - TLS/SSL opcional para conexiones seguras
+    - Buffer de mensajes offline
+    - Timestamps en publicaciones
+    - Formato JSON o plain text
+    
+    Autor: Equipo de Desarrollo Modbus
+    Versión: 1.0.0
+    Licencia: LGPL-2.1
+*/
 
-#ifndef MODBUS_MQTT_H
-#define MODBUS_MQTT_H
+#pragma once
 
-#include <Arduino.h>
-#include <PubSubClient.h>
 #include "Modbus.h"
+#include <stdint.h>
+#include <string.h>
 
 // ============================================================================
-// CONSTANTES Y CONFIGURACIÓN
-// ============================================================================
-
-/** @brief Tamaño máximo del buffer para tópicos MQTT (limitado por seguridad) */
-#define MQTT_TOPIC_MAX_LEN 64
-
-/** @brief Tamaño máximo del buffer para payloads MQTT (limitado por seguridad) */
-#define MQTT_PAYLOAD_MAX_LEN 128
-
-/** @brief Tamaño máximo del buffer para client ID MQTT */
-#define MQTT_CLIENT_ID_MAX_LEN 32
-
-/** @brief Timeout por defecto para operaciones MQTT (ms) */
-#define MQTT_DEFAULT_TIMEOUT 5000
-
-/** @brief Macro para copia segura de strings con validación de límites */
-#define SAFE_STRNCPY(dest, src, max_size) do { \
-    strncpy((dest), (src), (max_size) - 1); \
-    (dest)[(max_size) - 1] = '\0'; \
-} while(0)
-
-/** @brief Macro para concatenación segura de strings */
-#define SAFE_STRNCAT(dest, src, max_size) do { \
-    strncat((dest), (src), (max_size) - strlen((dest)) - 1); \
-    (dest)[(max_size) - 1] = '\0'; \
-} while(0)
-
-/** @brief Macro para sprintf seguro con validación de longitud */
-#define SAFE_SNPRINTF(dest, max_size, format, ...) do { \
-    snprintf((dest), (max_size), (format), ##__VA_ARGS__); \
-    (dest)[(max_size) - 1] = '\0'; \
-} while(0)
-
-// ============================================================================
-// ESTRUCTURAS DE DATOS
+// CONFIGURACIÓN DE MQTT
 // ============================================================================
 
 /**
- * @struct ModbusMQTTConfig
- * @brief Configuración segura para conexión MQTT
- * 
- * Todos los buffers tienen tamaños fijos limitados para prevenir
- * desbordamientos. Los valores se validan antes de su uso.
+ * @brief Configuración máxima del puente MQTT
  */
-struct ModbusMQTTConfig {
-    char server[64];                    ///< Dirección del servidor MQTT
-    uint16_t port;                      ///< Puerto del servidor (por defecto 1883)
-    char clientId[MQTT_CLIENT_ID_MAX_LEN]; ///< ID único del cliente
-    char user[32];                      ///< Usuario para autenticación
-    char password[32];                  ///< Contraseña para autenticación
-    char topicPrefix[MQTT_TOPIC_MAX_LEN]; ///< Prefijo para tópicos Modbus
-    uint32_t keepAlive;                 ///< Intervalo keep-alive (segundos)
-    bool cleanSession;                  ///< Limpieza de sesión en conexión
+#ifndef MODBUS_MQTT_MAX_TOPICS
+#define MODBUS_MQTT_MAX_TOPICS 16          ///< Máximo número de topics suscritos
+#endif
+
+#ifndef MODBUS_MQTT_MAX_TOPIC_LENGTH
+#define MODBUS_MQTT_MAX_TOPIC_LENGTH 128   ///< Longitud máxima de un topic
+#endif
+
+#ifndef MODBUS_MQTT_MAX_PAYLOAD_LENGTH
+#define MODBUS_MQTT_MAX_PAYLOAD_LENGTH 256 ///< Longitud máxima de payload
+#endif
+
+#ifndef MODBUS_MQTT_BUFFER_SIZE
+#define MODBUS_MQTT_BUFFER_SIZE 512        ///< Buffer para mensajes MQTT
+#endif
+
+#ifndef MODBUS_MQTT_RECONNECT_INTERVAL
+#define MODBUS_MQTT_RECONNECT_INTERVAL 5000 ///< Intervalo entre reintentos (ms)
+#endif
+
+#ifndef MODBUS_MQTT_PUBLISH_INTERVAL
+#define MODBUS_MQTT_PUBLISH_INTERVAL 1000   ///< Intervalo mínimo entre publicaciones (ms)
+#endif
+
+#ifndef MODBUS_MQTT_MAX_OFFLINE_MESSAGES
+#define MODBUS_MQTT_MAX_OFFLINE_MESSAGES 10 ///< Máximo mensajes en buffer offline
+#endif
+
+// ============================================================================
+// TIPOS DE DATOS Y ENUMERACIONES
+// ============================================================================
+
+/**
+ * @brief Estados de conexión MQTT
+ */
+enum ModbusMQTTConnectionState {
+    MQTT_DISCONNECTED = 0,      ///< Desconectado
+    MQTT_CONNECTING,            ///< Conectando
+    MQTT_CONNECTED,             ///< Conectado
+    MQTT_RECONNECTING,          ///< Reconectando
+    MQTT_ERROR                  ///< Error crítico
+};
+
+/**
+ * @brief Calidad de Servicio (QoS) MQTT
+ */
+enum ModbusMQTTQoS {
+    MQTT_QOS_0 = 0,  ///< Como mucho una vez (fire and forget)
+    MQTT_QOS_1 = 1,  ///< Al menos una vez (acknowledged delivery)
+    MQTT_QOS_2 = 2   ///< Exactamente una vez (assured delivery)
+};
+
+/**
+ * @brief Tipo de dato para registro Modbus
+ */
+enum ModbusRegisterType {
+    MODBUS_HOLDING_REGISTER = 0,  ///< Registros de salida (RW)
+    MODBUS_INPUT_REGISTER,        ///< Registros de entrada (R)
+    MODBUS_COIL,                  ///< Coils (RW boolean)
+    MODBUS_DISCRETE_INPUT         ///< Discrete inputs (R boolean)
+};
+
+/**
+ * @brief Formato de publicación
+ */
+enum ModbusMQTTPublishFormat {
+    MQTT_FORMAT_PLAIN = 0,  ///< Valor simple (ej: "25.5")
+    MQTT_FORMAT_JSON,       ///< JSON estructurado
+    MQTT_FORMAT_CSV         ///< CSV para múltiples valores
+};
+
+/**
+ * @brief Estructura para configuración de topic
+ */
+struct ModbusMQTTTopicConfig {
+    char topic[MODBUS_MQTT_MAX_TOPIC_LENGTH];  ///< Topic MQTT
+    uint16_t registerAddress;                   ///< Dirección del registro Modbus
+    ModbusRegisterType registerType;            ///< Tipo de registro
+    ModbusMQTTQoS qos;                          ///< Calidad de servicio
+    bool retain;                                ///< Retener mensaje en broker
+    bool publishOnChange;                       ///< Publicar solo si cambia
+    uint32_t publishInterval;                   ///< Intervalo mínimo entre pubs (ms)
+    const char* description;                    ///< Descripción del topic
     
-    /**
-     * @brief Constructor con inicialización segura
-     * Inicializa todos los buffers a vacío y valores por defecto seguros
-     */
-    ModbusMQTTConfig() : port(1883), keepAlive(60), cleanSession(true) {
-        memset(server, 0, sizeof(server));
-        memset(clientId, 0, sizeof(clientId));
-        memset(user, 0, sizeof(user));
-        memset(password, 0, sizeof(password));
-        memset(topicPrefix, 0, sizeof(topicPrefix));
-    }
-    
-    /**
-     * @brief Valida la configuración actual
-     * @return true si la configuración es válida, false en caso contrario
-     */
-    bool validate() const {
-        return (strlen(server) > 0 && strlen(server) < sizeof(server) &&
-                port > 0 && port <= 65535 &&
-                strlen(clientId) > 0 && strlen(clientId) < sizeof(clientId));
+    ModbusMQTTTopicConfig() :
+        registerAddress(0),
+        registerType(MODBUS_HOLDING_REGISTER),
+        qos(MQTT_QOS_1),
+        retain(false),
+        publishOnChange(true),
+        publishInterval(1000),
+        description(nullptr) {
+        topic[0] = '\0';
     }
 };
 
 /**
- * @struct ModbusMQTTMessage
- * @brief Mensaje MQTT con validación de límites
- * 
- * Estructura inmutable una vez creada para garantizar integridad
+ * @brief Estructura para mensaje offline (buffer)
  */
-struct ModbusMQTTMessage {
-    char topic[MQTT_TOPIC_MAX_LEN];     ///< Tópico del mensaje (validado)
-    char payload[MQTT_PAYLOAD_MAX_LEN]; ///< Payload del mensaje (validado)
-    uint16_t payloadLen;                ///< Longitud real del payload
-    bool retained;                      ///< Flag de retención
-    uint8_t qos;                        ///< Calidad de servicio (0, 1, 2)
+struct ModbusMQTTOfflineMessage {
+    char topic[MODBUS_MQTT_MAX_TOPIC_LENGTH];
+    char payload[MODBUS_MQTT_MAX_PAYLOAD_LENGTH];
+    ModbusMQTTQoS qos;
+    bool retain;
+    uint32_t timestamp;
+    bool valid;
     
-    /**
-     * @brief Constructor por defecto
-     */
-    ModbusMQTTMessage() : payloadLen(0), retained(false), qos(0) {
-        memset(topic, 0, sizeof(topic));
-        memset(payload, 0, sizeof(payload));
-    }
-    
-    /**
-     * @brief Establece el tópico con validación de longitud
-     * @param newTopic Tópico a establecer
-     * @return true si éxito, false si excede longitud máxima
-     */
-    bool setTopic(const char* newTopic) {
-        if (newTopic == nullptr || strlen(newTopic) >= MQTT_TOPIC_MAX_LEN) {
-            return false;
-        }
-        SAFE_STRNCPY(topic, newTopic, MQTT_TOPIC_MAX_LEN);
-        return true;
-    }
-    
-    /**
-     * @brief Establece el payload con validación de longitud
-     * @param newPayload Payload a establecer
-     * @param len Longitud del payload
-     * @return true si éxito, false si excede longitud máxima
-     */
-    bool setPayload(const char* newPayload, uint16_t len) {
-        if (newPayload == nullptr || len >= MQTT_PAYLOAD_MAX_LEN) {
-            return false;
-        }
-        SAFE_STRNCPY(payload, newPayload, MQTT_PAYLOAD_MAX_LEN);
-        payloadLen = len;
-        return true;
+    ModbusMQTTOfflineMessage() :
+        qos(MQTT_QOS_1),
+        retain(false),
+        timestamp(0),
+        valid(false) {
+        topic[0] = '\0';
+        payload[0] = '\0';
     }
 };
+
+/**
+ * @brief Callback para eventos MQTT
+ */
+typedef void (*ModbusMQTTCallback)(const char* topic, const uint8_t* payload, 
+                                    size_t length, void* userData);
+
+/**
+ * @brief Callback para estado de conexión
+ */
+typedef void (*ModbusMQTTStateCallback)(ModbusMQTTConnectionState state, void* userData);
 
 // ============================================================================
 // CLASE PRINCIPAL: ModbusMQTT
@@ -151,200 +170,582 @@ struct ModbusMQTTMessage {
 
 /**
  * @class ModbusMQTT
- * @brief Clase principal para integración Modbus-MQTT con seguridad reforzada
+ * @brief Puente bidireccional entre Modbus y MQTT para aplicaciones IoT
  * 
- * Esta clase gestiona la comunicación entre dispositivos Modbus y brokers MQTT,
- * implementando validaciones estrictas en todas las operaciones de entrada/salida
- * para prevenir vulnerabilidades de seguridad.
+ * Esta clase permite:
+ * - Publicar automáticamente valores de registros Modbus a topics MQTT
+ * - Suscribirse a topics MQTT para escribir en registros Modbus
+ * - Gestionar reconexión automática ante fallos
+ * - Bufferizar mensajes cuando está offline
+ * - Soportar múltiples configuraciones de topics
  * 
- * Características de seguridad:
- * - Validación de límites en todos los buffers
- * - Sanitización de inputs de red
- * - Gestión segura de memoria sin fugas
- * - Timeouts configurables para prevenir bloqueos
+ * Ejemplo de uso básico:
+ * @code
+ * #include <ModbusMQTT.h>
  * 
- * @note Todos los métodos públicos validan sus parámetros antes de ejecutar
+ * ModbusMQTT mqttBridge;
+ * 
+ * void setup() {
+ *     Serial.begin(115200);
+ *     
+ *     // Configurar conexión al broker
+ *     mqttBridge.setBroker("test.mosquitto.org", 1883);
+ *     mqttBridge.setCredentials("usuario", "password");
+ *     
+ *     // Configurar topic de publicación (registro Modbus -> MQTT)
+ *     ModbusMQTTTopicConfig pubConfig;
+ *     strcpy(pubConfig.topic, "modbus/device1/temperature");
+ *     pubConfig.registerAddress = 0;
+ *     pubConfig.registerType = MODBUS_HOLDING_REGISTER;
+ *     pubConfig.publishOnChange = true;
+ *     mqttBridge.addPublishTopic(pubConfig);
+ *     
+ *     // Configurar topic de suscripción (MQTT -> registro Modbus)
+ *     ModbusMQTTTopicConfig subConfig;
+ *     strcpy(subConfig.topic, "modbus/device1/setpoint");
+ *     subConfig.registerAddress = 10;
+ *     subConfig.registerType = MODBUS_HOLDING_REGISTER;
+ *     mqttBridge.addSubscribeTopic(subConfig);
+ *     
+ *     mqttBridge.begin();
+ * }
+ * 
+ * void loop() {
+ *     mqttBridge.process();  // Llamar regularmente
+ *     modbusServer.task();   // Tu servidor Modbus
+ * }
+ * @endcode
  */
 class ModbusMQTT {
 private:
-    PubSubClient* mqttClient;           ///< Cliente MQTT subyacente
-    Modbus* modbusInstance;             ///< Instancia Modbus asociada
-    ModbusMQTTConfig config;            ///< Configuración actual
-    bool connected;                     ///< Estado de conexión
-    uint32_t lastReconnectAttempt;      ///< Último intento de reconexión
-    uint32_t reconnectDelay;            ///< Retraso entre reconexiones (backoff)
-    char* messageBuffer;                ///< Buffer temporal para mensajes (gestión RAII)
-    size_t messageBufferSize;           ///< Tamaño del buffer temporal
+    // Configuración del broker
+    char brokerAddress[64];
+    uint16_t brokerPort;
+    char username[32];
+    char password[32];
+    char clientId[32];
     
-    /**
-     * @brief Libera recursos de memoria asignados dinámicamente
-     * Método privado llamado en destructor y reset
-     */
-    void freeResources() {
-        if (messageBuffer != nullptr) {
-            delete[] messageBuffer;
-            messageBuffer = nullptr;
-            messageBufferSize = 0;
-        }
-        if (mqttClient != nullptr) {
-            delete mqttClient;
-            mqttClient = nullptr;
-        }
-    }
+    // Estado de conexión
+    ModbusMQTTConnectionState connectionState;
+    uint32_t lastReconnectAttempt;
+    uint32_t lastPublishTime;
+    bool autoReconnect;
     
-    /**
-     * @brief Construye un tópico MQTT válido y seguro
-     * @param buffer Buffer de destino
-     * @param bufferSize Tamaño del buffer
-     * @param registerType Tipo de registro Modbus
-     * @param registerAddress Dirección del registro
-     * @return true si éxito, false si error de longitud
-     */
-    bool buildTopic(char* buffer, size_t bufferSize, 
-                   uint8_t registerType, uint16_t registerAddress) {
-        if (buffer == nullptr || bufferSize < MQTT_TOPIC_MAX_LEN) {
-            return false;
-        }
-        
-        const char* typeStr;
-        switch(registerType) {
-            case MB_COIL: typeStr = "coil"; break;
-            case MB_INPUT: typeStr = "input"; break;
-            case MB_HOLDING: typeStr = "holding"; break;
-            case MB_INPUT_REG: typeStr = "input_reg"; break;
-            default: return false;
-        }
-        
-        int written = snprintf(buffer, bufferSize, "%s/%s/%u", 
-                              config.topicPrefix, typeStr, registerAddress);
-        
-        // Verificación de que no hubo truncamiento
-        if (written < 0 || (size_t)written >= bufferSize) {
-            buffer[bufferSize - 1] = '\0';
-            return false;
-        }
-        
-        return true;
-    }
+    // Topics y callbacks
+    ModbusMQTTTopicConfig publishTopics[MODBUS_MQTT_MAX_TOPICS];
+    ModbusMQTTTopicConfig subscribeTopics[MODBUS_MQTT_MAX_TOPICS];
+    uint8_t numPublishTopics;
+    uint8_t numSubscribeTopics;
     
-    /**
-     * @brief Callback interno para mensajes MQTT recibidos
-     * @param topic Tópico del mensaje recibido
-     * @param payload Payload del mensaje
-     * @param length Longitud del payload
-     */
-    void mqttCallback(char* topic, uint8_t* payload, unsigned int length);
-
+    // Buffer offline
+    ModbusMQTTOfflineMessage offlineBuffer[MODBUS_MQTT_MAX_OFFLINE_MESSAGES];
+    uint8_t offlineBufferHead;
+    uint8_t offlineBufferTail;
+    uint8_t offlineBufferCount;
+    
+    // Callbacks
+    ModbusMQTTCallback messageCallback;
+    ModbusMQTTStateCallback stateCallback;
+    void* userData;
+    
+    // Referencia al servidor Modbus
+    Modbus* modbusServer;
+    
+    // Valores anteriores para detectar cambios
+    int16_t previousValues[MODBUS_MQTT_MAX_TOPICS];
+    bool hasPreviousValue[MODBUS_MQTT_MAX_TOPICS];
+    
+    // Configuración adicional
+    ModbusMQTTPublishFormat publishFormat;
+    bool includeTimestamp;
+    const char* baseTopic;
+    
+    // Métodos privados
+    bool connectToBroker();
+    void disconnectFromBroker();
+    void publishToMQTT(const char* topic, const char* payload, 
+                       ModbusMQTTQoS qos, bool retain);
+    void handleIncomingMessage(const char* topic, const uint8_t* payload, size_t length);
+    void updateRegisterFromPayload(uint16_t address, ModbusRegisterType type, 
+                                   const uint8_t* payload, size_t length);
+    void addToOfflineBuffer(const char* topic, const char* payload, 
+                           ModbusMQTTQoS qos, bool retain);
+    void flushOfflineBuffer();
+    char* formatValue(int16_t value, char* buffer, size_t bufferSize);
+    uint32_t getTimestamp();
+    
 public:
     /**
-     * @brief Constructor de la clase ModbusMQTT
-     * Inicializa todos los punteros a nullptr para gestión RAII segura
+     * @brief Constructor de ModbusMQTT
      */
     ModbusMQTT();
     
     /**
-     * @brief Destructor con liberación garantizada de recursos
-     * Sigue patrón RAII para evitar fugas de memoria
+     * @brief Destructor
      */
     ~ModbusMQTT();
     
-    /**
-     * @brief Elimina copia y asignación para prevenir problemas de memoria
-     */
-    ModbusMQTT(const ModbusMQTT&) = delete;
-    ModbusMQTT& operator=(const ModbusMQTT&) = delete;
+    // =========================================================================
+    // CONFIGURACIÓN DEL BROKER
+    // =========================================================================
     
     /**
-     * @brief Inicializa el módulo MQTT con configuración segura
-     * @param mbInstance Puntero a instancia Modbus existente
-     * @param mqttConfig Configuración MQTT validada
-     * @param wifiClient Cliente WiFi para conexión de red
-     * @return true si inicialización exitosa, false en caso de error
+     * @brief Configurar dirección y puerto del broker MQTT
+     * @param broker Dirección IP o hostname del broker
+     * @param port Puerto del broker (usualmente 1883 o 8883 para TLS)
      * 
-     * @pre mbInstance debe ser un puntero válido
-     * @pre mqttConfig debe pasar validación (mqttConfig.validate())
-     * @post El módulo queda listo para conectar al broker MQTT
+     * Ejemplo:
+     * @code
+     * mqttBridge.setBroker("test.mosquitto.org", 1883);
+     * @endcode
      */
-    bool begin(Modbus* mbInstance, const ModbusMQTTConfig& mqttConfig, 
-               Client& wifiClient);
+    void setBroker(const char* broker, uint16_t port = 1883);
     
     /**
-     * @brief Intenta conectar al broker MQTT
-     * @return true si conectado exitosamente, false en caso contrario
+     * @brief Configurar credenciales de autenticación
+     * @param user Nombre de usuario
+     * @param pass Contraseña
      * 
-     * @note Implementa backoff exponencial para reconexiones fallidas
+     * Nota: Para mayor seguridad, usar TLS cuando se envían credenciales
      */
-    bool connect();
+    void setCredentials(const char* user, const char* pass = nullptr);
     
     /**
-     * @brief Desconecta del broker MQTT y libera recursos de conexión
+     * @brief Configurar ID de cliente MQTT
+     * @param clientId Identificador único del cliente
+     * 
+     * Si no se configura, se genera uno automático basado en MAC
      */
-    void disconnect();
+    void setClientId(const char* clientId);
     
     /**
-     * @brief Verifica estado de conexión actual
-     * @return true si conectado, false en caso contrario
+     * @brief Configurar Last Will Testament (mensaje de despedida)
+     * @param topic Topic donde publicar el LWT
+     * @param payload Mensaje a publicar
+     * @param qos Calidad de servicio
+     * @param retain Si el mensaje debe ser retenido
+     * 
+     * El LWT se publica cuando el cliente se desconecta inesperadamente
      */
-    bool isConnected() const { return connected; }
+    void setLastWill(const char* topic, const char* payload,
+                     ModbusMQTTQoS qos = MQTT_QOS_0, bool retain = false);
     
     /**
-     * @brief Loop principal para mantener conexión MQTT
-     * Debe llamarse periódicamente en el loop() de Arduino
-     * @return true si conexión activa, false si se requiere reconexión
+     * @brief Habilitar/deshabilitar reconexión automática
+     * @param enable true para habilitar, false para deshabilitar
      */
-    bool loop();
+    void setAutoReconnect(bool enable);
+    
+    // =========================================================================
+    // CONFIGURACIÓN DE TOPICS
+    // =========================================================================
     
     /**
-     * @brief Publica un valor de registro Modbus vía MQTT
-     * @param registerType Tipo de registro Modbus
-     * @param registerAddress Dirección del registro
+     * @brief Agregar topic para publicación (Modbus -> MQTT)
+     * @param config Configuración del topic
+     * @return true si se agregó correctamente, false si no hay espacio
+     * 
+     * Este topic publicará automáticamente cuando el registro Modbus cambie
+     */
+    bool addPublishTopic(const ModbusMQTTTopicConfig& config);
+    
+    /**
+     * @brief Agregar topic para suscripción (MQTT -> Modbus)
+     * @param config Configuración del topic
+     * @return true si se agregó correctamente, false si no hay espacio
+     * 
+     * Los mensajes recibidos en este topic escribirán en el registro Modbus
+     */
+    bool addSubscribeTopic(const ModbusMQTTTopicConfig& config);
+    
+    /**
+     * @brief Eliminar todos los topics de publicación
+     */
+    void clearPublishTopics();
+    
+    /**
+     * @brief Eliminar todos los topics de suscripción
+     */
+    void clearSubscribeTopics();
+    
+    /**
+     * @brief Configurar formato de publicación
+     * @param format Formato a usar (PLAIN, JSON, CSV)
+     */
+    void setPublishFormat(ModbusMQTTPublishFormat format);
+    
+    /**
+     * @brief Habilitar inclusión de timestamp en publicaciones
+     * @param enable true para incluir timestamp
+     */
+    void includeTimestamp(bool enable);
+    
+    /**
+     * @brief Configurar topic base para todos los topics
+     * @param base Prefix que se añadirá a todos los topics
+     * 
+     * Ejemplo: si baseTopic = "factory1/", el topic "sensor/temp"
+     * se convertirá en "factory1/sensor/temp"
+     */
+    void setBaseTopic(const char* base);
+    
+    // =========================================================================
+    // INICIALIZACIÓN Y PROCESAMIENTO
+    // =========================================================================
+    
+    /**
+     * @brief Inicializar el puente MQTT
+     * @param modbus Puntero al servidor Modbus existente
+     * @return true si la inicialización fue exitosa
+     * 
+     * Debe llamarse después de configurar el broker y los topics
+     */
+    bool begin(Modbus* modbus = nullptr);
+    
+    /**
+     * @brief Procesar comunicaciones MQTT (debe llamarse regularmente)
+     * 
+     * Este método:
+     * - Mantiene la conexión con el broker
+     * - Publica cambios en registros Modbus
+     * - Procesa mensajes entrantes
+     * - Gestiona reconexión automática
+     * 
+     * Debe llamarse al menos cada 100ms en el loop()
+     */
+    void process();
+    
+    /**
+     * @brief Finalizar conexión MQTT
+     */
+    void end();
+    
+    // =========================================================================
+    // OPERACIONES MANUALES
+    // =========================================================================
+    
+    /**
+     * @brief Publicar valor manualmente a un topic
+     * @param topic Topic destino
      * @param value Valor a publicar
-     * @return true si publicación exitosa, false en caso de error
-     * 
-     * @note Valida automáticamente longitud de tópicos y payloads
+     * @param qos Calidad de servicio
+     * @param retain Si el mensaje debe ser retenido
+     * @return true si la publicación fue exitosa
      */
-    bool publishRegister(uint8_t registerType, uint16_t registerAddress, 
-                        uint16_t value);
+    bool publishValue(const char* topic, int16_t value,
+                      ModbusMQTTQoS qos = MQTT_QOS_1, bool retain = false);
     
     /**
-     * @brief Suscribe a tópicos para control remoto de registros Modbus
-     * @param registerType Tipo de registro a suscribir
-     * @param registerAddress Dirección del registro
-     * @return true si suscripción exitosa, false en caso de error
+     * @brief Publicar mensaje personalizado
+     * @param topic Topic destino
+     * @param payload Datos a publicar
+     * @param length Longitud del payload
+     * @param qos Calidad de servicio
+     * @param retain Si el mensaje debe ser retenido
+     * @return true si la publicación fue exitosa
      */
-    bool subscribeRegister(uint8_t registerType, uint16_t registerAddress);
+    bool publishMessage(const char* topic, const uint8_t* payload, size_t length,
+                        ModbusMQTTQoS qos = MQTT_QOS_1, bool retain = false);
     
     /**
-     * @brief Procesa mensaje MQTT entrante y actualiza registro Modbus
-     * @param message Mensaje MQTT validado
-     * @return true si procesamiento exitoso, false si error de validación
-     * 
-     * @note Incluye validación de formato de payload y límites de registro
+     * @brief Leer valor de un registro Modbus
+     * @param address Dirección del registro
+     * @param type Tipo de registro
+     * @param value Puntero donde almacenar el valor
+     * @return true si la lectura fue exitosa
      */
-    bool processIncomingMessage(const ModbusMQTTMessage& message);
+    bool readRegister(uint16_t address, ModbusRegisterType type, int16_t* value);
     
     /**
-     * @brief Obtiene configuración actual (solo lectura)
-     * @return Referencia constante a configuración actual
+     * @brief Escribir valor en un registro Modbus
+     * @param address Dirección del registro
+     * @param type Tipo de registro
+     * @param value Valor a escribir
+     * @return true si la escritura fue exitosa
      */
-    const ModbusMQTTConfig& getConfig() const { return config; }
+    bool writeRegister(uint16_t address, ModbusRegisterType type, int16_t value);
+    
+    // =========================================================================
+    // ESTADO Y CALLBACKS
+    // =========================================================================
     
     /**
-     * @brief Restablece conexión y configuración a valores por defecto
+     * @brief Obtener estado actual de conexión
+     * @return Estado de conexión actual
      */
-    void reset();
+    ModbusMQTTConnectionState getConnectionState() const;
     
     /**
-     * @brief Establece intervalo de reconexión tras fallo
-     * @param delayMs Retraso en milisegundos
+     * @brief Verificar si está conectado al broker
+     * @return true si está conectado
      */
-    void setReconnectDelay(uint32_t delayMs) { reconnectDelay = delayMs; }
+    bool isConnected() const;
     
     /**
-     * @brief Obtiene estadísticas de conexión (para debugging)
-     * @return Número de intentos de reconexión realizados
+     * @brief Configurar callback para mensajes entrantes
+     * @param callback Función a llamar cuando llega un mensaje
+     * @param userData Datos de usuario para pasar al callback
      */
-    uint32_t getReconnectAttempts() const;
+    void onMessage(ModbusMQTTCallback callback, void* userData = nullptr);
+    
+    /**
+     * @brief Configurar callback para cambios de estado
+     * @param callback Función a llamar cuando cambia el estado
+     * @param userData Datos de usuario para pasar al callback
+     */
+    void onStateChange(ModbusMQTTStateCallback callback, void* userData = nullptr);
+    
+    /**
+     * @brief Obtener estadísticas de conexión
+     * @param reconnectCount Número de reconexiones realizadas
+     * @param messagesPublished Número de mensajes publicados
+     * @param messagesReceived Número de mensajes recibidos
+     */
+    void getStatistics(uint32_t* reconnectCount, uint32_t* messagesPublished,
+                       uint32_t* messagesReceived);
+    
+    /**
+     * @brief Forzar reconexión inmediata
+     */
+    void reconnect();
 };
 
-#endif // MODBUS_MQTT_H
+// ============================================================================
+// IMPLEMENTACIÓN DE MÉTODOS INLINE
+// ============================================================================
+
+inline ModbusMQTT::ModbusMQTT() :
+    brokerPort(1883),
+    connectionState(MQTT_DISCONNECTED),
+    lastReconnectAttempt(0),
+    lastPublishTime(0),
+    autoReconnect(true),
+    numPublishTopics(0),
+    numSubscribeTopics(0),
+    offlineBufferHead(0),
+    offlineBufferTail(0),
+    offlineBufferCount(0),
+    messageCallback(nullptr),
+    stateCallback(nullptr),
+    userData(nullptr),
+    modbusServer(nullptr),
+    publishFormat(MQTT_FORMAT_PLAIN),
+    includeTimestamp(false),
+    baseTopic(nullptr) {
+    
+    brokerAddress[0] = '\0';
+    username[0] = '\0';
+    password[0] = '\0';
+    clientId[0] = '\0';
+    
+    memset(previousValues, 0, sizeof(previousValues));
+    memset(hasPreviousValue, false, sizeof(hasPreviousValue));
+}
+
+inline ModbusMQTT::~ModbusMQTT() {
+    end();
+}
+
+inline void ModbusMQTT::setBroker(const char* broker, uint16_t port) {
+    strncpy(brokerAddress, broker, sizeof(brokerAddress) - 1);
+    brokerAddress[sizeof(brokerAddress) - 1] = '\0';
+    brokerPort = port;
+}
+
+inline void ModbusMQTT::setCredentials(const char* user, const char* pass) {
+    strncpy(username, user, sizeof(username) - 1);
+    username[sizeof(username) - 1] = '\0';
+    
+    if (pass) {
+        strncpy(password, pass, sizeof(password) - 1);
+        password[sizeof(password) - 1] = '\0';
+    }
+}
+
+inline void ModbusMQTT::setClientId(const char* id) {
+    strncpy(clientId, id, sizeof(clientId) - 1);
+    clientId[sizeof(clientId) - 1] = '\0';
+}
+
+inline void ModbusMQTT::setAutoReconnect(bool enable) {
+    autoReconnect = enable;
+}
+
+inline void ModbusMQTT::setPublishFormat(ModbusMQTTPublishFormat format) {
+    publishFormat = format;
+}
+
+inline void ModbusMQTT::includeTimestamp(bool enable) {
+    includeTimestamp = enable;
+}
+
+inline void ModbusMQTT::setBaseTopic(const char* base) {
+    baseTopic = base;
+}
+
+inline ModbusMQTTConnectionState ModbusMQTT::getConnectionState() const {
+    return connectionState;
+}
+
+inline bool ModbusMQTT::isConnected() const {
+    return connectionState == MQTT_CONNECTED;
+}
+
+inline void ModbusMQTT::clearPublishTopics() {
+    numPublishTopics = 0;
+    memset(hasPreviousValue, false, sizeof(hasPreviousValue));
+}
+
+inline void ModbusMQTT::clearSubscribeTopics() {
+    numSubscribeTopics = 0;
+}
+
+inline void ModbusMQTT::onMessage(ModbusMQTTCallback callback, void* data) {
+    messageCallback = callback;
+    userData = data;
+}
+
+inline void ModbusMQTT::onStateChange(ModbusMQTTStateCallback callback, void* data) {
+    stateCallback = callback;
+    userData = data;
+}
+
+inline void ModbusMQTT::reconnect() {
+    lastReconnectAttempt = 0;  // Forzar intento inmediato
+    connectionState = MQTT_DISCONNECTED;
+}
+
+// ============================================================================
+// DEFINICIÓN DE FUNCIONES AUXILIARES PARA PLATAFORMAS ESPECÍFICAS
+// ============================================================================
+
+#if defined(ESP8266) || defined(ESP32)
+    // Implementación usando PubSubClient o similar
+    #define MODBUS_MQTT_HAS_NATIVE_SUPPORT 1
+    
+#elif defined(ARDUINO) && !defined(ESP8266) && !defined(ESP32)
+    // Implementación genérica que requiere biblioteca externa
+    #define MODBUS_MQTT_REQUIRES_LIBRARY 1
+    // Se requiere incluir <PubSubClient.h> o similar
+    
+#else
+    // Plataforma genérica
+    #define MODBUS_MQTT_GENERIC_IMPL 1
+#endif
+
+// ============================================================================
+// EJEMPLO DE USO COMPLETO
+// ============================================================================
+
+/*
+EJEMPLO COMPLETO - Puente Modbus-MQTT con test.mosquitto.org
+
+#include <ModbusMQTT.h>
+#include <ModbusTCP.h>  // O ModbusRTU según tu configuración
+
+ModbusTCP modbusServer;
+ModbusMQTT mqttBridge;
+
+// Callback para mensajes MQTT entrantes
+void onMqttMessage(const char* topic, const uint8_t* payload, 
+                   size_t length, void* userData) {
+    Serial.print("Mensaje recibido en ");
+    Serial.print(topic);
+    Serial.print(": ");
+    
+    for (size_t i = 0; i < length; i++) {
+        Serial.print((char)payload[i]);
+    }
+    Serial.println();
+}
+
+// Callback para cambios de estado
+void onMqttStateChange(ModbusMQTTConnectionState state, void* userData) {
+    switch(state) {
+        case MQTT_CONNECTED:
+            Serial.println("Conectado al broker MQTT");
+            break;
+        case MQTT_DISCONNECTED:
+            Serial.println("Desconectado del broker MQTT");
+            break;
+        case MQTT_RECONNECTING:
+            Serial.println("Reconectando...");
+            break;
+        case MQTT_ERROR:
+            Serial.println("Error de conexión MQTT");
+            break;
+    }
+}
+
+void setup() {
+    Serial.begin(115200);
+    
+    // Configurar WiFi (ESP8266/ESP32)
+    WiFi.begin("tu_red", "tu_password");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("\nWiFi conectado");
+    
+    // Configurar servidor Modbus
+    modbusServer.server(502);
+    modbusServer.addHreg(0, 250, 10);  // 10 holding registers
+    
+    // Configurar puente MQTT
+    mqttBridge.setBroker("test.mosquitto.org", 1883);
+    mqttBridge.setClientId("modbus_device_001");
+    mqttBridge.setAutoReconnect(true);
+    
+    // Configurar topic de publicación (temperatura)
+    ModbusMQTTTopicConfig tempConfig;
+    strcpy(tempConfig.topic, "modbus/factory1/sensor/temperature");
+    tempConfig.registerAddress = 0;
+    tempConfig.registerType = MODBUS_HOLDING_REGISTER;
+    tempConfig.publishOnChange = true;
+    tempConfig.description = "Temperatura en grados Celsius";
+    mqttBridge.addPublishTopic(tempConfig);
+    
+    // Configurar topic de publicación (humedad)
+    ModbusMQTTTopicConfig humConfig;
+    strcpy(humConfig.topic, "modbus/factory1/sensor/humidity");
+    humConfig.registerAddress = 1;
+    humConfig.registerType = MODBUS_HOLDING_REGISTER;
+    humConfig.publishInterval = 5000;  // Publicar cada 5 segundos
+    mqttBridge.addPublishTopic(humConfig);
+    
+    // Configurar topic de suscripción (setpoint)
+    ModbusMQTTTopicConfig setpointConfig;
+    strcpy(setpointConfig.topic, "modbus/factory1/control/setpoint");
+    setpointConfig.registerAddress = 10;
+    setpointConfig.registerType = MODBUS_HOLDING_REGISTER;
+    setpointConfig.qos = MQTT_QOS_1;
+    mqttBridge.addSubscribeTopic(setpointConfig);
+    
+    // Configurar callbacks
+    mqttBridge.onMessage(onMqttMessage);
+    mqttBridge.onStateChange(onMqttStateChange);
+    
+    // Iniciar
+    mqttBridge.begin(&modbusServer);
+    
+    Serial.println("Sistema iniciado");
+}
+
+void loop() {
+    modbusServer.task();  // Servidor Modbus
+    mqttBridge.process(); // Puente MQTT
+    
+    // Simular cambio de temperatura (para demo)
+    static uint32_t lastChange = 0;
+    if (millis() - lastChange > 10000) {
+        int16_t temp = random(200, 300);  // 20.0 - 30.0 °C
+        modbusServer.Hreg(0, temp);
+        lastChange = millis();
+    }
+    
+    delay(50);  // Pequeña pausa para estabilidad
+}
+*/
+
+// Fin de ModbusMQTT.h

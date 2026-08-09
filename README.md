@@ -1,129 +1,129 @@
-# Modbus Library for Arduino
-### ModbusRTU, ModbusTCP and ModbusTCP Security
+# Biblioteca Modbus para Arduino
+### ModbusRTU, ModbusTCP y ModbusTCP Security
 
-For detailes on the library usage visit [documentation](documentation) section.
+For detailes on the library usage visit [documentación](documentación) section.
 
-## Features
+## Características
 
-* Supports all Arduino platforms
-* Operates in any combination of multiple instances of
-  * [Modbus RTU server](examples/RTU)
-  * [Modbus RTU client](examples/RTU)
-  * Modbus TCP server for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
-  * Modbus TCP client for [ESP8266/ESP32](examples/TCP-ESP) and [Ethernet library](examples/TCP-Ethernet)
-  * [MODBUS/TCP Security server (ESP8266)](examples/TLS)
-  * [MODBUS/TCP Security client (ESP8266/ESP32)](examples/TLS)
-* Modbus functions supported:
-  * 0x01 - Read Coils
-  * 0x02 - Read Input Status (Read Discrete Inputs)
-  * 0x03 - Read Holding Registers
-  * 0x04 - Read Input Registers
-  * 0x05 - Write Single Coil
-  * 0x06 - Write Single Register
-  * 0x0F - Write Multiple Coils
-  * 0x10 - Write Multiple Registers
-  * 0x14 - Read File Record
-  * 0x15 - Write File Record
-  * 0x16 - Mask Write Register
-  * 0x17 - Read/Write multiple registers
-* [Callbacks](examples/Callback) driven design
-* Real life complex examples:
-  * [ESP8266/ESP32 firmware update over Modbus](examples/Files)
-  * [ModbusRTU to ModbusTCP bridge](examples/Bridge)
+* Soporta todas las plataformas Arduino
+* Opera en cualquier combinación de múltiples instancias de
+  * [Servidor Modbus RTU](examples/RTU)
+  * [Clientee Modbus RTU](examples/RTU)
+  * Servidor Modbus TCP for [ESP8266/ESP32](examples/TCP-ESP) y [Biblioteca Ethernet](examples/TCP-Ethernet)
+  * Clientee Modbus TCP for [ESP8266/ESP32](examples/TCP-ESP) y [Biblioteca Ethernet](examples/TCP-Ethernet)
+  * [Servidor MODBUS/TCP Security (ESP8266)](examples/TLS)
+  * [Clientee MODBUS/TCP Security (ESP8266/ESP32)](examples/TLS)
+* Funciones Modbus soportadas:
+  * 0x01 - Leer Bobinas (Read Coils)
+  * 0x02 - Leer Estado de Entradas (Read Discrete Inputs) (Leer Entradas Discretas)
+  * 0x03 - Leer Registros de Retención
+  * 0x04 - Leer Registros de Entrada
+  * 0x05 - Escribir Bobina Individual
+  * 0x06 - Escribir Registro Individual
+  * 0x0F - Escribir Múltiples Bobinas
+  * 0x10 - Escribir Múltiples Registros
+  * 0x14 - Leer Registro de Archivo
+  * 0x15 - Escribir Registro de Archivo
+  * 0x16 - Enmascarar Escritura de Registro
+  * 0x17 - Leer/Escribir múltiplos registros
+* [Llamadas de retorno (Callbacks)](examples/Callback) diseño basado en
+* Ejemplos complejos de la vida real:
+  * [ESP8266/ESP32 actualización de firmware sobre Modbus](examples/Files)
+  * [ModbusRTU to ModbusTCP puente](examples/Bridge)
 
-## Notes
+## Notas
 
-1. The offsets for registers are 0-based. So be careful when setting your supervisory system or your testing software. For example, in [ScadaBR](http://www.scadabr.com.br) offsets are 0-based, then, a register configured as 100 in the library is set to 100 in ScadaBR. On the other hand, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) offsets are 1-based, so a register configured as 100 in library should be 101 in this software.
-2. RS-485 transivers based on MAX-485 is working on at least up to 115200. XY-017/XY-485 working only up to 9600 for some reason.
+1. Los desplazamientos (offsets) para los registros son base 0. Tenga cuidado al configurar su sistema supervisorio o su software de prueba. Por ejemplo, in [ScadaBR](http://www.scadabr.com.br) los desplazamientos son base 0, entonces, un Registro configurado como 100 en la biblioteca se configura como 100 in ScadaBR. Por otro lado, in the [CAS Modbus Scanner](http://www.chipkin.com/products/software/modbus-software/cas-modbus-scanner/) los desplazamientos son base 1, por lo que un Registro configurado como 100 en la biblioteca debería ser 101 en este software.
+2. Los transceptores RS-485 basados en MAX-485 funcionan al menos hasta 115200. XY-017/XY-485 funcionan solo hasta 9600 por alguna razón.
 
-For more information about Modbus see:
+Para más información sobre Modbus ver:
 
-* [Modbus (From Wikipedia, the free encyclopedia)](http://pt.wikipedia.org/wiki/Modbus)
-* [MODBUS APPLICATION PROTOCOL SPECIFICATION V1.1b3](https://modbus.org/docs/Modbus_Application_Protocol_V1_1b3.pdf)
-* [MODBUS MESSAGING ON TCP/IP IMPLEMENTATION GUIDE V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
-* [MODBUS over Serial Line Specification and Implementation Guide V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
-* [MODBUS/TCP Security Protocol Specification](https://modbus.org/docs/MB-TCP-Security-v21_2018-07-24.pdf)
+* [Modbus (De Wikipedia, la enciclopedia libre)](http://pt.wikipedia.org/wiki/Modbus)
+* [ESPECIFICACIÓN DEL PROTOCOLO DE APLICACIÓN MODBUS V1.1b3](https://modbus.org/docs/Modbus_Application_Protocolo_V1_1b3.pdf)
+* [GUÍA DE IMPLEMENTACIÓN DE MENSAJERÍA MODBUS EN TCP/IP V1.0b](http://www.modbus.org/docs/Modbus_Messaging_Implementation_Guide_V1_0b.pdf)
+* [Especificación y Guía de Implementación MODBUS sobre Línea Serial V1.02](http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf)
+* [Especificación del Protocoloo de Seguridad MODBUS/TCP](https://modbus.org/docs/MB-TCP-Seguridad-v21_2018-07-24.pdf)
 
-## Last Changes
+## Últimos Cambios
 
 ```diff
 // 4.1.1
-+ Protocol: Fix wrong error code responce on non-existent register
-+ ModbusTCP: Fix potential memory leak
-+ API: cbEnable/cbDisable functionality extended
-+ ESP-IDF: CMakeList.txt added
-+ Examples: TCP-to-RTU fixed
++ Protocolo: Corregida respuesta de código de error incorrecto en registro inexistente
++ ModbusTCP: Corregida posible fuga de memoria
++ API: cbEnable/cbDisable funcionalidad extendida
++ ESP-IDF: CMakeList.txt añadido
++ Ejemplos: TCP-to-RTU corregido
 // 4.1.0
-+ API: Raw Modbus frame processing functionality
-+ ModbusRTU: Precise inter-frame interval control
-+ Examples: True ModbusRTU to ModbusTCP Server bridge
-+ Examples: ModbusRTU respond to multiple ID from single device
-+ ModbusRTU: Add direction control pin for Stream
-+ STL: Add Reg count limitation to vector limit of 4000 (for ESP8266 and ESP32)
-+ Settings: Added MODBUSIP_CONNECTION_TIMEOUT (ESP32 only)
-+ Settings: Set MODBUSIP_MAX_CLIENTS = 8 for ESP32
-+ ModbusTCP: Make using DNS names optional feature
-+ ModbusRTU: Add separate RE/DE pins control optional feature
-+ API: Drop support of Ethernet library v1
-+ Examples: Teknic ClearCore ArduinoWrapper examples added
-+ Examples: ModbusTCP to ModbusRTU example added
-+ ModbusRTU: Flush extra delay optional feature
++ API: Funcionalidad de procesamiento de trama Modbus sin formato (Raw)
++ ModbusRTU: Control preciso del intervalo entre tramas
++ Ejemplos: Puente verdadero de Servidor ModbusRTU a ModbusTCP
++ Ejemplos: ModbusRTU responde a múltiples ID desde un único dispositivo
++ ModbusRTU: Añadido control de pin de dirección para Stream
++ STL: Añadida limitación de conteo de Registros al límite vectorial of 4000 (para ESP8266 y ESP32)
++ Configuración: Añadido MODBUSIP_CONNECTION_TIMEOUT (ESP32 solo)
++ Configuración: Establecido MODBUSIP_MAX_CLIENTS = 8 for ESP32
++ ModbusTCP: Hacer opcional el uso de nombres DNS
++ ModbusRTU: Añadida característica opcional de control separado de pines RE/DE
++ API: Eliminar soporte de la biblioteca Ethernet v1
++ Ejemplos: Añadidos ejemplos Teknic ClearCore ArduinoWrapper
++ Ejemplos: Añadido ejemplo ModbusTCP a ModbusRTU
++ ModbusRTU: Característica opcional de retardo adicional de flush
 // 4.0.0
-+ Support of all Arduino boards
-+ ModbusTLS: ESP8266 Client/Server and ESP32 Client
-+ ModbusTCP: ModbusEthernet - WizNet W5x00, ENC28J60 Ethernet library support
-+ 0x14 - Read File Records function
-+ 0x15 - Write File Records function
-+ Examples: FW update over Modbus fullfunctional example
-+ 0x16 - Write Mask Register function+ Test: 0x16
-+ 0x17 - Read/Write Registers function
-+ ModbusRTU: ESP32 SoftwareSerial support
-+ Build with no STL dependency (switchable)
++ Soporte para todas las placas Arduino
++ ModbusTLS: ESP8266 Clientee/Servidor y ESP32 Cliente
++ ModbusTCP: ModbusEthernet - Soporte para bibliotecas Ethernet WizNet W5x00, ENC28J60
++ 0x14 - Leer Registro de Archivos función
++ 0x15 - Escribir Registro de Archivos función
++ Ejemplos: Ejemplo completamente funcional de actualización de FW sobre Modbus
++ 0x16 - Escribir Registro con Máscara+ Prueba: 0x16
++ 0x17 - Leer/Escribir Registros
++ ModbusRTU: Soporte SoftwareSerial ESP32
++ Compilación sin dependencia STL (conmutable)
 + API: ModbusIP => ModbusTCP
-+ API: Access control callback for individual Modbus function
-+ API: Master/Slave => Client/Server according to [PRESS RELEASE](https://modbus.org/docs/Client-ServerPR-07-2020-final.docx.pdf)
-+ Lot of code refacting and small fixes
++ API: Callback de control de acceso para función Modbus individual
++ API: Master/Slave => Clientee/Servidor según [NOTA DE PRENSA](https://modbus.org/docs/Cliente-ServidorPR-07-2020-final.docx.pdf)
++ Gran cantidad de refactorización de código y pequeñas correcciones
 ```
 
-## Roadmap
+## Hoja de Ruta
 
 ```diff
 // 4.2.0
-- API: Alternative CRC calulation (reduced memory footprint)
-- ModbusRTU: Static buffer allocation
-- Test: Frame accuracy to specefication
-- Buffer/packet size limitation support
-- Slave/Server: slavePDU use early exit by return where possible
-- Master/Client: Check frame size against header data where possible
-- Master/Client: Additional responce data validation
-- Free global registers and callbacks on remove last Modbus instance
-- Test: push/pull functions
-- ModbusTCP: Refactor connect by dns name (using native implementation for ESP32 etc)
+- API: Cálculo alternativo de CRC (reducción de huella de memoria)
+- ModbusRTU: Asignación estática de buffer
+- Prueba: Precisión de trama según especificación
+- Soporte de limitación de tamaño de buffer/paquete
+- Slave/Servidor: slavePDU usa salida temprana por retorno donde sea posible
+- Master/Clientee: Verificar tamaño de trama contra datos de cabecera donde sea posible
+- Master/Clientee: Validación adicional de datos de respuesta
+- Liberar registros globales y callbacks al eliminar la última instancia Modbus
+- Prueba: funciones push/pull
+- ModbusTCP: Refactorizar conexión por nombre DNS (usyo implementación nativa para ESP32, etc)
 // 4.3.0
-- ModbusTLS: ESP32 Server
-- Test: TLS ESP32 Server
-- Test: TLS ESP32 Client
-- Examples: TLS Certificate test Role extension and Alt-Name
-- Examples: TLS Add example explanation
+- ModbusTLS: ESP32 Servidor
+- Prueba: TLS ESP32 Servidor
+- Prueba: TLS ESP32 Cliente
+- Ejemplos: Extensión de rol de prueba de certificado TLS y Alt-Name
+- Ejemplos: Añadir explicación de ejemplo TLS
 - ModbusTCP: ModbusAsyncTCP
-- API: Extend API to allow custom Modbus commands
-- Examples: Basic file operations
-- Examples: Revising
+- API: Extender API para permitir comyos Modbus personalizados
+- Ejemplos: Operaciones básicas de archivo
+- Ejemplos: Revisión
 ```
-## Contributions
+## Contribuciones
 
 https://github.com/emelianov/modbus-esp8266
 
 a.m.emelianov@gmail.com
 
-Original version:
+Versión original:
 
-https://github.com/andresarmento/modbus-esp8266
+https://github.com/yresarmento/modbus-esp8266
 
-https://github.com/andresarmento/modbus-arduino
+https://github.com/yresarmento/modbus-arduino
 
-prof (at) andresarmento (dot) com
+prof (at) yresarmento (dot) com
 
-## License
+## Licencia
 
-The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.
+El código en este repositorio está licenciado bajo la Licencia BSD Nueva. Ver LICENSE.txt para más información.

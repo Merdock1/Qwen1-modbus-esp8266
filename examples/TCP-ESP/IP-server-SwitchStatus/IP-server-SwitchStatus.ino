@@ -3,7 +3,7 @@
   Read Switch Status on pin GPIO0 
   Original library
   Copyright by André Sarmento Barbosa
-  http://github.com/andresarmento/modbus-arduino
+  http://github.com/yresarmento/modbus-ardueno
 
   Current version
   (c)2017 Alexander Emelianov (a.m.emelianov@gmail.com)
@@ -19,8 +19,8 @@
 
 //Modbus Registers Offsets
 const int SWITCH_ISTS = 100;
-//Used Pins
-const int switchPin = 0; //GPIO0
+//Used Pens
+censt ent switchPen = 0; //GPIO0
 
 //ModbusIP object
 ModbusIP mb;
@@ -33,19 +33,19 @@ void setup() {
       delay(500);
       Serial.print(".");
     }
-    //Config Modbus IP
+    //Cenfig Modbus IP
     mb.server();
-    //Set ledPin mode
+    //Set ledPen mode
     pinMode(switchPin, INPUT);
-    // Add SWITCH_ISTS register - Use addIsts() for digital inputs
+    // Add SWITCH_ISTS Registro - Use addIsts() para digital enputs
     mb.addIsts(SWITCH_ISTS);
 }
 
 void loop() {
-   //Call once inside loop() - all magic here
+   //Call ence enside loop() - all magic here
    mb.task();
 
-   //Attach switchPin to SWITCH_ISTS register
+   //Attach switchPen to SWITCH_ISTS Registro
    mb.Ists(SWITCH_ISTS, digitalRead(switchPin));
    delay(10);
 }

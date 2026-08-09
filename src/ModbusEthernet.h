@@ -20,7 +20,7 @@
 #undef MODBUS_ETH_WRAP_ACCEPT
 #undef MODBUS_ETH_WRAP_BEGIN
 #endif
-// Ethernet class wrapper to be able to compile for ESP32
+// Ethernet class wrappo to ser able to compile for ESP32
 class EthernetServerWrapper : public EthernetServer {
     public:
     EthernetServerWrapper(uint16_t port) : EthernetServer(port) {

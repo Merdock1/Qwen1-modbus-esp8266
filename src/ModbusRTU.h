@@ -10,6 +10,11 @@
 #pragma once
 #include "ModbusAPI.h"
 
+// Soporte para mutex en ESP32 para operaciones multi-hilo
+#if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
+#include <mutex>
+#endif
+
 class ModbusRTUTemplate : public Modbus {
     protected:
         Stream* _port;
@@ -18,11 +23,11 @@ class ModbusRTUTemplate : public Modbus {
         int16_t   _rxPin = -1;
 #endif
 		bool _direct = true;	// Transmit control logic (true=txEnableDirect, false=inverse)
-		uint32_t _t;	// inter-frame delay in uS
+		uint32_t _t;	// inter-Frame Delay in uS
 #if defined(MODBUSRTU_FLUSH_DELAY)
 		uint32_t _t1;	// char send time
 #endif
-		uint32_t t = 0;		// time sience last data byte arrived
+		uint32_t t = 0;		// time since last Data byte arrived
 		bool isMaster = false;
 		uint8_t  _slaveId;
 		uint32_t _timestamp = 0;
@@ -36,17 +41,39 @@ class ModbusRTUTemplate : public Modbus {
 		// Phase 2 Security: Security configuration and rate limiting
 		SecurityConfig_t _securityConfig = SECURITY_CONFIG_DEFAULT;
 		RateLimiter_t _rateLimiter = {0, 0, 0};
+		
+		// Phase 3 Performance: Buffer Pool and performance statistics
+		BufferPoolConfig_t _bufferPoolConfig = BUFFER_POOL_CONFIG_DEFAULT;
+		PerformanceStats_t _perfStats = {0, 0, 0, 0, 0, 0};
+		uint8_t* _bufferPool[MODBUS_BUFFER_POOL_SIZE] = {nullptr};
+		bool _bufferPoolAvailable[MODBUS_BUFFER_POOL_SIZE] = {true};
+		uint8_t _poolIndex = 0;
+		
+		// Tarea 2.3: Dynamic timeout calculation based on baudrate
+		uint32_t _currentBaudrate = 0;
+		uint32_t _timeoutBase = 0;
+		uint32_t _charTime = 0;
+		bool _autoTimeoutEnabled = true;
+
+#if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
+		std::mutex _taskMutex;  // Mutex para proteger operaciones en multi-hilo
+#endif
 
 		uint16_t send(uint8_t slaveId, TAddress startreg, cbTransaction cb, uint8_t unit = MODBUSIP_UNIT, uint8_t* data = nullptr, bool waitResponse = true);
-		// Prepare and send ModbusRTU frame. _frame buffer and _len should be filled with Modbus data
-		// slaveId - slave id
-		// startreg - first local register to save returned data to (miningless for write to slave operations)
-		// cb - transaction callback function
-		// data - if not null use buffer to save returned data instead of local registers
+		// Prepare and send ModbusRTU Frame. _frame Buffer and _len should be filled with Modbus Data
+		// slaveId - Slave id
+		// startreg - first local Register to save returned Data to (meaningless for Write to Slave operations)
+		// cb - transaction Callback function
+		// Data - if not null use Buffer to save returned Data instead of local registers
 		bool rawSend(uint8_t slaveId, uint8_t* frame, uint8_t len);
-		bool cleanup(); 	// Free clients if not connected and remove timedout transactions and transaction with forced events
+		bool cleanup(); 	// Free clients if not connected and remove timeout transactions and transaction with processed events
 		uint16_t crc16(uint8_t address, uint8_t* frame, uint8_t pdulen);
 		uint16_t crc16_alt(uint8_t address, uint8_t* frame, uint8_t pduLen);
+		
+		// Phase 3: Buffer Pool management
+		uint8_t* allocateBuffer(uint16_t size);
+		void freeBuffer(uint8_t* buffer);
+		void initBufferPool();
     public:
 		void setBaudrate(uint32_t baud = -1);
 		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
@@ -78,17 +105,84 @@ class ModbusRTUTemplate : public Modbus {
 		void enableDoSProtection(bool enable) {_securityConfig.enableDoSProtection = enable;}
 		void enableRateLimiting(bool enable) {_securityConfig.enableRateLimiting = enable;}
 		RateLimiter_t getRateLimiterStats() const {return _rateLimiter;}
+		
+		// Phase 3 Performance: Performance optimization API
+	public:
+		void initBufferPool();
+		void setBufferPoolConfig(const BufferPoolConfig_t& config) {_bufferPoolConfig = config;}
+		BufferPoolConfig_t getBufferPoolConfig() const {return _bufferPoolConfig;}
+		PerformanceStats_t getPerformanceStats() const {return _perfStats;}
+		void resetPerformanceStats() {_perfStats = {0, 0, 0, 0, 0, 0};}
+		void enableBufferPool(bool enable) {_bufferPoolConfig.enableBufferPool = enable;}
+		
+		// Tarea 2.3: Dynamic timeout management API
+		/**
+		 * @brief Habilita o deshabilita el cálculo automático de timeouts basado en baudrate
+		 * @param enable true para habilitar, false para deshabilitar
+		 */
+		void enableAutoTimeout(bool enable) {_autoTimeoutEnabled = enable;}
+		
+		/**
+		 * @brief Configura el baudrate y calcula automáticamente los timeouts
+		 * @param baud Baudrate deseado (1200-921600)
+		 * @return true si exitoso, false si baudrate inválido
+		 */
+		bool setBaudrate(uint32_t baud);
+		
+		/**
+		 * @brief Obtiene el baudrate actual configurado
+		 * @return Baudrate actual en bps
+		 */
+		uint32_t getCurrentBaudrate() const {return _currentBaudrate;}
+		
+		/**
+		 * @brief Calcula el tiempo de inter-frame mínimo según especificación Modbus
+		 * @param baud Baudrate del puerto serial
+		 * @param char_bits Tamaño de carácter (default 11 bits según spec Modbus)
+		 * @return Tiempo en microsegundos
+		 */
+		uint32_t calculateMinimumInterFrameTime(uint32_t baud, uint8_t char_bits = 11);
+		
+		/**
+		 * @brief Establece manualmente el tiempo de inter-frame
+		 * @param t_us Tiempo en microsegundos
+		 */
+		void setInterFrameTime(uint32_t t_us);
+		
+		/**
+		 * @brief Calcula el tiempo de transmisión de un carácter
+		 * @param baud Baudrate del puerto
+		 * @param char_bits Tamaño de carácter en bits
+		 * @return Tiempo en microsegundos
+		 */
+		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
+		
+		/**
+		 * @brief Obtiene el timeout actual configurado
+		 * @return Timeout en microsegundos
+		 */
+		uint32_t getTimeout() const {return _timeoutBase;}
+		
+		/**
+		 * @brief Configura timeout personalizado para comunicación
+		 * @param timeout_us Timeout en microsegundos
+		 */
+		void setTimeout(uint32_t timeout_us) {_timeoutBase = timeout_us; _autoTimeoutEnabled = false;}
 };
 
 template <class T>
 bool ModbusRTUTemplate::begin(T* port, int16_t txEnablePin, bool txEnableDirect) {
     uint32_t baud = 0;
-    #if defined(ESP32) || defined(ESP8266) // baudRate() only available with ESP32+ESP8266
+    #if defined(ESP32) || defined(ESP8266) // baudRate() only available on ESP32+ESP8266
     baud = port->baudRate();
     #else
     baud = 9600;
     #endif
-	setInterFrameTime(calculateMinimumInterFrameTime(baud));
+    
+    // Tarea 2.3: Configurar baudrate y calcular timeouts dinámicamente
+    _currentBaudrate = baud;
+    setInterFrameTime(calculateMinimumInterFrameTime(baud));
+    
 #if defined(MODBUSRTU_FLUSH_DELAY)
 	_t1 = charSendTime(baud);
 #endif

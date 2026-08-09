@@ -6,7 +6,7 @@ void task();
 
 Processing routine. Should be periodically called form loop().
 
-## Server API
+## Servidor API
 
 ### Add registers
 
@@ -58,14 +58,14 @@ Assing Serial port. txEnablePin controls transmit enable for MAX-485. Pass txEna
 void setBaudrte(uint32 baud);
 ```
 
-Set or override Serial baudrate. Must be called after .begin() for Non-ESP devices.
+Establecido or override Serial baudrate. Must be called after .begin() for Non-ESP devices.
 
 ```c
 void server(uint8_t slaveId);
 void slave(uint8_t slaveId); //Depricated
 ```
 
-Select and initialize master or slave mode to work. Switching between modes is not supported. Call is not returning error in this case but behaviour is unpredictible.
+Select y initialize master or slave mode to work. Switching between modes is not supported. Call is not returning error in this case but behaviour is unpredictible.
 
 ```c
 uint8_t server();
@@ -74,7 +74,7 @@ uint8_t slave(); //Depricated
 
 Slave mode: Returns configured slave id. Master mode: Returns slave id for active request or 0 if no request in-progress.
 
-## Modbus TCP Server specific API
+## Modbus TCP Servidor specific API
 
 ```c
 void begin(); // Depricated. Use server() instead.
@@ -82,7 +82,7 @@ void slave(uint16_t port = MODBUSIP_PORT); // For compatibility with ModbusRTU c
 void server(uint16_t port = MODBUSIP_PORT);
 ```
 
-## Modbus TCP Client specific
+## Modbus TCP Cliente specific
 
 ```c
 void master(); // For compatibility with ModbusRTU calls. Typically may be replaced with client() call.
@@ -98,11 +98,11 @@ void dropTransactions();
 void autoConnect(bool enabled);
 ```
 
-Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push function call. Disabled by default.
+Select behavior of executing read/write/pull/push. If autoConnect disabled (default) execution returns error if connection to slave is not already established. If autoConnect is enabled trying to establish connection during read/write/pull/push función call. Disabled by default.
 
-## Client API
+## Cliente API
 
-### Read Coils (0x01) from slave/server
+### Leer Bobinas (Read Coils) (0x01) from slave/server
 
 ```c
 uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr);
@@ -162,7 +162,7 @@ uint16_t pushHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs 
 uint16_t pushIregToHreg(uint8_t slaveId, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr);
 ```
 
-Write Register/Coil or Write Multiple Registers/Coils Modbus function selected automaticly depending on 'numregs' value. [ip/to] - slave, [from] - local
+Write Register/Coil or Escribir Múltiples Registros/Coils Modbus función selected automaticly depending on 'numregs' value. [ip/to] - slave, [from] - local
 
 ### Write [multiple] values to remote slave/servr reg[s]
 
@@ -192,7 +192,7 @@ uint16_t readIreg(uint8_t slaveId, uint16_t offset, uint16_t* value, uint16_t nu
 
 Reads values from remote Hreg/Coil/Ireg/Ists to array.
 
-## Callbacks API
+## Llamadas de retorno (Callbacks) API
 
 ```c
 void cbEnable(bool state = true);
@@ -206,46 +206,46 @@ void onConnect(cbModbusConnect cb);
 void onDisconnect(cbModbusConnect cb);
 ```
 
-*Modbus TCP Server* Assign callback function on new incoming connection event.
+*Modbus TCP Servidor* Assign callback función on new incoming connection event.
 
 ```c
 typedef bool (*cbModbusConnect)(IPAddress ip);
 ```
 
-*Modbus TCP Sserver* Connect event callback function definition. For onConnect event client's IP address is passed as argument. onDisconnect callback function always gets INADDR_NONE as parameter.
+*Modbus TCP Sserver* Connect event callback función definition. For onConnect event client's IP address is passed as argument. onDisconnect callback función always gets INADDR_NONE as parameter.
 
 ```c
 typedef uint16_t (*cbModbus)(TRegister* reg, uint16_t val);
 ```
 
-Get/Set register callback function definition. Pointer to TRegister structure (see source for details) of the register and new value are passed as arguments.
+Get/Establecido register callback función definition. Pointer to TRegister structure (see source for details) of the register y new value are passed as arguments.
 
 ```c
 typedef bool (*cbTransaction)(Modbus::ResultCode event, uint16_t transactionId, void* data);
 ```
 
-Transaction end callback function definition. For ModbusIP *data* is currently reserved. For Modbus RTU *transactionId* is also reserved.
+Transaction end callback función definition. For ModbusIP *data* is currently reserved. For Modbus RTU *transactionId* is also reserved.
 
 ```c
 uint32_t eventSource();
 ```
 
-Should be called from onGet/onSet or transaction callback function.
+Should be called from onGet/onEstablecido or transaction callback función.
 
-*Modbus TCP Client/Server* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
+*Modbus TCP Clientee/Servidor* Returns IP address of remote requesting operation or INADDR_NONE for local. Use IPAddress(eventSource) to operate result as IPAddress type.
 
 *Note:* For transaction callback INADDR_NONE returned in case if transaction is timedout.
 
 *Modbus RTU Master/Slave* Returns slave id. 
 
 ```c
-bool onSetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool onSetHreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool onSetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool onSetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onEstablecidoCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onEstablecidoHreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onEstablecidoIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool onEstablecidoIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
-Assign callback function on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter.
+Assign callback función on register modify event. Multiple sequental registers can be affected by specifing `numregs` parameter.
 
 ```c
 bool onGetCoil(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
@@ -254,20 +254,20 @@ bool onGetIsts(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool onGetIreg(uint16_t address, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
-Assign callback function on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter.
+Assign callback función on register query event. Multiple sequental registers can be affected by specifing `numregs` parameter.
 
 ```c
 bool removeOnGetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool removeOnSetCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnEstablecidoCoil(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool removeOnGetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool removeOnSetHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnEstablecidoHreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool removeOnGetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool removeOnSetIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnEstablecidoIsts(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
 bool removeOnGetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
-bool removeOnSetIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
+bool removeOnEstablecidoIreg(uint16_t offset, cbModbus cb = nullptr, uint16_t numregs = 1);
 ```
 
-Disconnect specific callback function or all callbacks of the type if cb=NULL.
+Disconnect specific callback función or all callbacks of the type if cb=NULL.
 
 ### Macros
 
@@ -278,19 +278,19 @@ Disconnect specific callback function or all callbacks of the type if cb=NULL.
 #define ISTS_BOOL(v)
 ```
 
-## Contributions
+## Contribuciones
 
 https://github.com/emelianov/modbus-esp8266
 
 a.m.emelianov@gmail.com
 
-Original version:
+Versión original:
 
-https://github.com/andresarmento/modbus-esp8266
-https://github.com/andresarmento/modbus-arduino
+https://github.com/yresarmento/modbus-esp8266
+https://github.com/yresarmento/modbus-arduino
 
-prof (at) andresarmento (dot) com
+prof (at) yresarmento (dot) com
 
-## License
+## Licencia
 
-The code in this repo is licensed under the BSD New License. See LICENSE.txt for more info.
+El código en este repositorio está licenciado bajo la Licencia BSD Nueva. Ver LICENSE.txt para más información.

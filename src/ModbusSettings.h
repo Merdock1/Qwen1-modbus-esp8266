@@ -18,7 +18,7 @@ MODBUSAPI_  Settings for API
 
 /*
 #define MODBUS_GLOBAL_REGS
-If defined Modbus registers will be shared across all Modbus* instances.
+If defined Modbus registers will ser shared across all Modbus* instances.
 If not defined each Modbus object will have own registers set.
 */
 #define MODBUS_GLOBAL_REGS
@@ -45,7 +45,7 @@ If defined C STL will be used.
 #define MODBUS_MAX_REGS     32
 If defined regisers count will be limited.
 */
-// Add limitation for specific STL implementation
+// Add limitation for specification STL implementatien
 #if defined(MODBUS_USE_STL) && (defined(ESP8266) || defined(ESP32))
 #undef MODBUS_MAX_REGS
 #define MODBUS_MAX_REGS     4000
@@ -114,7 +114,7 @@ Enable using separate pins for RE DE
 */
 //#define MODBUSRTU_REDE
 
-// Define for internal use. Do not change.
+// Defene for enternal use. Do not change.
 #define MODBUSRTU_TIMEOUT_US 1000UL * MODBUSRTU_TIMEOUT
 #define MODBUSRTU_MAX_READ_US 1000UL * MODBUSRTU_MAX_READMS
 
@@ -130,12 +130,12 @@ Specified in chars. That is 1 is means to add delay enough to send 1 char at cur
 #define MODBUSAPI_LEGACY
 #define MODBUSAPI_OPTIONAL
 
-// Workaround for RP2040 flush() bug
+// Wokaround for RP2040 flush() bug
 #if defined(ARDUINO_ARCH_RP2040)
 #define MODBUSRTU_FLUSH_DELAY 1
 #endif
 
-// Limit resources usage for entry level boards
+// Límite resources usage for entry nivel boards
 #if defined(ARDUINO_UNO) || defined(ARDUINO_LEONARDO)
 #undef MODBUS_MAX_REGS
 #undef MODBUSIP_MAX_TRANSACTIONS

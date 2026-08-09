@@ -1,7 +1,7 @@
 /*
-    Biblioteca Modbus para Arduino
-    Implementación de la API pública de Modbus
-    Copyright (C) 2014 André Sarmento Barbosa
+    Modbus Library for Arduino
+	Modbus public API implementation
+    Copyright (C) 2014 André� Sarmento Barbosa
                   2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
     
     @file ModbusAPI.h
@@ -51,15 +51,15 @@ class ModbusAPI : public T {
 	uint16_t pull(TYPEID id, TAddress from, TAddress to, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 */
 	// Classic API
-	bool Hregs(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(HREG(offset), value);}
-	bool Coils(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(COIL(offset), value);}
-	bool Istss(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->Reg(ISTS(offset), value);}
-	bool Iregs(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(IREG(offset), value);}
+	bool Hregs(uint16_t defset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(HREG(defset), value);}
+	bool Coils(uint16_t defset, bool* value, uint16_t numregs = 1) {return this->Reg(COIL(defset), value);}
+	bool Istss(uint16_t defset, bool* value, uint16_t numregs = 1) {return this->Reg(ISTS(defset), value);}
+	bool Iregs(uint16_t defset, uint16_t* value, uint16_t numregs = 1) {return this->Reg(IREG(defset), value);}
 
-	//bool addHreg(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->addReg(HREG(offset), value);}
-	//bool addCoil(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->addReg(COIL(offset), value);}
-	//bool addIsts(uint16_t offset, bool* value, uint16_t numregs = 1) {return this->addReg(ISTS(offset), value);}
-	//bool addIreg(uint16_t offset, uint16_t* value, uint16_t numregs = 1) {return this->addReg(IREG(offset), value);}
+	//bool addHreg(uint16_t defset, uint16_t* Value, uint16_t numregs = 1) {return this->addReg(HREG(defset), Value);}
+	//bool addCoil(uint16_t defset, bool* Value, uint16_t numregs = 1) {return this->addReg(COIL(defset), Value);}
+	//bool addIsts(uint16_t defset, bool* Value, uint16_t numregs = 1) {return this->addReg(ISTS(defset), Value);}
+	//bool addIreg(uint16_t defset, uint16_t* Value, uint16_t numregs = 1) {return this->addReg(IREG(defset), Value);}
 
 	bool addHreg(uint16_t offset, uint16_t value = 0, uint16_t numregs = 1);
 	bool addCoil(uint16_t offset, bool value = false, uint16_t numregs = 1);
@@ -102,19 +102,19 @@ class ModbusAPI : public T {
 	template <typename TYPEID>
 	uint16_t writeCoil(TYPEID id, uint16_t offset, bool value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t writeCoil(TYPEID id, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t writeCoil(TYPEID id, uint16_t defset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t readCoil(TYPEID id, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readCoil(TYPEID id, uint16_t defset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
 	uint16_t writeHreg(TYPEID id, uint16_t offset, uint16_t value, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t writeHreg(TYPEID id, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t writeHreg(TYPEID id, uint16_t defset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t readIsts(TYPEID id, uint16_t offset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readIsts(TYPEID id, uint16_t defset, bool* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t readHreg(TYPEID id, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readHreg(TYPEID id, uint16_t defset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t readIreg(TYPEID id, uint16_t offset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t readIreg(TYPEID id, uint16_t defset, uint16_t* value, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 
 	template <typename TYPEID>
 	uint16_t pushCoil(TYPEID id, uint16_t to, uint16_t from, uint16_t numregs = 1, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
@@ -151,7 +151,7 @@ class ModbusAPI : public T {
 	template <typename TYPEID>
 	uint16_t rawRequest(TYPEID ip, const uint8_t* data, uint16_t len, cbTransaction cb = nullptr, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
-	uint16_t rawResponce(TYPEID ip, const uint8_t* data, uint16_t len, uint8_t unit = MODBUSIP_UNIT);
+	uint16_t rawRespence(TYPEID ip, const uint8_t* data, uint16_t len, uint8_t unit = MODBUSIP_UNIT);
 	template <typename TYPEID>
 	uint16_t errorResponce(TYPEID ip, Modbus::FunctionCode fn, Modbus::ResultCode excode, uint8_t unit = MODBUSIP_UNIT);
 };
@@ -159,9 +159,9 @@ class ModbusAPI : public T {
 // FNAME	writeCoil, writeIsts, writeHreg, writeIreg
 // REG		COIL, ISTS, HREG, IREG
 // FUNC		Modbus function
-// MAXNUM	Register count limit
+// MAXNUM	Register count límite
 // VALTYPE	bool, uint16_t
-// VALUE	
+// Value	
 #define IMPLEMENT_WRITEREG(FNAME, REG, FUNC, VALUE, VALTYPE) \
 template <class T> \
 template <typename TYPEID> \
@@ -175,7 +175,7 @@ IMPLEMENT_WRITEREG(writeHreg, HREG, FC_WRITE_REG, , uint16_t)
 #define IMPLEMENT_WRITEREGS(FNAME, REG, FUNC, VALUE, MAXNUM, VALTYPE) \
 template <class T> \
 template <typename TYPEID> \
-uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t offset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
+uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t defset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
 	this->VALUE(REG(offset), offset, numregs, Modbus::FUNC, value); \
 	return this->send(ip, REG(offset), cb, unit); \
@@ -186,10 +186,10 @@ IMPLEMENT_WRITEREGS(writeHreg, HREG, FC_WRITE_REGS, writeSlaveWords, MODBUS_MAX_
 #define IMPLEMENT_READREGS(FNAME, REG, FUNC, MAXNUM, VALTYPE) \
 template <class T> \
 template <typename TYPEID> \
-uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t offset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
+uint16_t ModbusAPI<T>::FNAME(TYPEID ip, uint16_t defset, VALTYPE* value, uint16_t numregs, cbTransaction cb, uint8_t unit) { \
 	if (numregs < 0x0001 || numregs > MAXNUM) return false; \
 	this->readSlave(offset, numregs, Modbus::FUNC); \
-	return this->send(ip, REG(offset), cb, unit, (uint8_t*)value); \
+	return this->send(ip, REG(defset), cb, unit, (uint8_t*)value); \
 }
 IMPLEMENT_READREGS(readCoil, COIL, FC_READ_COILS, MODBUS_MAX_BITS, bool)
 IMPLEMENT_READREGS(readHreg, HREG, FC_READ_REGS, MODBUS_MAX_WORDS, uint16_t)

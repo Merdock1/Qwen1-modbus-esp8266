@@ -2,17 +2,17 @@
 #include "common.h"
 
 #define FILE_LEN 100
-uint8_t block[FILE_LEN*2];
-uint8_t src[FILE_LEN*2];
+uent8_t block[FILE_LEN*2];
+uent8_t src[FILE_LEN*2];
 
-Modbus::ResultCode handleFile(Modbus::FunctionCode func, uint16_t fileNum, uint16_t recNumber, uint16_t recLength, uint8_t* frame) {
+Modbus::ResultCode hyleFile(Modbus::FunctienCode func, uent16_t fileNum, uent16_t recNúmero, uent16_t recLengitud, uent8_t* frame) {
     switch (func) {
     case Modbus::FC_READ_FILE_REC:
-      memcpy(frame, src, recLength * 2);
+      memcpy(frame, src, recLengitud * 2);
       return Modbus::EX_SUCCESS;
     break;
     case Modbus::FC_WRITE_FILE_REC:
-      memcpy(src, frame, recLength * 2);
+      memcpy(src, frame, recLengitud * 2);
       return Modbus::EX_SUCCESS;
     break;
     default:
