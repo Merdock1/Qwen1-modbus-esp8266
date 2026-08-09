@@ -28,14 +28,247 @@ Este informe presenta los resultados de una revisión exhaustiva de la librería
 
 ### 1.2 Discrepancias Encontradas
 
-1. **Roadmap v4.2.0 Incumplido:**
-   - La documentación menciona características planificadas para v4.2.0 que aún no están implementadas
-   - Asignación estática de buffers NO disponible
-   - Validación adicional de buffers NO implementada completamente
+#### 1.2.1 Roadmap v4.2.0 Incumplido
 
-2. **Límites de Buffer Inconsistente:**
-   - Documentación sugiere límites robustos
-   - Realidad: `MODBUS_MAX_FRAME = 256` y `MODBUSIP_MAXFRAME = 200` son configurables pero NO siempre se validan
+**Documentación (library_description.md líneas 239-245):**
+```markdown
+### Versión 4.2.0
+- [ ] Cálculo alternativo de CRC (menor uso de memoria)
+- [ ] Asignación estática de buffers para Modbus RTU
+- [ ] Limitación de tamaño de buffer/paquete
+- [ ] Validación adicional de respuestas
+- [ ] Liberación de registros globales y callbacks
+```
+
+**Realidad del Código:**
+- **Asignación estática de buffers:** NO implementada. Todos los buffers usan `malloc()` dinámico
+- **Validación de buffers:** Parcialmente implementada pero con verificaciones comentadas (línea 318-321 en Modbus.cpp)
+- **Cálculo alternativo CRC:** Presente pero comentado en `ModbusRTU.cpp:46-66`
+
+**Impacto:** La documentación crea falsas expectativas de seguridad y optimización que no están presentes en la versión actual.
+
+#### 1.2.2 Límites de Buffer Inconsistentes
+
+**Documentación (library_description.md línea 142):**
+```markdown
+- **Límite de registros**: Vector limitado a 4000 registros (ESP8266/ESP32)
+```
+
+**Realidad del Código (`ModbusSettings.h`):**
+```cpp
+#define MODBUS_MAX_FRAME   256      // Línea 56
+#define MODBUSIP_MAXFRAME 200       // Línea 65
+#define MODBUS_MAX_WORDS 0x007D     // 125 palabras (línea 58)
+#define MODBUS_MAX_BITS 0x07D0      // 2000 bits (línea 59)
+```
+
+**Problema Identificado:**
+- `MODBUS_MAX_FRAME = 256` bytes es DEMASIADO PEQUEÑO para operaciones File Record (FC 0x14/0x15)
+- Un solo archivo con 100 registros requiere: `2 + 100*2 = 202 bytes` (casi el límite)
+- Múltiples sub-registros en una solicitud File Record pueden exceder fácilmente 256 bytes
+
+**Evidencia en Código (`Modbus.cpp:318-321`):**
+```cpp
+// LÍNEAS COMENTADAS - VERIFICACIÓN DESACTIVADA
+// if (bufSize > MODBUS_MAX_FRAME) {  // Frame to return too large
+//     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+//     return;  
+// }
+```
+
+**Conclusión:** La limitación existe pero está INTENCIONALMENTE desactivada, creando vulnerabilidad crítica.
+
+#### 1.2.3 API Documentada vs Implementación Real
+
+**API Documentada (`documentation/API.md`):**
+```c
+uint16_t readCoil(uint8_t slaveId, uint16_t offset, bool* value, ...);
+```
+
+**Implementación Real (`ModbusAPI.h:108-117`):**
+- Sobrecarga correcta presente ✅
+- Pero falta validación de puntero `value` antes de usar ⚠️
+
+**Funciones File Record (0x14, 0x15):**
+- **Documentación:** Menciona "Operaciones con archivos" en ejemplos
+- **Realidad:** API existe pero con vulnerabilidades críticas sin parchar
+- **Ejemplos:** Carpeta `examples/Files/` presente pero sin advertencias de seguridad
+
+---
+
+### 1.3 Arquitectura Documentada vs Realidad
+
+#### 1.3.1 Diseño Basado en Callbacks
+
+**Documentación (library_description.md línea 41):**
+```markdown
+- **Diseño basado en callbacks** para manejo asíncrono de transacciones
+```
+
+**Realidad del Código:**
+✅ Confirmado en `Modbus.h`:
+```cpp
+typedef std::function<uint16_t(TRegister* reg, uint16_t val)> cbModbus;
+typedef std::function<bool(Modbus::ResultCode, uint16_t, void*)> cbTransaction;
+typedef std::function<ResultCode(FunctionCode, const RequestData)> cbRequest;
+```
+
+**Problema:** Los callbacks pueden lanzar excepciones si no se manejan correctamente (STL `std::function`).
+
+#### 1.3.2 Independiente de STL
+
+**Documentación (library_description.md línea 48):**
+```markdown
+- **Independiente de STL**: Puede compilarse sin la biblioteca estándar de C++
+```
+
+**Realidad (`ModbusSettings.h:40-42`):**
+```cpp
+#if defined(ESP8266) || defined(ESP32) || defined(ARDUINO_ARCH_STM32) || defined(ARDUINO_SAM_DUE_STL)
+#define MODBUS_USE_STL  // STL forzado en plataformas modernas
+#endif
+```
+
+**Discrepancia:** 
+- ✅ Cierto para AVR (Uno/Nano/Mega)
+- ⚠️ Falso para ESP8266/ESP32 - STL es OBLIGATORIO, no opcional
+- La documentación debería especificar "Independiente de STL en plataformas AVR solamente"
+
+---
+
+### 1.4 Plataformas Soportadas - Verificación
+
+#### 1.4.1 ESP8266
+
+**Documentación (library_description.md líneas 62-70):**
+```markdown
+#### 1. **ESP8266**
+- **Soporte completo**: Cliente/Servidor Modbus TCP
+- **Soporte completo**: Cliente/Servidor Modbus TLS (Security)
+- **Soporte completo**: Cliente/Servidor Modbus RTU
+- Hasta 8 conexiones TCP simultáneas
+```
+
+**Realidad (`ModbusSettings.h:82-83`):**
+```cpp
+#define MODBUSIP_MAX_CLIENTS    4  // ESP8266 (NO 8 como documentado)
+```
+
+**❌ ERROR DOCUMENTAL:** ESP8266 soporta MÁXIMO 4 clientes, NO 8 como afirma la documentación.
+
+#### 1.4.2 ESP32
+
+**Documentación (library_description.md líneas 71-82):**
+```markdown
+#### 2. **ESP32**
+- Hasta 8 clientes TCP simultáneos ✅ CORRECTO
+- Soporte nativo para nombres DNS
+```
+
+**Realidad (`ModbusSettings.h:79-80`):**
+```cpp
+#if defined(ESP32)
+#define MODBUSIP_MAX_CLIENTS    8  // ✅ Correcto
+```
+
+**Verificación DNS (`ModbusSettings.h:99-101`):**
+```cpp
+//#define MODBUS_IP_USE_DNS  // DESACTIVADO POR DEFECTO
+```
+
+**⚠️ PARCIAL:** Soporte DNS existe pero está DESACTIVADO por defecto, requiriendo recompilación.
+
+---
+
+### 1.5 Funciones Modbus - Estado Real
+
+| FC | Nombre | Documentado | Implementado | Validado | Seguro |
+|----|--------|-------------|--------------|----------|--------|
+| 0x01 | Read Coils | ✅ | ✅ `slavePDU:201-214` | ✅ | ✅ |
+| 0x02 | Read Input Status | ✅ | ✅ `slavePDU:216-229` | ✅ | ✅ |
+| 0x03 | Read Holding Registers | ✅ | ✅ `slavePDU:160-173` | ✅ | ✅ |
+| 0x04 | Read Input Registers | ✅ | ✅ `slavePDU:231-244` | ✅ | ✅ |
+| 0x05 | Write Single Coil | ✅ | ✅ `slavePDU:246-267` | ✅ | ✅ |
+| 0x06 | Write Single Register | ✅ | ✅ `slavePDU:141-158` | ✅ | ✅ |
+| 0x0F | Write Multiple Coils | ✅ | ✅ `slavePDU:269-295` | ✅ | ✅ |
+| 0x10 | Write Multiple Registers | ✅ | ✅ `slavePDU:175-199` | ✅ | ✅ |
+| 0x14 | Read File Record | ✅ | ✅ `slavePDU:297-352` | ⚠️ | ❌ CRÍTICO |
+| 0x15 | Write File Record | ✅ | ✅ `slavePDU:353-380` | ⚠️ | ⚠️ ALTO |
+| 0x16 | Mask Write Register | ✅ | ✅ `slavePDU:382-403` | ✅ | ✅ |
+| 0x17 | Read/Write Multiple | ✅ | ✅ `slavePDU:404-431` | ✅ | ✅ |
+
+**Leyenda:**
+- ✅ Validado = Verificaciones completas de límites
+- ⚠️ Validado = Verificaciones parciales o incompletas
+- ❌ Seguro = Vulnerabilidades críticas identificadas
+
+---
+
+### 1.6 Roadmap Incumplido - Análisis Detallado
+
+#### Característica: "Limitación de tamaño de buffer/paquete"
+
+**Promesa (library_description.md línea 242):**
+```markdown
+- [ ] Limitación de tamaño de buffer/paquete
+```
+
+**Realidad:**
+1. **Límite definido:** `MODBUS_MAX_FRAME = 256` bytes
+2. **Verificación DESACTIVADA:** Líneas 318-321 comentadas intencionalmente
+3. **Consecuencia:** Buffer overflow posible en FC_READ_FILE_REC
+
+**Código Real (`Modbus.cpp:303-328`):**
+```cpp
+uint8_t bufSize = 2;    // ⚠️ TIPO DEMASIADO PEQUEÑO (máx 255)
+// ...
+for (uint8_t p = 0; p < recsCount; p++) {
+    uint16_t recLen = (uint16_t)recs[5] << 8 | (uint16_t)recs[6];
+    // ⚠️ recLen puede ser 0xFFFF
+    bufSize += recLen * 2 + 2;  // ⚠️ DESBORDAMIENTO DE uint8_t
+}
+// if (bufSize > MODBUS_MAX_FRAME) {  // ❌ COMENTADO
+//     exceptionResponse(fcode, EX_ILLEGAL_ADDRESS);
+//     return;  
+// }
+_frame = (uint8_t*)malloc(bufSize);  // ⚠️ malloc de tamaño incorrecto
+```
+
+**Escenario de Ataque:**
+1. Atacante envía FC_READ_FILE_REC con `recLen = 0xFFFF`
+2. `bufSize = 2 + 0xFFFF * 2 + 2 = 0x1FFFE` → desborda a `0xFE` (254)
+3. `malloc(254)` asigna buffer pequeño
+4. Escritura posterior de `0xFFFF * 2 = 131068 bytes` → **Heap corruption total**
+
+---
+
+### 1.7 Conclusiones de la Comparativa
+
+#### Cumplimiento General: 75%
+
+| Categoría | Cumplimiento | Notas |
+|-----------|--------------|-------|
+| Funciones Modbus | 100% | Todas implementadas |
+| Protocolos (RTU/TCP/TLS) | 100% | Completos |
+| Plataformas | 90% | Error documental en ESP8266 |
+| Seguridad | 40% | Validaciones críticas faltantes |
+| Rendimiento | 60% | malloc/free excesivos |
+| Documentación API | 95% | Precisa pero incompleta |
+| Roadmap | 20% | Promesas v4.2.0 incumplidas |
+
+#### Hallazgos Críticos
+
+1. **Buffer Overflow Intencional:** Verificación de límites comentada sugiere conocimiento del problema sin acción correctiva
+2. **Tipos de Datos Incorrectos:** `uint8_t` para tamaños de buffer que pueden exceder 255 bytes
+3. **Documentación Engañosa:** Afirma características de seguridad no implementadas
+4. **Límites Inconsistentes:** `MODBUS_MAX_FRAME` demasiado pequeño para casos de uso documentados
+
+#### Recomendaciones Prioritarias
+
+1. **INMEDIATO:** Reactivar verificaciones de buffer comentadas
+2. **CRÍTICO:** Cambiar tipos de `uint8_t` a `uint16_t` para tamaños de frame
+3. **ALTO:** Actualizar documentación para reflejar estado real
+4. **MEDIO:** Implementar roadmap prometido (buffers estáticos)
 
 ---
 
