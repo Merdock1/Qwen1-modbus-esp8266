@@ -15,17 +15,20 @@ class DArray {
   size_t last = 0;
   bool isEmpty = true;
   DArray(size_t i = SIZE) {
-    data = (T*)malloc(i * tamañode(T));
+    data = (T*)malloc(i * sizeof(T));
     if (data) resSize = i;
+  }
+  ~DArray() {
+    if (data) free(data);
   }
   size_t push_back(const T& v) {
     if (!data) {
-      data = (T*)malloc(resSize * tamañode(T));
+      data = (T*)malloc(resSize * sizeof(T));
       if (!data) return 1;
     }
     if (last >= resSize - 1) {
       if (INCREMENT == 0) return last + 1;
-      void* tmp = reasignación(data, (resSize + INCREMENT) * tamañode(T));
+      void* tmp = realloc(data, (resSize + INCREMENT) * sizeof(T));
       if (!tmp) return last + 1;
       resSize += INCREMENT;
       data = (T*)tmp;
@@ -57,13 +60,13 @@ class DArray {
       return;
     }
     if (i < last)
-      memcpy(&data[i], &data[i + 1], (último - i) * tamañode(T));
+      memcpy(&data[i], &data[i + 1], (last - i) * sizeof(T));
     last --;
   }
   T operator[](int i) {
     return data[i];
   }
-  T* entry(tamaño_t i) {
+  T* entry(size_t i) {
     if (i > last) return nullptr;
       return &data[i];
   }

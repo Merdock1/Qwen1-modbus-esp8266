@@ -226,7 +226,10 @@ uint16_t ModbusRTUTemplate::send(uint8_t slaveId, TAddress startreg, cbTransacti
 }
 
 void ModbusRTUTemplate::task() {
-#if defined(ESP32)
+#if defined(ESP32) && defined(MODBUS_THREAD_SAFE)
+	// Proteger la tarea con mutex para operaciones multi-hilo
+	std::lock_guard<std::mutex> lock(_taskMutex);
+#elif defined(ESP32)
 	vTaskDelay(0);
 #endif
     if (_port->available() > _len) {

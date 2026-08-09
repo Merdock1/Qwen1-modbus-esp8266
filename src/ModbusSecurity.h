@@ -95,7 +95,7 @@ typedef struct {
     .enableLogging = true, \
     .enableStrictValidation = true, \
     .enableDoSProtection = true, \
-    .enableRateLimiting = false, \
+    .enableRateLimiting = true, \
     .maxEventsPerSecond = 100, \
     .logCallback = nullptr \
 }
