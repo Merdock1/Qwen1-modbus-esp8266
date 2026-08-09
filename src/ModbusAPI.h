@@ -1,12 +1,33 @@
 /*
-    Modbus Library for Arduino
-	Modbus public API implementation
-    Copyright (C) 2014 Andr� Sarmento Barbosa
+    Biblioteca Modbus para Arduino
+    Implementación de la API pública de Modbus
+    Copyright (C) 2014 André Sarmento Barbosa
                   2017-2021 Alexander Emelianov (a.m.emelianov@gmail.com)
+    
+    @file ModbusAPI.h
+    @brief Implementación de la capa de API pública para operaciones Modbus
+    
+    Esta clase plantilla proporciona una interfaz de alto nivel para realizar
+    operaciones Modbus (lectura/escritura de registros y bobinas) sobre cualquier
+    transporte subyacente (RTU, TCP, etc.).
 */
 #pragma once
 #include "Modbus.h"
 
+/**
+ * @brief Plantilla de clase que implementa la API pública Modbus
+ * 
+ * @tparam T Clase base que proporciona la implementación del transporte
+ * 
+ * Esta clase proporciona métodos para:
+ * - Lectura y escritura de registros individuales y múltiples
+ * - Gestión de bobinas (coils) y estados discretos (inputs status)
+ * - Operaciones especiales (máscaras, lectura/escritura combinada)
+ * - Manejo de archivos Modbus (si está habilitado)
+ * 
+ * @note Todas las funciones son thread-safe dentro del contexto del loop principal
+ * @see Modbus, ModbusRTU, ModbusTCP
+ */
 template <class T>
 class ModbusAPI : public T {
 	public:
