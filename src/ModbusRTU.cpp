@@ -13,6 +13,22 @@
 #define MODBUSRTU_MIN_FRAME_LEN 3       // Minimum valid frame: slaveId + func + crc(2)
 #define MODBUSRTU_MAX_PDU_LEN 253       // Max PDU size (256 - slaveId - 2CRC - 1byteCount)
 #define MODBUSRTU_SAFE_MALLOC_SIZE 512  // Safety limit for dynamic allocation
+#define MODBUSRTU_TIMEOUT_CHECK_US 1000000UL  // 1 second timeout check interval
+
+// Rate limiting helper
+static inline bool checkRateLimit(RateLimiter_t* limiter, uint32_t maxPerSecond) {
+    uint32_t now = micros();
+    if (now - limiter->lastResetTime >= 1000000UL) {  // Reset every second
+        limiter->lastResetTime = now;
+        limiter->eventCount = 0;
+    }
+    if (limiter->eventCount >= maxPerSecond) {
+        limiter->droppedEvents++;
+        return false;  // Rate limit exceeded
+    }
+    limiter->eventCount++;
+    return true;  // Within rate limit
+}
 
 // Table of CRC values
 static const uint16_t _auchCRC[] PROGMEM = {
@@ -243,18 +259,53 @@ bool valid_frame = true;
     address = _port->read(); //first byte of frame = address
     _len--; // Decrease by slaveId byte
     
-    // SEC-001 FIX: Validate frame length before any processing
+    // Phase 2: Rate limiting check
+    if (_securityConfig.enableRateLimiting) {
+        if (!checkRateLimit(&_rateLimiter, _securityConfig.maxEventsPerSecond)) {
+            // Rate limit exceeded - drop frame
+            for (uint8_t i=0 ; i < _len ; i++) _port->read();
+            _len = 0;
+            if (isMaster) cleanup();
+            return;
+        }
+    }
+    
+    // SEC-001 FIX with logging: Validate frame length before any processing
     if (_len < MODBUSRTU_MIN_FRAME_LEN) {
         // Frame too small to be valid (needs at least func + 2 CRC bytes)
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_FRAME_TOO_SMALL,
+                .severity = SEC_SEVERITY_CRITICAL,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = 0,
+                .frameLength = _len,
+                .description = "Frame below minimum length"
+            };
+            _securityConfig.logCallback(&evt);
+        }
         for (uint8_t i=0 ; i < _len ; i++) _port->read();
         _len = 0;
         if (isMaster) cleanup();
         return;
     }
     
-    // SEC-002 FIX: Prevent buffer overflow - limit allocation size
+    // SEC-002 FIX with logging: Prevent buffer overflow - limit allocation size
     if (_len > MODBUSRTU_SAFE_MALLOC_SIZE) {
         // Frame too large - possible attack or corruption
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_FRAME_TOO_LARGE,
+                .severity = SEC_SEVERITY_CRITICAL,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = 0,
+                .frameLength = _len,
+                .description = "Frame exceeds safe malloc limit"
+            };
+            _securityConfig.logCallback(&evt);
+        }
         for (uint8_t i=0 ; i < _len ; i++) _port->read();
         _len = 0;
         if (isMaster) cleanup();
@@ -268,6 +319,19 @@ bool valid_frame = true;
                 valid_frame = false;
     }
         if (!valid_frame && !_cbRaw) {
+        // Log slave ID mismatch
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_SLAVE_ID_MISMATCH,
+                .severity = SEC_SEVERITY_WARNING,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = 0,
+                .frameLength = _len,
+                .description = "Slave ID mismatch"
+            };
+            _securityConfig.logCallback(&evt);
+        }
         for (uint8_t i=0 ; i < _len ; i++) _port->read();   // Skip packet if SlaveId doesn't mach
         _len = 0;
                 if (isMaster) cleanup();
@@ -275,8 +339,20 @@ bool valid_frame = true;
         }
 
         free(_frame);   //Just in case
-    // SEC-003 FIX: Validate PDU length against Modbus specification
+    // SEC-003 FIX with logging: Validate PDU length against Modbus specification
     if (_len > MODBUSRTU_MAX_PDU_LEN + 2) { // +2 for CRC bytes
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_PDU_LENGTH_VIOLATION,
+                .severity = SEC_SEVERITY_ERROR,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = 0,
+                .frameLength = _len,
+                .description = "PDU length exceeds specification"
+            };
+            _securityConfig.logCallback(&evt);
+        }
         for (uint8_t i=0 ; i < _len ; i++) _port->read();
         _len = 0;
         if (isMaster) cleanup();
@@ -285,6 +361,18 @@ bool valid_frame = true;
     
     _frame = (uint8_t*) malloc(_len);
     if (!_frame) {  // Fail to allocate buffer
+      if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_MALLOC_FAILURE,
+                .severity = SEC_SEVERITY_ERROR,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = 0,
+                .frameLength = _len,
+                .description = "Memory allocation failed"
+            };
+            _securityConfig.logCallback(&evt);
+        }
       for (uint8_t i=0 ; i < _len ; i++) _port->read(); // Skip packet if can't allocate buffer
       _len = 0;
           if (isMaster) cleanup();
@@ -304,6 +392,18 @@ bool valid_frame = true;
     uint16_t frameCrc = ((_frame[_len - 2] << 8) | _frame[_len - 1]); // Last two byts = crc
     _len = _len - 2;    // Decrease by CRC 2 bytes
     if (frameCrc != crc16(address, _frame, _len)) {  // CRC Check
+        if (_securityConfig.enableLogging && _securityConfig.logCallback) {
+            SecurityEvent_t evt = {
+                .eventType = SEC_EVENT_CRC_MISMATCH,
+                .severity = SEC_SEVERITY_ERROR,
+                .timestamp = micros(),
+                .slaveId = address,
+                .functionCode = _frame[0],
+                .frameLength = _len + 2,
+                .description = "CRC validation failed"
+            };
+            _securityConfig.logCallback(&evt);
+        }
 		goto cleanup;
     }
 	_reply = EX_PASSTHROUGH;
