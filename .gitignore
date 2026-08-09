@@ -1,66 +1,7 @@
-```
-# Arduino build artifacts
-*.hex
-*.elf
-*.bin
-*.map
-*.sym
+Nothing should be ignored in this case, as only a markdown file (`informe_completo_analisis.md`) was added, which is a source/config file and not a build artifact, dependency, or temporary file. According to rule 6, when the change list contains only source or config files and no build artifacts, dependencies, or temp files, the output should be empty.
 
-# Build directories
-build/
-.release/
+Therefore, the output is:
 
-# IDE files
-.vscode/
-.idea/
+```markdown
 
-# Temporary files
-*.tmp
-*.swp
-*.swo
-
-# Logs
-*.log
-
-# Environment files
-.env
-.env.local
-*.env.*
-
-# Dependencies
-node_modules/
-venv/
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# OS specific
-.DS_Store
-Thumbs.db
-
-# Compression artifacts
-*.zip
-*.gz
-*.tar
-*.tgz
-*.bz2
-*.xz
-*.7z
-*.rar
-*.zst
-*.lz4
-*.lzh
-*.cab
-*.arj
-*.rpm
-*.deb
-*.Z
-*.lz
-*.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 ```
