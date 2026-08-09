@@ -1,9 +1,16 @@
-/*
-    Modbus Library for Arduino
-    Core functions
-    Copyright (C) 2014 André� Sarmento Barbosa
-                  2017-2022 Alexander Emelianov (a.m.emelianov@gmail.com)
-*/
+/**
+ * @file Modbus.h
+ * @brief Núcleo de la biblioteca Modbus para Arduino
+ * 
+ * Implementación de las funciones principales del protocolo Modbus
+ * para comunicación con dispositivos industriales.
+ * 
+ * @author André Sarmento Barbosa
+ * @author Alexander Emelianov (a.m.emelianov@gmail.com)
+ * @copyright Copyright (C) 2014 André Sarmento Barbosa
+ *            Copyright (C) 2017-2022 Alexander Emelianov
+ * @version 3.0
+ */
 #pragma once
 #include "ModbusSettings.h"
 #include "Arduino.h"
@@ -222,7 +229,14 @@ class Modbus {
 
         ~Modbus();
 
+/** @brief Habilita el procesamiento de callbacks
+ * @param state true para habilitar, false para deshabilitar
+ * @return true si la operación fue exitosa
+ */
         bool cbEnable(const bool state = true);
+/** @brief Deshabilita el procesamiento de callbacks
+ * @return true si la operación fue exitosa
+ */
         bool cbDisable();
 
     private:
@@ -302,16 +316,60 @@ class Modbus {
         // data - if null use local registers. Otherwise use data from array to write to Slave
         bool removeOn(TCallback::CallbackType t, TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
     public:
+/** @brief Agrega registros al banco de registros Modbus
+ * @param address Dirección inicial del registro (tipo + número)
+ * @param value Valor inicial para los registros (por defecto 0)
+ * @param numregs Cantidad de registros consecutivos a agregar
+ * @return true si los registros fueron agregados exitosamente
+ */
         bool addReg(TAddress address, uint16_t value = 0, uint16_t numregs = 1);
+/** @brief Escribe un valor en un registro Modbus
+ * @param address Dirección del registro a escribir
+ * @param value Valor a escribir en el registro
+ * @return true si la escritura fue exitosa
+ */
         bool Reg(TAddress address, uint16_t value);
+/** @brief Lee el valor de un registro Modbus
+ * @param address Dirección del registro a leer
+ * @return Valor actual del registro
+ */
         uint16_t Reg(TAddress address);
+/** @brief Elimina registros del banco de registros Modbus
+ * @param address Dirección inicial del registro a eliminar
+ * @param numregs Cantidad de registros consecutivos a eliminar
+ * @return true si la eliminación fue exitosa
+ */
         bool removeReg(TAddress address, uint16_t numregs = 1);
         bool addReg(TAddress address, uint16_t* value, uint16_t numregs = 1);
         bool Reg(TAddress address, uint16_t* value, uint16_t numregs = 1);
 
+/** @brief Registra un callback para operaciones de lectura (GET)
+ * @param address Dirección inicial del registro
+ * @param cb Función callback a ejecutar antes de leer el registro
+ * @param numregs Cantidad de registros afectados
+ * @return true si el callback fue registrado exitosamente
+ */
         bool onGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+/** @brief Registra un callback para operaciones de escritura (SET)
+ * @param address Dirección inicial del registro
+ * @param cb Función callback a ejecutar antes de escribir el registro
+ * @param numregs Cantidad de registros afectados
+ * @return true si el callback fue registrado exitosamente
+ */
         bool onSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+/** @brief Elimina un callback de escritura previamente registrado
+ * @param address Dirección del registro asociado al callback
+ * @param cb Callback específico a eliminar (nullptr elimina todos)
+ * @param numregs Cantidad de registros (no usado actualmente)
+ * @return true si se eliminó al menos un callback
+ */
         bool removeOnSet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
+/** @brief Elimina un callback de lectura previamente registrado
+ * @param address Dirección del registro asociado al callback
+ * @param cb Callback específico a eliminar (nullptr elimina todos)
+ * @param numregs Cantidad de registros (no usado actualmente)
+ * @return true si se eliminó al menos un callback
+ */
         bool removeOnGet(TAddress address, cbModbus cb = nullptr, uint16_t numregs = 1);
 
         virtual uint32_t eventSource() {return 0;}
@@ -328,7 +386,15 @@ class Modbus {
         static ResultCode _onRequestDefault(FunctionCode fc, const RequestData data);
         cbRequest _onRequest = _onRequestDefault;
     public:
+/** @brief Registra un callback raw para procesamiento personalizado de frames
+ * @param cb Función callback que recibe el frame completo
+ * @return true si el callback fue registrado exitosamente
+ */
         bool onRaw(cbRaw cb = nullptr);
+/** @brief Registra un callback para procesamiento de solicitudes Modbus
+ * @param cb Función callback que procesa códigos de función y datos
+ * @return true si el callback fue registrado exitosamente
+ */
         bool onRequest(cbRequest cb = _onRequestDefault);
     #if defined (MODBUSAPI_OPTIONAL)
     protected:

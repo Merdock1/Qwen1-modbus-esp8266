@@ -80,9 +80,15 @@ class ModbusRTUTemplate : public Modbus {
 		void setInterFrameTime(uint32_t t_us);
 		uint32_t charSendTime(uint32_t baud, uint8_t char_bits = 11);
 		template <class T>
+/** @brief Inicializa el módulo
+ * @return true si la inicialización fue exitosa
+ */
 		bool begin(T* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
 #if defined(MODBUSRTU_REDE)
 		template <class T>
+/** @brief Inicializa el módulo
+ * @return true si la inicialización fue exitosa
+ */
 		bool begin(T* port, int16_t txEnablePin, int16_t rxEnablePin, bool txEnableDirect);
 #endif
 		bool begin(Stream* port, int16_t txEnablePin = -1, bool txEnableDirect = true);
